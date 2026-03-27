@@ -5,39 +5,42 @@ The platform is a reservation application designed for local residents and entre
 
 To achieve this, the system features an automated engine that replaces manual assignments, routing orders in a way that allows the entrepreneur to accept or reject the service [1]. Additionally, it provides a frictionless experience so tourists can easily access the app to request their daily activities or meals [1].
 
+**Key Technical Context:** The application will be primarily used on **Web and Android** platforms. Because the user base (both local entrepreneurs and some tourists) lacks advanced smartphone skills, **ease of use and accessibility are the highest priorities**. Furthermore, the frontend must be highly optimized to run smoothly on **low-end mobile devices**.
+
 ## 2. Actors and Intentions (Roles)
 
 ### 2.1. Tourist (Zero Friction)
 *   **Intention:** Request an activity or service quickly [1].
-*   **Behavior:**
-    *   Eliminates the need for traditional user account creation to avoid friction [3].
-    *   Accesses the platform by scanning a QR code (which already contains the Project ID, e.g., Impenetrable).
+*   **Behavior & UX Constraints:**
+    *   Eliminates the need for traditional user account creation to avoid friction [2].
+    *   Accesses the platform by scanning a QR code (which already contains the Project ID).
     *   Identifies themselves using a mandatory "Alias".
     *   The system uses a device Token (Local Storage) to recognize them for future requests.
+    *   *UX Priority:* The interface must be extremely visual, with large buttons and minimal text input required.
 
 ### 2.2. Entrepreneur & Venture (Business)
 *   **Intention:** Organize daily work and receive clients equitably through the rotation system [1].
-*   **Behavior:**
-    *   Registers their venture [2]. A single entrepreneur (owner) can manage multiple physical ventures (businesses) associated with a Project.
-    *   Registers activities or gastronomic services [2].
-    *   The engine routes orders to their business. From their dashboard, they can accept or reject the request [1, 2].
-    *   **Calendar View:** The dashboard includes a calendar view to track assigned orders based on the service date and the specific time of day.
-    *   **Individual Pause (Stock Control):** Can pause a specific catalog item if they run out of ingredients.
-    *   **General Pause (Capacity Control):** Can disable the reception of all new requests if their business is full or closed.
+*   **Behavior & UX Constraints:**
+    *   Registers their venture [3]. 
+    *   Registers activities or gastronomic services [3].
+    *   The engine routes orders to their business. From their dashboard, they can easily accept or reject the request [1, 3].
+    *   **Calendar View:** The dashboard includes a simple calendar view to track assigned orders based on the service date and time.
+    *   **Individual & General Pauses:** Can toggle switches to pause specific items (out of stock) or their entire business (full capacity).
+    *   *UX Priority:* The dashboard must be native-feeling on Android, avoiding complex menus. Actions like "Accept/Reject" must be prominent and error-proof.
 
 ### 2.3. Rewilding Admin
 *   **Intention:** Audit the ecosystems, enable local hosts, and control regional catalogs.
 *   **Behavior:**
-    *   Enables the entrepreneur in the platform [2].
-    *   *Evolution:* No longer performs manual request routing [2]; this is now handled by the Backend Autonomous Engine.
-    *   Manages the master catalog separated *by project*. Can apply a **Global Pause** to an item across an entire region.
-    *   Consumes a Monthly Reporting Dashboard (KPIs for acceptance rates, timeouts, and completed services).
+    *   Enables the entrepreneur in the platform [3].
+    *   *Evolution:* No longer performs manual request routing [3]; this is now handled by the Backend Autonomous Engine.
+    *   Manages the master catalog separated *by project*. 
+    *   Consumes a Monthly Reporting Dashboard.
 
 ### 2.4. Autonomous Engine (Platform Backend)
 *   **Intention:** Guarantee the fair distribution of work per region without human intervention.
 *   **Behavior:** 
-    *   **Router:** Executes the Cascading Routing Algorithm, isolating the rotation lists for each `Project`.
-    *   **Morning Reminder (Cron Job):** Runs a scheduled task early in the morning to find confirmed orders for the current day and sends the entrepreneur an automated reminder (via WhatsApp/Email) with their daily agenda.
+    *   **Router:** Executes the Cascading Routing Algorithm.
+    *   **Morning Reminder (Cron Job):** Sends the entrepreneur an automated reminder (via WhatsApp/Email) with their daily agenda.
 
 ---
 
@@ -45,20 +48,30 @@ To achieve this, the system features an automated engine that replaces manual as
 
 ### 3.1. Cascading Routing Flow (Project-Isolated)
 When a tourist submits a request:
-1.  The engine looks up `Ventures` that belong *exclusively* to that project (e.g., Impenetrable).
-2.  Evaluates the rotation order, automatically skipping ventures with an active "General Pause" or those lacking the requested item ("Individual Pause").
+1.  The engine looks up Ventures that belong *exclusively* to that project (e.g., Impenetrable).
+2.  Evaluates the rotation order, automatically skipping paused ventures.
 3.  Sends the offer and triggers a waiting Timeout (e.g., 30 minutes).
-4.  If the venture rejects the request or the timeout expires, the offer is automatically forwarded to the next venture in the rotation list for that project.
+4.  If the venture rejects the request or the timeout expires, the offer is forwarded to the next venture.
 
 ### 3.2. Internationalization (i18n)
-*   Dynamic Catalog data (dish and activity names) are stored in the database using PostgreSQL's native `JSONB` type.
-*   This allows the system to quickly extract translations (e.g., `{"es": "Guiso", "en": "Stew"}`) based on the tourist's browser `Accept-Language` header.
+*   Dynamic Catalog data is stored in the database using PostgreSQL's native `JSONB` type for fast translation extraction based on the browser's `Accept-Language`.
 
 ---
 
-## 4. Data Structure (Multi-Project ERD)
+## 4. Technical Architecture & Tech Stack
 
-Below is the relational data model prepared for AI generation using PostgreSQL. Operational states are kept as Enums to protect the cascading engine's strict logic, while expansible categories use parametric tables.
+To meet the requirement of running smoothly on low-end devices while serving Web and Android users efficiently:
+
+*   **Frontend Framework:** **React Native using Expo**. This allows writing a single codebase that compiles into a lightweight Android application (APK/AAB) and a responsive Web application.
+*   **Performance Constraint:** Avoid heavy UI animations and large client-side bundle sizes to ensure performance on low-end hardware.
+*   **Backend Framework:** **Node.js with TypeScript**. This enables sharing interfaces and type definitions between the frontend and backend, ensuring end-to-end type safety.
+*   **Database:** PostgreSQL (ERD defined below) [7].
+
+---
+
+## 5. Data Structure (Multi-Project ERD)
+
+Below is the relational data model prepared for AI generation using PostgreSQL. 
 
 ```mermaid
 erDiagram
