@@ -1,4 +1,4 @@
-# OpenSpec: Multi-Destination Rewilding Reservation Platform
+# OpenSpec: Multi-Destination Impenetrable Reservation Platform
 
 ## 1. System Overview
 The platform is a reservation application designed for local residents and entrepreneurs within conservation projects, starting with the IMPE (Impenetrable) region [1]. The main goal is to manage requests for activities and gastronomic services using a fair and equitable rotation logic [1]. 
@@ -13,34 +13,34 @@ To achieve this, the system features an automated engine that replaces manual as
 *   **Intention:** Request an activity or service quickly [1].
 *   **Behavior & UX Constraints:**
     *   Eliminates the need for traditional user account creation to avoid friction [2].
-    *   Accesses the platform by scanning a QR code (which already contains the Project ID).
-    *   Identifies themselves using a mandatory "Alias".
-    *   The system uses a device Token (Local Storage) to recognize them for future requests.
-    *   *UX Priority:* The interface must be extremely visual, with large buttons and minimal text input required.
+    *   Accesses the platform by scanning a QR code (which already contains the Project ID, e.g., Impenetrable) [2].
+    *   Identifies themselves using a mandatory "Alias" [2].
+    *   The system uses a device Token (Local Storage) to recognize them for future requests [2].
 
 ### 2.2. Entrepreneur & Venture (Business)
-*   **Intention:** Organize daily work and receive clients equitably through the rotation system [1].
+*   **Intention:** Organize daily work and receive clients equitably through the rotation system [1, 2].
 *   **Behavior & UX Constraints:**
-    *   Registers their venture [3]. 
-    *   Registers activities or gastronomic services [3].
-    *   The engine routes orders to their business. From their dashboard, they can easily accept or reject the request [1, 3].
-    *   **Calendar View:** The dashboard includes a simple calendar view to track assigned orders based on the service date and time.
-    *   **Individual & General Pauses:** Can toggle switches to pause specific items (out of stock) or their entire business (full capacity).
+    *   Registers their venture [2]. A single entrepreneur (owner) can manage multiple physical ventures (businesses) associated with a Project [2].
+    *   Registers activities or gastronomic services [2].
+    *   The engine routes orders to their business, and from their dashboard, they can accept or reject the request [2].
+    *   **Calendar View:** The dashboard includes a simple calendar view to track assigned orders based on the service date and the specific time of day [2].
+    *   **Individual Pause (Stock Control):** Can pause a specific catalog item if they run out of ingredients [2].
+    *   **General Pause (Capacity Control):** Can disable the reception of all new requests if their business is full or closed [2].
     *   *UX Priority:* The dashboard must be native-feeling on Android, avoiding complex menus. Actions like "Accept/Reject" must be prominent and error-proof.
 
-### 2.3. Rewilding Admin
-*   **Intention:** Audit the ecosystems, enable local hosts, and control regional catalogs.
+### 2.3. Impenetrable Admin
+*   **Intention:** Audit the ecosystems, enable local hosts, and control regional catalogs [3].
 *   **Behavior:**
     *   Enables the entrepreneur in the platform [3].
-    *   *Evolution:* No longer performs manual request routing [3]; this is now handled by the Backend Autonomous Engine.
-    *   Manages the master catalog separated *by project*. 
-    *   Consumes a Monthly Reporting Dashboard.
+    *   *Evolution:* No longer performs manual request routing; this is now handled by the Backend Autonomous Engine [3].
+    *   Manages the master catalog separated *by project* [3]. Can apply a **Global Pause** to an item across an entire region [3].
+    *   Consumes a Monthly Reporting Dashboard (KPIs for acceptance rates, timeouts, and completed services) [3].
 
 ### 2.4. Autonomous Engine (Platform Backend)
-*   **Intention:** Guarantee the fair distribution of work per region without human intervention.
+*   **Intention:** Guarantee the fair distribution of work per region without human intervention [4].
 *   **Behavior:** 
-    *   **Router:** Executes the Cascading Routing Algorithm.
-    *   **Morning Reminder (Cron Job):** Sends the entrepreneur an automated reminder (via WhatsApp/Email) with their daily agenda.
+    *   **Router:** Executes the Cascading Routing Algorithm, isolating the rotation lists for each Project [4].
+    *   **Morning Reminder (Cron Job):** Runs a scheduled task early in the morning to find confirmed orders for the current day and sends the entrepreneur an automated reminder (via WhatsApp/Email) with their daily agenda [4].
 
 ---
 
@@ -48,13 +48,14 @@ To achieve this, the system features an automated engine that replaces manual as
 
 ### 3.1. Cascading Routing Flow (Project-Isolated)
 When a tourist submits a request:
-1.  The engine looks up Ventures that belong *exclusively* to that project (e.g., Impenetrable).
-2.  Evaluates the rotation order, automatically skipping paused ventures.
-3.  Sends the offer and triggers a waiting Timeout (e.g., 30 minutes).
-4.  If the venture rejects the request or the timeout expires, the offer is forwarded to the next venture.
+1.  The engine looks up Ventures that belong *exclusively* to that project (e.g., Impenetrable) [5].
+2.  Evaluates the rotation order, automatically skipping ventures with an active "General Pause" or those lacking the requested item ("Individual Pause") [5].
+3.  Sends the offer and triggers a waiting Timeout (e.g., 30 minutes) [5].
+4.  If the venture rejects the request or the timeout expires, the offer is automatically forwarded to the next venture in the rotation list for that project [5].
 
 ### 3.2. Internationalization (i18n)
-*   Dynamic Catalog data is stored in the database using PostgreSQL's native `JSONB` type for fast translation extraction based on the browser's `Accept-Language`.
+*   Dynamic Catalog data (dish and activity names) are stored in the database using PostgreSQL's native `JSONB` type [6].
+*   This allows the system to quickly extract translations (e.g., `{"es": "Guiso", "en": "Stew"}`) based on the tourist's browser `Accept-Language` header [6].
 
 ---
 
@@ -65,13 +66,13 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 *   **Frontend Framework:** **React Native using Expo**. This allows writing a single codebase that compiles into a lightweight Android application (APK/AAB) and a responsive Web application.
 *   **Performance Constraint:** Avoid heavy UI animations and large client-side bundle sizes to ensure performance on low-end hardware.
 *   **Backend Framework:** **Node.js with TypeScript**. This enables sharing interfaces and type definitions between the frontend and backend, ensuring end-to-end type safety.
-*   **Database:** PostgreSQL (ERD defined below) [7].
+*   **Database:** PostgreSQL (ERD defined below).
 
 ---
 
 ## 5. Data Structure (Multi-Project ERD)
 
-Below is the relational data model prepared for AI generation using PostgreSQL. 
+Below is the relational data model prepared for AI generation using PostgreSQL. Operational states are kept as Enums to protect the cascading engine's strict logic, while expansible categories use parametric tables [6].
 
 ```mermaid
 erDiagram
@@ -80,7 +81,7 @@ erDiagram
     %% ==========================================
     Project {
         int id PK
-        string name "e.g. 'IMPE Rewilding', 'Patagonia Rewilding'"
+        string name "e.g. 'Impenetrable', 'Patagonia'"
         boolean is_active
     }
 
@@ -91,7 +92,7 @@ erDiagram
         int id PK
         string email "Unique"
         string password_hash 
-        enum system_role "ADMIN_REWILDING, ENTREPRENEUR"
+        enum system_role "ADMIN, ENTREPRENEUR"
         int entrepreneur_id FK "Nullable. Ref: Physical person"
     }
 
@@ -215,3 +216,37 @@ erDiagram
     
     Order ||--o{ Cascade_Assignment : "processed by engine"
     Venture ||--o{ Cascade_Assignment : "receives offer"
+
+
+--------------------------------------------------------------------------------
+6. UI/UX Mockup Specifications (Google Stitch / Design Guidelines)
+When generating UI components or screens, adhere strictly to the following constraints tailored for low-end Android devices and non-technical users.
+6.1 Global Design Guidelines
+
+    Visual & Accessible: Use high-contrast colors, extremely large buttons (wide touch areas), and highly legible typography.
+    Performance: The UI must be lightweight. Strictly avoid complex animations, heavy shadows, or overlapping elements that consume RAM on low-end phones.
+    Navigation: Avoid complex hamburger menus or multi-step wizard flows. Keep actions flat and immediate.
+
+6.2 Tourist Flow (Zero Friction Journey)
+
+    Screen 1: Welcome & Access (QR Scan):
+        Spec: No traditional login/signup forms.
+        UI Elements: A single, prominent text input asking for an "Alias" (e.g., "Gomez Family") followed by a massive "Start" button.
+    Screen 2: Service Catalog:
+        Spec: A simple list to request an activity or meal.
+        UI Elements: Visual cards for available dishes/activities. Hidden entirely if under an "Individual Pause" or "Global Pause".
+    Screen 3: Order Status (Waiting Room):
+        Spec: Interactive waiting screen while the cascading engine works.
+        UI Elements: A friendly loading indicator informing the tourist that the system is finding an available entrepreneur (accommodating the 30-minute algorithm timeout).
+
+6.3 Entrepreneur Flow (Operational Journey)
+
+    Screen 1: Order Reception Dashboard:
+        Spec: The main hub where the engine routes incoming requests to the business.
+        UI Elements: Alert cards for incoming orders featuring two huge, contrasting, error-proof buttons: "Accept" and "Reject".
+    Screen 2: Daily Agenda / Calendar:
+        Spec: Visual tool to organize the workday.
+        UI Elements: A calendar or timeline view grouping confirmed orders by date and time of day (e.g., Breakfast, Lunch).
+    Screen 3: Availability Control Panel (Pauses):
+        Spec: Quick toggles for capacity and stock management.
+        UI Elements: A master Toggle Switch at the very top for "General Pause" (business full/closed). Below it, a simple list of their products with individual toggles for "Individual Pause" (out of stock).
