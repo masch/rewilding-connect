@@ -287,3 +287,17 @@ When generating UI components or screens, adhere strictly to the following const
     Screen 3: Availability Control Panel (Pauses):
         Spec: Quick toggles for capacity and stock management.
         UI Elements: A master Toggle Switch at the very top for "General Pause" (business full/closed). Below it, a simple list of their products with individual toggles for "Individual Pause" (out of stock).
+
+6.4 Admin Impenetrable Flow (Management & Auditing)
+This interface will be accessed primarily via Web (Desktop) but must remain uncluttered.
+
+    Screen 1: Monthly Reporting Dashboard (KPIs):
+        Spec: A bird's-eye view to audit the ecosystem without manual assignment intervention.
+        UI Elements: Large metric cards at the top displaying core KPIs: Acceptance Rates, Timeouts, and Completed Services. Simple data tables filterable by Project.
+    Screen 2: Master Catalog & Global Pause:
+        Spec: Regional control over available activities and gastronomy.
+        UI Elements: A list/table of all catalog items associated with a project. Each item must feature a prominent, high-contrast toggle switch for "Global Pause", allowing the admin to disable an item across the entire region instantly.
+    Screen 3: Host Management:
+        Spec: Simple onboarding interface for local hosts.
+        UI Elements: A clean list of registered entrepreneurs with a clear "Enable" or "Disable" action to authorize their access to the platform.
+
