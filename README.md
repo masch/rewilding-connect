@@ -1,4 +1,4 @@
-# Rewilding Reservation Platform
+# Impenetrable Reservation Platform
 
 ## Overview
 This project is a service reservation application designed for local neighbors and entrepreneurs in conservation areas, initially deployed in the IMPE (Impenetrable) region [1]. 
@@ -10,7 +10,7 @@ The platform's main goal is to manage requests for activities and gastronomic se
 *   **Tourist Access (Zero Friction):** Tourists can easily access the application to request their activities or services for the day without cumbersome registration processes [1].
 *   **Entrepreneur Dashboard:** Local hosts can register their ventures, list their activities and gastronomic services [2, 3], and easily accept or reject incoming service requests [1].
 *   **Automated Fair Rotation:** The core engine features a cascading flow that assigns requests equitably among available entrepreneurs based on a strict rotation logic [1]. 
-*   **Admin Management:** The Rewilding Admin is responsible for enabling entrepreneurs [2] and managing the master catalogs across different regional projects.
+*   **Admin Management:** The Impenetrable Admin is responsible for enabling entrepreneurs [2] and managing the master catalogs across different regional projects.
 *   **Multi-Destination & Multi-Language:** Built to scale across different conservation projects (e.g., Patagonia, Impenetrable) and supports multiple languages dynamically for international tourists.
 
 ## Repository Structure (Monorepo)
