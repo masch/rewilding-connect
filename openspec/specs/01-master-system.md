@@ -84,6 +84,20 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 *   **Backend Framework:** **Node.js with TypeScript**. This enables sharing interfaces and type definitions between the frontend and backend, ensuring end-to-end type safety.
 *   **Database:** PostgreSQL (ERD defined below).
 
+### 4.1 Security Requirements
+
+*   **Authentication:**
+    *   **Entrepreneur/Admin:** JWT-based authentication with email/password. Tokens stored in httpOnly cookies (web) or secure storage (mobile).
+    *   **Tourist:** JWT token with 7-day expiration. Auto-renewal before expiration. No traditional login required — token generated on first visit.
+*   **Password Security:** Use bcrypt or argon2 for password hashing with cost factor 10+.
+*   **Rate Limiting:**
+    *   Global: 100 requests/minute per IP
+    *   Order creation: 10 orders/minute per device token
+    *   Auth endpoints: 5 attempts/minute per IP
+*   **Account Lockout:** After 5 failed login attempts, lock account for 15 minutes.
+*   **Input Validation:** All inputs sanitized. SQL injection prevented via parameterized queries (Knex/Prisma). XSS prevented via output encoding.
+*   **API Security:** All endpoints require authentication except: `POST /auth/login`, `POST /orders` (tourist), `GET /catalog`.
+
 ---
 
 ## 5. Data Structure (Multi-Project ERD)
@@ -109,9 +123,13 @@ erDiagram
     Access_User {
         int id PK
         string email "Unique"
-        string password_hash 
+        string password_hash "bcrypt or argon2 hash"
         enum system_role "ADMIN, ENTREPRENEUR"
         int entrepreneur_id FK "Nullable. Ref: Physical person"
+        int failed_login_attempts "Default 0. Lock after 5 failed attempts"
+        timestamp locked_until "Nullable. Lockout expiration time"
+        timestamp last_login_at
+        boolean is_enabled "Default TRUE. Manual enable/disable by admin"
     }
 
     %% ==========================================
@@ -140,7 +158,10 @@ erDiagram
         string alias "Mandatory"
         string first_name "Nullable"
         string last_name "Nullable"
-        string device_token "Local Storage"
+        string whatsapp "Nullable. For order notifications"
+        string auth_token "JWT token stored in secure storage (not LocalStorage). Expires in 7 days."
+        timestamp token_expires_at
+        timestamp created_at
     }
 
     Entrepreneur {
@@ -195,6 +216,9 @@ erDiagram
         enum cancel_reason "null, BY_TOURIST, NO_VENTURE_AVAILABLE, SYSTEM_ERROR"
         timestamp cancelled_at "Nullable. Set when status becomes CANCELLED or EXPIRED"
         timestamp created_at
+        
+        %% Notification preferences for this order
+        boolean notify_whatsapp "Whether to send WhatsApp notifications for this order"
     }
 
     Order_Detail {
