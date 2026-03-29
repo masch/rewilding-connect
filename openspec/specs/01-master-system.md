@@ -21,10 +21,10 @@ To achieve this, the system features an automated engine that replaces manual as
     *   Identifies themselves using a mandatory "Alias" [2].
     *   The system uses a JWT auth_token (stored in secure storage) to recognize them for future requests [2]. Token auto-refreshes before expiration (7 days).
 
-### 2.2. Entrepreneur & Venture (Business) **[MVP]**
+### 2.2. Entrepreneur (Business) **[MVP]**
 *   **Intention:** Organize daily work and receive clients equitably through the rotation system [1, 2].
 *   **Behavior & UX Constraints:**
-    *   One entrepreneur = one venture (their business). No multi-venture support [2].
+    *   **No separate Venture entity.** Entrepreneur IS the business. Contains all venture fields directly [2].
     *   The entrepreneur can only offer items from the **Master Catalog** defined by the Admin for that Project [2].
     *   The engine routes orders to the entrepreneur, and from their dashboard, they can accept or reject the request [2].
     *   **Calendar View:** The dashboard includes a simple calendar view to track assigned orders based on the service date and the specific time of day [2].
@@ -52,23 +52,23 @@ To achieve this, the system features an automated engine that replaces manual as
 
 ### 3.1. Cascading Routing Flow (Project-Isolated) **[MVP]**
 
-> **Note:** One entrepreneur = One venture. The cascade iterates through **entrepreneurs** (each with 1 venture). Individual Pause (Venture_Item level) is **[POST-MVP]**. Only General Pause at venture level for MVP.
+> **Note:** Entrepreneur IS the business (Venture entity merged into Entrepreneur). The cascade iterates through **entrepreneurs**. Individual Pause is tracked via `paused_items` array on Entrepreneur.
 
 When a tourist submits a request:
-1.  **Order Init**: Order is created with status `SEARCHING`. The engine starts iterating through **entrepreneurs** sorted by `cascade_order` (ascending). Each entrepreneur has exactly one venture.
+1.  **Order Init**: Order is created with status `SEARCHING`. The engine starts iterating through **entrepreneurs** sorted by `cascade_order` (ascending).
 2.  **Filter Phase**: For each entrepreneur in rotation order:
-    - Skip if `venture.is_active = false` → record `skip_reason = VENTURE_INACTIVE`
+    - Skip if `entrepreneur.is_active = false` → record `skip_reason = VENTURE_INACTIVE`
     - Skip if `entrepreneur.is_paused = true` → record `skip_reason = GENERAL_PAUSE`
-    - Skip if Venture_Item has `individual_pause = true` for requested Catalog_Item → record `skip_reason = INDIVIDUAL_PAUSE`
-    - Skip if `guest_count > venture.max_capacity` → record `skip_reason = CAPACITY_EXCEEDED`
-    - Skip if `service_date` day is not in `venture.opening_hours` → record `skip_reason = CLOSED_THAT_DAY`
-    - Skip if requested time is outside `venture.opening_hours` range → record `skip_reason = OUTSIDE_OPENING_HOURS`
+    - Skip if `catalog_item_id` is in `entrepreneur.paused_items` → record `skip_reason = INDIVIDUAL_PAUSE`
+    - Skip if `guest_count > entrepreneur.max_capacity` → record `skip_reason = CAPACITY_EXCEEDED`
+    - Skip if `service_date` day is not in `entrepreneur.opening_hours` → record `skip_reason = CLOSED_THAT_DAY`
+    - Skip if requested time is outside `entrepreneur.opening_hours` range → record `skip_reason = OUTSIDE_OPENING_HOURS`
 3.  **Offer Phase**: First entrepreneur that passes filters gets the offer:
     - Create Cascade_Assignment with `offer_status = WAITING_FOR_RESPONSE`
     - Set `response_deadline = now + project.cascade_timeout_minutes`
     - Send notification to entrepreneur
 4.  **Response Handling**:
-    - **Accept**: Update Order status to `CONFIRMED`, set `confirmed_venture_id`, mark assignment as `ACCEPTED`
+    - **Accept**: Update Order status to `CONFIRMED`, set `confirmed_entrepreneur_id`, mark assignment as `ACCEPTED`
     - **Reject**: Mark assignment as `REJECTED`, continue to next entrepreneur in rotation
     - **Timeout**: Mark assignment as `TIMEOUT`, continue to next entrepreneur
 5.  **Termination Conditions**:
@@ -122,28 +122,27 @@ When a tourist creates an order, the following validations must pass:
 | `items` | Max 10 unique items | "Maximum 10 items per order" |
 | `time_of_day_id` | Required | "Time of day is required" |
 
-#### 3.3.2 Entrepreneur/Venture Availability Validations (Filter Phase)
+#### 3.3.2 Entrepreneur Availability Validations (Filter Phase)
 
-> **Note:** The cascade iterates through **entrepreneurs**. Each entrepreneur has exactly one venture. The checks apply to both.
+> **Note:** Entrepreneur entity contains all business fields (formerly in Venture).
 
 Before offering an order to an entrepreneur, the engine validates:
 
 | Check | Condition | Skip Reason |
 |-------|-----------|-------------|
 | Entrepreneur Active | `entrepreneur.is_active = true` | `VENTURE_INACTIVE` |
-| Venture Active | `venture.is_active = true` | `VENTURE_INACTIVE` |
 | General Pause | `entrepreneur.is_paused = false` | `GENERAL_PAUSE` |
-| Capacity | `order.guest_count <= venture.max_capacity` | `CAPACITY_EXCEEDED` |
-| Individual Pause | `venture_item.individual_pause = false` for all items | `INDIVIDUAL_PAUSE` |
-| **Opening Hours** | Order time within `venture.opening_hours` for the day | `CLOSED_THAT_DAY` |
+| Capacity | `order.guest_count <= entrepreneur.max_capacity` | `CAPACITY_EXCEEDED` |
+| Individual Pause | `catalog_item_id NOT IN entrepreneur.paused_items` | `INDIVIDUAL_PAUSE` |
+| **Opening Hours** | Order time within `entrepreneur.opening_hours` for the day | `CLOSED_THAT_DAY` |
 
 **Opening Hours Logic:**
 ```typescript
-function isVentureOpen(venture: Venture, serviceDate: Date, timeOfDayId: number): boolean {
+function isEntrepreneurOpen(entrepreneur: Entrepreneur, serviceDate: Date, timeOfDayId: number): boolean {
     const dayOfWeek = getDayOfWeek(serviceDate); // 'mon', 'tue', ...
-    const hours = venture.opening_hours[dayOfWeek];
+    const hours = entrepreneur.opening_hours[dayOfWeek];
     
-    if (!hours) return false; // Venture is closed that day
+    if (!hours) return false; // Entrepreneur is closed that day
     
     const [openTime, closeTime] = hours.split('-');
     const orderTime = getStartTimeForTimeOfDay(timeOfDayId); // e.g., '12:00' for LUNCH
@@ -163,13 +162,13 @@ SEARCHING ──accept──> CONFIRMED ──complete──> COMPLETED
    │
    ├──cancel──> CANCELLED (by tourist)
    │
-   └──expire──> EXPIRED (no venture available / all skipped)
+   └──expire──> EXPIRED (no entrepreneur available / all skipped)
 ```
 
 **State Transition Rules:**
 - `SEARCHING` → `CONFIRMED`: When entrepreneur accepts
 - `SEARCHING` → `CANCELLED`: When tourist cancels (only if status = SEARCHING)
-- `SEARCHING` → `EXPIRED`: When max cascade attempts reached or all ventures skipped
+- `SEARCHING` → `EXPIRED`: When max cascade attempts reached or all entrepreneurs skipped
 - `CONFIRMED` → `COMPLETED`: When service date passes + no NO_SHOW reported
 - `CONFIRMED` → `NO_SHOW`: When entrepreneur marks tourist as no-show
 
@@ -179,14 +178,14 @@ Complete list of skip reasons in `Cascade_Assignment.skip_reason`:
 
 | Reason | Description |
 |--------|-------------|
-| `null` | Venture was offered (not skipped) |
-| `GENERAL_PAUSE` | Venture has general_pause = true |
-| `INDIVIDUAL_PAUSE` | Venture_Item has individual_pause = true for requested item |
-| `CAPACITY_EXCEEDED` | guest_count > venture.max_capacity |
-| `CLOSED_THAT_DAY` | Venture is closed on the requested day (not in opening_hours) |
-| `OUTSIDE_OPENING_HOURS` | Requested time is outside venture's operating hours |
-| `VENTURE_INACTIVE` | Venture.is_active = false |
-| `NOT_OFFERED` | Venture was not in the rotation list |
+| `null` | Entrepreneur was offered (not skipped) |
+| `GENERAL_PAUSE` | Entrepreneur has general_pause = true |
+| `INDIVIDUAL_PAUSE` | Catalog_Item has individual_pause = true for requested item |
+| `CAPACITY_EXCEEDED` | guest_count > entrepreneur.max_capacity |
+| `CLOSED_THAT_DAY` | Entrepreneur is closed on the requested day (not in opening_hours) |
+| `OUTSIDE_OPENING_HOURS` | Requested time is outside entrepreneur's operating hours |
+| `ENTREPRENEUR_INACTIVE` | Entrepreneur.is_active = false |
+| `NOT_OFFERED` | Entrepreneur was not in the rotation list |
 
 #### 3.3.5 Order Duplication Prevention
 
@@ -197,25 +196,21 @@ If such order exists with status `SEARCHING` or `CONFIRMED`, the system returns 
 
 #### 3.3.6 Capacity Calculation
 
-> **Note:** Capacity is checked per entrepreneur (via their venture).
-
 When checking if an entrepreneur can accept an order:
 
 ```typescript
 function getCurrentGuestCount(entrepreneurId: number, serviceDate: Date, timeOfDayId: number): number {
     // Sum of guest_count for CONFIRMED orders at same date/time
     return SUM(o.guest_count) FROM Order o
-    JOIN Venture v ON o.confirmed_venture_id = v.id
-    WHERE v.entrepreneur_id = entrepreneurId
+    WHERE o.confirmed_entrepreneur_id = entrepreneurId
       AND o.service_date = serviceDate
       AND o.time_of_day_id = timeOfDayId
       AND o.status IN ('SEARCHING', 'CONFIRMED');
 }
 
 function canAcceptOrder(entrepreneur: Entrepreneur, order: Order): boolean {
-    const venture = entrepreneur.venture;
     const currentGuests = getCurrentGuestCount(entrepreneur.id, order.service_date, order.time_of_day_id);
-    return (currentGuests + order.guest_count) <= venture.max_capacity;
+    return (currentGuests + order.guest_count) <= entrepreneur.max_capacity;
 }
 ```
 
@@ -386,8 +381,8 @@ Response (200):
     { "catalog_item_id": 1, "name": "Guiso", "quantity": 2, "price": 15.00 }
   ],
   "cascade_history": [
-    { "venture": "Parador A", "status": "REJECTED", "reason": null },
-    { "venture": "Parador B", "status": "ACCEPTED", "reason": null }
+    { "entrepreneur": "Parador A", "status": "REJECTED", "reason": null },
+    { "entrepreneur": "Parador B", "status": "ACCEPTED", "reason": null }
   ]
 }
 ```
@@ -398,11 +393,11 @@ Response (200):
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/entrepreneur/me` | Get my venture details |
-| GET | `/entrepreneur/me/items` | Get my available catalog items |
+| GET | `/entrepreneur/me` | Get my details (includes business info) |
+| GET | `/entrepreneur/me/items` | Get catalog items with my pause status |
 | PUT | `/entrepreneur/me/items/:item_id/pause` | Toggle individual pause for item |
 | PUT | `/entrepreneur/me/pause` | Toggle general pause (business full/closed) |
-| GET | `/orders/pending` | Get pending orders for my venture |
+| GET | `/orders/pending` | Get pending orders for my business |
 | POST | `/orders/:id/accept` | Accept an order |
 | POST | `/orders/:id/reject` | Reject an order |
 | GET | `/calendar` | Get confirmed orders by date range |
@@ -415,8 +410,8 @@ Response (200):
   "assignments": [
     {
       "order_id": 123,
-      "venture_id": 1,
-      "venture_name": "Parador Don Esteban",
+      "entrepreneur_id": 1,
+      "entrepreneur_name": "Parador Don Esteban",
       "service_date": "2024-01-15",
       "time_of_day": "LUNCH",
       "guest_count": 4,
@@ -437,7 +432,7 @@ Response (200):
 {
   "order_id": 123,
   "status": "CONFIRMED",
-  "confirmed_venture_id": 1
+  "confirmed_entrepreneur_id": 1
 }
 ```
 
@@ -487,21 +482,16 @@ Response (200):
 ```
 Response (200):
 {
-  "venture": {
-    "id": 1,
-    "name": "Parador Don Esteban",
-    "address": "Calle Principal 123",
-    "max_capacity": 20,
-    "opening_hours": {"mon": "08:00-20:00", "tue": "08:00-20:00"},
-    "is_active": true
-  },
-  "entrepreneur": {
-    "id": 1,
-    "full_name": "Juan Perez",
-    "whatsapp_contact": "+54911...",
-    "is_paused": false,
-    "cascade_order": 1
-  }
+  "id": 1,
+  "full_name": "Juan Perez",
+  "name": "Parador Don Esteban",
+  "address": "Calle Principal 123",
+  "whatsapp_contact": "+54911...",
+  "max_capacity": 20,
+  "opening_hours": {"mon": "08:00-20:00", "tue": "08:00-20:00"},
+  "cascade_order": 1,
+  "is_paused": false,
+  "is_active": true
 }
 ```
 
@@ -548,9 +538,9 @@ Response (200):
 | PUT | `/admin/entrepreneurs/:id/enable` | Enable/disable entrepreneur |
 | PUT | `/admin/entrepreneurs/:id/pause` | Toggle entrepreneur's general pause |
 | PUT | `/admin/entrepreneurs/reorder` | Reorder cascade (cascade_order on entrepreneurs) |
-| POST | `/admin/entrepreneurs` | Create new entrepreneur + venture |
-| GET | `/admin/ventures/:id` | Get venture details (one per entrepreneur) |
-| PUT | `/admin/ventures/:id` | Update venture (capacity, hours, etc.) |
+| POST | `/admin/entrepreneurs` | Create new entrepreneur |
+| GET | `/admin/entrepreneurs/:id` | Get entrepreneur details |
+| PUT | `/admin/entrepreneurs/:id` | Update entrepreneur (capacity, hours, etc.) |
 | GET | `/admin/catalog` | List master catalog items (project-level) |
 | POST | `/admin/catalog` | Create catalog item |
 | PUT | `/admin/catalog/:id` | Update catalog item |
@@ -580,9 +570,9 @@ Response (200):
     { "date": "2024-01-15", "orders": 12, "acceptance_rate": 0.92 },
     { "date": "2024-01-14", "orders": 8, "acceptance_rate": 0.87 }
   ],
-  "by_venture": [
-    { "venture_id": 1, "name": "Parador A", "orders": 45, "acceptance_rate": 0.95 },
-    { "venture_id": 2, "name": "Parador B", "orders": 38, "acceptance_rate": 0.82 }
+  "by_entrepreneur": [
+    { "entrepreneur_id": 1, "name": "Parador A", "orders": 45, "acceptance_rate": 0.95 },
+    { "entrepreneur_id": 2, "name": "Parador B", "orders": 38, "acceptance_rate": 0.82 }
   ]
 }
 ```
@@ -613,7 +603,7 @@ Response: { "success": true }
 |-------|-----------|---------|---------|
 | `ORDER_RECEIVED` | Entrepreneur | Push | "Nuevo pedido: X personas, [items]" |
 | `ORDER_CANCELLED` | Entrepreneur | Push | "El cliente canceló el pedido #X" |
-| `ORDER_CONFIRMED` | Tourist | Push + WhatsApp | "Tu reserva está confirmada para [fecha] en [venture]" |
+| `ORDER_CONFIRMED` | Tourist | Push + WhatsApp | "Tu reserva está confirmada para [fecha] en [entrepreneur]" |
 | `ORDER_EXPIRED` | Tourist | Push | "Lo sentimos, no hay disponibilidad para tu solicitud" |
 | `MORNING_REMINDER` | Entrepreneur | Push + WhatsApp | "Hoy tienes X pedidos confirmados" |
 
@@ -974,47 +964,47 @@ pg_dump -h $DB_HOST -U $DB_USER $DB_NAME | gzip > backup_$(date +%Y%m%d).sql.gz
 **Example:**
 ```typescript
 describe('CascadeEngine', () => {
-  describe('filterVenture', () => {
-    it('skips when venture.is_active = false', () => {
-      const venture = { is_active: false, ... };
-      const result = filterVenture(venture, order);
+  describe('filterEntrepreneur', () => {
+    it('skips when entrepreneur.is_active = false', () => {
+      const entrepreneur = { is_active: false, ... };
+      const result = filterEntrepreneur(entrepreneur, order);
       expect(result.skip).toBe(true);
-      expect(result.reason).toBe('VENTURE_INACTIVE');
+      expect(result.reason).toBe('ENTREPRENEUR_INACTIVE');
     });
 
     it('skips when general_pause = true', () => {
-      const venture = { general_pause: true, ... };
-      const result = filterVenture(venture, order);
+      const entrepreneur = { general_pause: true, ... };
+      const result = filterEntrepreneur(entrepreneur, order);
       expect(result.skip).toBe(true);
       expect(result.reason).toBe('GENERAL_PAUSE');
     });
 
     it('skips when guest_count > max_capacity', () => {
-      const venture = { max_capacity: 10, ... };
+      const entrepreneur = { max_capacity: 10, ... };
       const order = { guest_count: 15 };
-      const result = filterVenture(venture, order);
+      const result = filterEntrepreneur(entrepreneur, order);
       expect(result.skip).toBe(true);
       expect(result.reason).toBe('CAPACITY_EXCEEDED');
     });
 
     it('skips when outside opening_hours', () => {
-      const venture = { opening_hours: { mon: '08:00-20:00' } };
+      const entrepreneur = { opening_hours: { mon: '08:00-20:00' } };
       const order = { service_date: '2024-01-15', time_of_day_id: LUNCH }; // 12:00
-      const result = filterVenture(venture, order);
+      const result = filterEntrepreneur(entrepreneur, order);
       expect(result.skip).toBe(false);
     });
   });
 
   describe('cascadeLoop', () => {
     it('marks EXPIRED after max_attempts', async () => {
-      const ventures = [...Array(10).keys()].map(i => ({ id: i, ... }));
-      const result = await cascadeLoop(order, ventures, { max_attempts: 10 });
+      const entrepreneurs = [...Array(10).keys()].map(i => ({ id: i, ... }));
+      const result = await cascadeLoop(order, entrepreneurs, { max_attempts: 10 });
       expect(result.status).toBe('EXPIRED');
     });
 
     it('returns CONFIRMED on first accept', async () => {
-      const ventures = [{ id: 1, ... }];
-      const result = await cascadeLoop(order, ventures, {});
+      const entrepreneurs = [{ id: 1, ... }];
+      const result = await cascadeLoop(order, entrepreneurs, {});
       expect(result.status).toBe('CONFIRMED');
     });
   });
@@ -1030,7 +1020,7 @@ describe('CascadeEngine', () => {
 | Scenario | Description |
 |----------|-------------|
 | **Order Flow** | Tourist creates order → enters SEARCHING → entrepreneur accepts → becomes CONFIRMED |
-| **Cascade Flow** | Order creates → skips paused ventures → reaches active venture → accepts |
+| **Cascade Flow** | Order creates → skips paused entrepreneurs → reaches active entrepreneur → accepts |
 | **Auth Flow** | Tourist creates identity → gets JWT → refreshes token → token invalidates old |
 | **Notification Flow** | Order confirmed → notification created → sent via provider |
 
@@ -1119,7 +1109,7 @@ test('tourist creates order', async ({ page }) => {
 | Scenario | Target |
 |----------|--------|
 | **Order Creation** | 100 orders/minute |
-| **Cascade Engine** | 50 ventures, 10 attempts each |
+| **Cascade Engine** | 50 entrepreneurs, 10 attempts each |
 | **Concurrent Accepts** | 10 entrepreneurs accepting simultaneously |
 | **Calendar View** | 1000 confirmed orders |
 
@@ -1217,7 +1207,7 @@ erDiagram
         string name "e.g. 'Impenetrable', 'Patagonia'"
         string default_language "Default language code, e.g. 'es'"
         jsonb supported_languages "Array of supported language codes, e.g. ['es', 'en']"
-        int cascade_timeout_minutes "Default: 30. Timeout per attempt before cascading to next venture"
+        int cascade_timeout_minutes "Default: 30. Timeout per attempt before cascading to next entrepreneur"
         int max_cascade_attempts "Default: 10. Maximum times the engine will try before marking order as EXPIRED"
         boolean is_active
     }
@@ -1269,27 +1259,22 @@ erDiagram
 
     Entrepreneur {
         int id PK
+        int project_id FK "Project this entrepreneur belongs to"
         string full_name "Physical Person / Owner"
-        string whatsapp_contact "Used for Morning Reminder"
-        int cascade_order "Isolated rotation per project. Default: creation order (1, 2, 3...)"
-        boolean is_paused "General pause - entrepreneur cannot receive orders"
-        boolean is_active "Enabled by admin"
-    }
-
-    Venture {
-        int id PK
-        int project_id FK
-        int entrepreneur_id FK "1:1 with Entrepreneur - one venture per entrepreneur"
-        string name "e.g. Parador Don Esteban"
-        string description "Optional venture description"
+        string name "Business name (e.g. Parador Don Esteban)"
+        string description "Optional business description"
         string address "Physical address"
         decimal latitude "Geolocation"
         decimal longitude "Geolocation"
-        string image_url "Optional venture photo"
+        string image_url "Optional business photo"
         int role_type_id FK
+        string whatsapp_contact "Used for Morning Reminder"
+        int cascade_order "Isolated rotation per project. Default: creation order (1, 2, 3...)"
         int max_capacity "Maximum number of guests per service (e.g. 20 seats)"
         jsonb opening_hours "e.g. {'mon': '08:00-20:00', 'tue': '08:00-20:00'}"
-        boolean is_active
+        jsonb paused_items "Array of catalog_item_ids paused by this entrepreneur"
+        boolean is_paused "General pause - entrepreneur cannot receive orders"
+        boolean is_active "Enabled by admin"
     }
 
     Catalog_Item {
@@ -1300,18 +1285,10 @@ erDiagram
         jsonb allergens_i18n "Allergen info (e.g. {'es':'Contiene gluten'})"
         jsonb ingredients_i18n "Ingredient list (e.g. {'es':'Carne, papas, cebolla'})"
         int category_id FK
-        decimal price
+        decimal price "Default price from master catalog"
         int max_participants "Maximum participants for activities (null for gastronomy)"
         string image_url "Optional: URL to dish/activity photo"
-        boolean global_pause 
-    }
-
-    Venture_Item {
-        int id PK
-        int venture_id FK
-        int catalog_item_id FK
-        boolean individual_pause "Venture-level stock control"
-        decimal price_override "Nullable. If null, uses Catalog_Item.price. Allows ventures to offer discounts."
+        boolean global_pause "Admin can pause item for ALL entrepreneurs"
     }
 
     %% ==========================================
@@ -1321,7 +1298,7 @@ erDiagram
         int id PK
         uuid person_id FK
         int project_id FK "Order origin"
-        int confirmed_venture_id FK "Nullable. Set when status becomes CONFIRMED"
+        int confirmed_entrepreneur_id FK "Nullable. Set when status becomes CONFIRMED"
         date service_date "Used for Calendar view"
         int time_of_day_id FK "Used for Calendar view"
         int guest_count 
@@ -1346,10 +1323,10 @@ erDiagram
     Cascade_Assignment {
         int id PK
         int order_id FK
-        int entrepreneur_id FK "Cascade iterates through entrepreneurs (each has one venture)"
+        int entrepreneur_id FK "Cascade iterates through entrepreneurs"
         int attempt_number
         enum offer_status "WAITING_FOR_RESPONSE, ACCEPTED, REJECTED, TIMEOUT, AUTO_REJECTED"
-        enum skip_reason "null, GENERAL_PAUSE, INDIVIDUAL_PAUSE, CAPACITY_EXCEEDED, CLOSED_THAT_DAY, OUTSIDE_OPENING_HOURS, VENTURE_INACTIVE, NOT_OFFERED"
+        enum skip_reason "null, GENERAL_PAUSE, INDIVIDUAL_PAUSE, CAPACITY_EXCEEDED, CLOSED_THAT_DAY, OUTSIDE_OPENING_HOURS, ENTREPRENEUR_INACTIVE, NOT_OFFERED"
         timestamp offer_sent_at
         timestamp response_deadline 
         timestamp resolved_at
@@ -1361,7 +1338,7 @@ erDiagram
     Notification {
         int id PK
         uuid person_id FK "Nullable. For tourist notifications"
-        int venture_id FK "Nullable. For entrepreneur notifications"
+        int entrepreneur_id FK "Nullable. For entrepreneur notifications"
         int order_id FK "Nullable. Associated order"
         enum channel "PUSH, WHATSAPP, EMAIL, IN_APP"
         enum event_type "ORDER_RECEIVED, ORDER_CONFIRMED, ORDER_EXPIRED, ORDER_CANCELLED, MORNING_REMINDER"
@@ -1384,24 +1361,20 @@ erDiagram
     %% ==========================================
     %% RELATIONSHIPS
     %% ==========================================
-    Project ||--o{ Venture : "groups businesses"
+    Project ||--o{ Entrepreneur : "has entrepreneurs (each is a business)"
     Project ||--o{ Catalog_Item : "defines regional catalog"
     Project ||--o{ Order : "receives requests"
-    Venture ||--o{ Order : "confirmed in"
+    Entrepreneur ||--o{ Order : "confirmed in"
 
     Access_User |o--|| Entrepreneur : "authenticates"
-    Entrepreneur ||--|| Venture : "has one"
     Entrepreneur ||--o{ Cascade_Assignment : "receives offers (cascade iterates entrepreneurs)"
     
-    Role_Type ||--o{ Venture : "classifies"
+    Role_Type ||--o{ Entrepreneur : "classifies"
     Catalog_Category ||--o{ Catalog_Item : "categorizes"
     
     Time_Of_Day ||--o{ Order : "occurs at"
     
     Person ||--o{ Order : "places"
-    
-    Venture ||--o{ Venture_Item : "offers"
-    Catalog_Item ||--o{ Venture_Item : "available at"
     
     Order ||--|{ Order_Detail : "contains"
     Catalog_Item ||--o{ Order_Detail : "includes"
@@ -1410,7 +1383,7 @@ erDiagram
     Entrepreneur ||--o{ Cascade_Assignment : "receives offer (cascade iterates entrepreneurs)"
 
     Person ||--o{ Notification : "receives"
-    Venture ||--o{ Notification : "receives"
+    Entrepreneur ||--o{ Notification : "receives"
     Order ||--o{ Notification : "triggers"
 
     Person ||--o{ Notification_Preference : "has"
@@ -1524,24 +1497,24 @@ When generating UI components or screens, adhere strictly to the following const
          - Visual occupation indicator (e.g., "12/20 seats filled")
          - Color coding: confirmed (green), completed (gray), no-show (red)
 
-    Screen 3: My Venture & Settings:
-        Spec: Single venture details, pause controls, and profile.
+    Screen 3: My Business & Settings:
+        Spec: Single entrepreneur details, pause controls, and profile.
         UI Elements:
-         - Venture card (single, not a list):
+         - Business card (single, not a list):
              - Name, Address, Role, Capacity, Status badge
          - General Pause: Large toggle switch for "Business Full/Closed"
          - Individual Pause: List of available items with toggles for "Out of Stock"
-         - Edit Venture button (to update name, address, capacity, hours)
+         - Edit Business button (to update name, address, capacity, hours)
          - Profile section:
              - Full name (read-only)
              - WhatsApp contact (editable)
              - Email (read-only)
          - Logout button at the bottom
 
-    Screen 5: Create/Edit Venture (Modal):
-        Spec: Form to create a new venture or edit existing one.
+    Screen 5: Create/Edit Business (Modal):
+        Spec: Form to create a new entrepreneur or edit existing one.
         UI Elements:
-         - Venture name input
+         - Business name input
          - Role Type dropdown (Hostel, Guide, Restaurant, etc.)
          - Max capacity input (number)
          - Opening hours: Day-by-day toggles with start/end time pickers
@@ -1555,7 +1528,7 @@ This interface will be accessed primarily via Web (Desktop).
         - Dashboard: Monthly Reporting KPIs (selected by default)
         - Catalog: Master Catalog & Global Pause
         - Hosts: Host Management
-        - Ventures: Venture Management
+        - Entrepreneurs: Entrepreneur Management
         - Settings: Project Configuration
         - Logout
 
@@ -1579,7 +1552,7 @@ This interface will be accessed primarily via Web (Desktop).
              - Timeout Rate (%)
              - Completed Rate (%)
          - Chart: Orders per day (last 30 days)
-         - Table: Venture rankings by acceptance rate
+         - Table: Entrepreneur rankings by acceptance rate
 
     Screen 2: Master Catalog & Global Pause:
         Spec: Regional control over available activities and gastronomy.
@@ -1597,15 +1570,15 @@ This interface will be accessed primarily via Web (Desktop).
          - Project filter dropdown
          - "Add Host" button
          - Search bar
-         - Table columns: Name, Email, WhatsApp, Ventures count, Status, Actions
+         - Table columns: Name, Email, WhatsApp, Status, Actions
          - Status toggle: Enable/Disable (inline button)
-         - Actions: Edit, View Ventures
+         - Actions: Edit, View Entrepreneur
 
-    Screen 4: Venture Management:
-        Spec: View and manage ventures, reorder cascade rotation.
+    Screen 4: Entrepreneur Management:
+        Spec: View and manage entrepreneurs, reorder cascade rotation.
         UI Elements:
          - Project filter dropdown
-         - "Add Venture" button
+         - "Add Entrepreneur" button
          - Drag-and-drop reorder handle for cascade_order
          - Table columns: Name, Owner, Role, Capacity, General Pause, Cascade Order
          - Actions: Edit, Delete, Enable/Disable
