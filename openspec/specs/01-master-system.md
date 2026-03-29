@@ -57,27 +57,27 @@ To achieve this, the system features an automated engine that replaces manual as
 When a tourist submits a request:
 1.  **Order Init**: Order is created with status `SEARCHING`. The engine starts iterating through **Ventures** sorted by `cascade_order` (ascending).
 2.  **Filter Phase**: For each venture in rotation order:
-    - Skip if `entrepreneur.is_active = false` → record `skip_reason = VENTURE_INACTIVE`
-    - Skip if `entrepreneur.is_paused = true` → record `skip_reason = GENERAL_PAUSE`
-    - Skip if `catalog_item_id` is in `entrepreneur.paused_items` → record `skip_reason = INDIVIDUAL_PAUSE`
-    - Skip if `guest_count > entrepreneur.max_capacity` → record `skip_reason = CAPACITY_EXCEEDED`
-    - Skip if `service_date` day is not in `entrepreneur.opening_hours` → record `skip_reason = CLOSED_THAT_DAY`
-    - Skip if requested time is outside `entrepreneur.opening_hours` range → record `skip_reason = OUTSIDE_OPENING_HOURS`
-3.  **Offer Phase**: First entrepreneur that passes filters gets the offer:
+    - Skip if `venture.is_active = false` → record `skip_reason = VENTURE_INACTIVE`
+    - Skip if `venture.is_paused = true` → record `skip_reason = GENERAL_PAUSE`
+    - Skip if `catalog_item_id` is in `venture.paused_items` → record `skip_reason = INDIVIDUAL_PAUSE`
+    - Skip if `guest_count > venture.max_capacity` → record `skip_reason = CAPACITY_EXCEEDED`
+    - Skip if `service_date` day is not in `venture.opening_hours` → record `skip_reason = CLOSED_THAT_DAY`
+    - Skip if requested time is outside `venture.opening_hours` range → record `skip_reason = OUTSIDE_OPENING_HOURS`
+3.  **Offer Phase**: First venture that passes filters gets the offer:
     - Create Cascade_Assignment with `offer_status = WAITING_FOR_RESPONSE`
     - Set `response_deadline = now + project.cascade_timeout_minutes`
-    - Send notification to entrepreneur
+    - Send notification to all entrepreneurs linked to this venture
 4.  **Response Handling**:
     - **Accept**: Update Order status to `CONFIRMED`, set `confirmed_venture_id`, mark assignment as `ACCEPTED`
-    - **Reject**: Mark assignment as `REJECTED`, continue to next entrepreneur in rotation
-    - **Timeout**: Mark assignment as `TIMEOUT`, continue to next entrepreneur
+    - **Reject**: Mark assignment as `REJECTED`, continue to next venture in rotation
+    - **Timeout**: Mark assignment as `TIMEOUT`, continue to next venture
 5.  **Termination Conditions**:
-    - **Success**: Entrepreneur accepts → Order becomes `CONFIRMED`
+    - **Success**: Linked entrepreneur accepts → Order becomes `CONFIRMED`
     - **Max Attempts**: After `project.max_cascade_attempts` rejections/timeouts → Order becomes `EXPIRED` with cancel_reason `NO_VENTURE_AVAILABLE`
-    - **All Paused**: If ALL entrepreneurs are skipped (General/Individual Pause) → Order becomes `EXPIRED` with cancel_reason `NO_VENTURE_AVAILABLE`
+    - **All Paused**: If ALL ventures are skipped (General/Individual Pause) → Order becomes `EXPIRED` with cancel_reason `NO_VENTURE_AVAILABLE`
     - **Tourist Cancel**: Order becomes `CANCELLED` with cancel_reason `BY_TOURIST`
 
-**Initial Cascade Order**: Default is creation order (1, 2, 3...). Admin can manually reorder entrepreneurs in the Admin Panel to change rotation priority.
+**Initial Cascade Order**: Default is creation order (1, 2, 3...). Admin can manually reorder ventures in the Admin Panel to change rotation priority.
 
 ### 3.2. Internationalization (i18n) **[POST-MVP]**
 
@@ -157,20 +157,18 @@ Valid transitions between order states:
 
 ```
 SEARCHING ──accept──> CONFIRMED ──complete──> COMPLETED
-   │                          │
-   │                          └──no-show──> NO_SHOW
    │
    ├──cancel──> CANCELLED (by tourist)
    │
-   └──expire──> EXPIRED (no entrepreneur available / all skipped)
+   └──expire──> EXPIRED (no venture available / all skipped)
 ```
 
 **State Transition Rules:**
-- `SEARCHING` → `CONFIRMED`: When entrepreneur accepts
+- `SEARCHING` → `CONFIRMED`: When linked entrepreneur accepts for their venture
 - `SEARCHING` → `CANCELLED`: When tourist cancels (only if status = SEARCHING)
 - `SEARCHING` → `EXPIRED`: When max cascade attempts reached or all ventures skipped
 - `CONFIRMED` → `COMPLETED`: When service date passes + no NO_SHOW reported
-- `CONFIRMED` → `NO_SHOW`: When entrepreneur marks tourist as no-show
+- `CONFIRMED` → `NO_SHOW`: When linked entrepreneur marks tourist as no-show
 
 #### 3.3.4 Cascade Skip Reasons
 
@@ -179,8 +177,8 @@ Complete list of skip reasons in `Cascade_Assignment.skip_reason`:
 | Reason | Description |
 |--------|-------------|
 | `null` | Venture was offered (not skipped) |
-| `GENERAL_PAUSE` | Venture has general_pause = true |
-| `INDIVIDUAL_PAUSE` | Venture_Item has individual_pause = true for requested item |
+| `GENERAL_PAUSE` | Venture has is_paused = true |
+| `INDIVIDUAL_PAUSE` | catalog_item_id is in venture.paused_items |
 | `CAPACITY_EXCEEDED` | guest_count > venture.max_capacity |
 | `CLOSED_THAT_DAY` | Venture is closed on the requested day (not in opening_hours) |
 | `OUTSIDE_OPENING_HOURS` | Requested time is outside venture's operating hours |
@@ -211,11 +209,6 @@ function getCurrentGuestCount(ventureId: number, serviceDate: Date, timeOfDayId:
 function canAcceptOrder(venture: Venture, order: Order): boolean {
     const currentGuests = getCurrentGuestCount(venture.id, order.service_date, order.time_of_day_id);
     return (currentGuests + order.guest_count) <= venture.max_capacity;
-}
-
-function canAcceptOrder(entrepreneur: Entrepreneur, order: Order): boolean {
-    const currentGuests = getCurrentGuestCount(entrepreneur.id, order.service_date, order.time_of_day_id);
-    return (currentGuests + order.guest_count) <= entrepreneur.max_capacity;
 }
 ```
 
@@ -386,8 +379,8 @@ Response (200):
     { "catalog_item_id": 1, "name": "Guiso", "quantity": 2, "price": 15.00 }
   ],
   "cascade_history": [
-    { "entrepreneur": "Parador A", "status": "REJECTED", "reason": null },
-    { "entrepreneur": "Parador B", "status": "ACCEPTED", "reason": null }
+    { "venture": "Parador A", "status": "REJECTED", "reason": null },
+    { "venture": "Parador B", "status": "ACCEPTED", "reason": null }
   ]
 }
 ```
@@ -415,8 +408,8 @@ Response (200):
   "assignments": [
     {
       "order_id": 123,
-      "entrepreneur_id": 1,
-      "entrepreneur_name": "Parador Don Esteban",
+      "venture_id": 1,
+      "venture_name": "Parador Don Esteban",
       "service_date": "2024-01-15",
       "time_of_day": "LUNCH",
       "guest_count": 4,
@@ -622,7 +615,7 @@ Response: { "success": true }
 |-------|-----------|---------|---------|
 | `ORDER_RECEIVED` | Entrepreneur | Push | "Nuevo pedido: X personas, [items]" |
 | `ORDER_CANCELLED` | Entrepreneur | Push | "El cliente canceló el pedido #X" |
-| `ORDER_CONFIRMED` | Tourist | Push + WhatsApp | "Tu reserva está confirmada para [fecha] en [entrepreneur]" |
+| `ORDER_CONFIRMED` | Tourist | Push + WhatsApp | "Tu reserva está confirmada para [fecha] en [venture]" |
 | `ORDER_EXPIRED` | Tourist | Push | "Lo sentimos, no hay disponibilidad para tu solicitud" |
 | `MORNING_REMINDER` | Entrepreneur | Push + WhatsApp | "Hoy tienes X pedidos confirmados" |
 
@@ -1254,11 +1247,6 @@ erDiagram
         string description "e.g. HOSTEL, GUIDE"
     }
 
-    Catalog_Category {
-        int id PK
-        string description "e.g. GASTRONOMY, ACTIVITY"
-    }
-
     Time_Of_Day {
         int id PK
         string description "e.g. BREAKFAST, LUNCH, DINNER"
@@ -1322,11 +1310,11 @@ erDiagram
     Catalog_Item {
         int id PK
         int catalog_type_id FK "Catalog type this item belongs to"
+        int project_id FK "Project this catalog item belongs to"
         jsonb name_i18n "e.g. {'es':'Guiso','en':'Stew'}"
         jsonb description_i18n "Optional description (e.g. {'es':'Delicious stew'})"
         jsonb allergens_i18n "Allergen info (e.g. {'es':'Contiene gluten'})"
         jsonb ingredients_i18n "Ingredient list (e.g. {'es':'Carne, papas, cebolla'})"
-        int category_id FK
         decimal price "Default price from master catalog"
         int max_participants "Maximum participants for activities (null for gastronomy)"
         string image_url "Optional: URL to dish/activity photo"
@@ -1405,6 +1393,7 @@ erDiagram
     %% RELATIONSHIPS
     %% ==========================================
     Project ||--o{ Catalog_Type : "has catalog types"
+    Project ||--o{ Catalog_Item : "has catalog items"
     Project ||--o{ Venture : "has ventures"
     Project ||--o{ Entrepreneur : "has entrepreneurs"
     Project ||--o{ Order : "receives requests"
@@ -1424,25 +1413,18 @@ erDiagram
     Access_User |o--|| Entrepreneur : "authenticates"
     
     Role_Type ||--o{ Venture : "classifies"
-    Catalog_Category ||--o{ Catalog_Item : "categorizes"
     
     Time_Of_Day ||--o{ Order : "occurs at"
     
     Person ||--o{ Order : "places"
     Person ||--o{ Notification : "receives"
+    Person ||--o{ Notification_Preference : "has"
     
     Order ||--|{ Order_Detail : "contains"
     Catalog_Item ||--o{ Order_Detail : "includes"
     
     Order ||--o{ Cascade_Assignment : "processed by engine"
-    Venture ||--o{ Cascade_Assignment : "receives offer (cascade iterates ventures)"
-
-    Person ||--o{ Notification : "receives"
-    Entrepreneur ||--o{ Notification : "receives"
     Order ||--o{ Notification : "triggers"
-
-    Person ||--o{ Notification_Preference : "has"
-    Entrepreneur ||--o{ Notification_Preference : "has"
 
 
 --------------------------------------------------------------------------------
