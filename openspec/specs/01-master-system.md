@@ -76,6 +76,25 @@ When a tourist submits a request:
 *   Dynamic Catalog data (dish and activity names) are stored in the database using PostgreSQL's native `JSONB` type [6].
 *   This allows the system to quickly extract translations (e.g., `{"es": "Guiso", "en": "Stew"}) based on the tourist's browser `Accept-Language` header [6].
 
+**Fallback Strategy:**
+1. Use the language from `Accept-Language` header (e.g., "es", "en", "fr")
+2. If the requested language is not available, fall back to the project's `default_language`
+3. If the default language is also not available, use the first available language in the translation object
+4. If no translation exists at all, return the key (e.g., "ORDER_CONFIRMED") as the message
+
+**Translation Helper:**
+```typescript
+function getTranslation(translations: Record<string, string>, acceptLanguage: string, defaultLang: string): string {
+    const lang = acceptLanguage.split(',')[0].slice(0, 2); // 'es' from 'es,en;q=0.9'
+    
+    if (translations[lang]) return translations[lang];
+    if (translations[defaultLang]) return translations[defaultLang];
+    return Object.values(translations)[0] || lang; // First available or lang code
+}
+```
+
+**Supported Languages per Project:** Each project defines its supported languages in `Project.supported_languages` (JSON array, e.g., `["es", "en", "pt"]`). The first language in the array is the default.
+
 ### 3.3. Validation Rules
 
 #### 3.3.1 Order Creation Validations
@@ -209,6 +228,405 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 *   **Input Validation:** All inputs sanitized. SQL injection prevented via parameterized queries (Knex/Prisma). XSS prevented via output encoding.
 *   **API Security:** All endpoints require authentication except: `POST /auth/login`, `POST /orders` (tourist), `GET /catalog`.
 
+### 4.2 API Design
+
+All endpoints follow RESTful conventions. Base URL: `https://api.elimpenetrable.org/v1`
+
+#### 4.2.1 Public Endpoints (No Authentication Required)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/tourist/create` | Create tourist identity with alias |
+| POST | `/auth/tourist/refresh` | Refresh tourist JWT token |
+| GET | `/catalog` | Get available catalog items for a project |
+
+**POST /auth/tourist/create**
+```json
+Request:
+{
+  "alias": "string (required, 1-50 chars)",
+  "first_name": "string (optional, max 100)",
+  "last_name": "string (optional, max 100)",
+  "whatsapp": "string (optional, e.g. +54911...)",
+  "project_id": "integer (required, from QR code)"
+}
+
+Response (201):
+{
+  "person_id": "uuid",
+  "auth_token": "jwt",
+  "expires_at": "timestamp"
+}
+```
+
+**POST /auth/tourist/refresh**
+```json
+Request:
+{
+  "auth_token": "string (current token)"
+}
+
+Response (200):
+{
+  "auth_token": "jwt (new)",
+  "expires_at": "timestamp"
+}
+```
+
+**GET /catalog**
+```json
+Query Parameters:
+- project_id (required): integer
+
+Headers:
+- Accept-Language: "es" or "en" (optional, defaults to project default)
+
+Response (200):
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Guiso",
+      "description": "Traditional stew",
+      "price": 15.00,
+      "category": "GASTRONOMY",
+      "image_url": "https://...",
+      "max_participants": null
+    }
+  ]
+}
+```
+
+#### 4.2.2 Tourist Endpoints (Auth Required)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/orders` | Create a new order |
+| GET | `/orders` | Get tourist's orders |
+| GET | `/orders/:id` | Get order details |
+| DELETE | `/orders/:id` | Cancel order (only if SEARCHING) |
+| PUT | `/profile` | Update tourist profile |
+
+**POST /orders**
+```json
+Request:
+{
+  "project_id": "integer (required)",
+  "service_date": "string (required, YYYY-MM-DD)",
+  "time_of_day_id": "integer (required)",
+  "guest_count": "integer (required, 1-100)",
+  "items": [
+    { "catalog_item_id": 1, "quantity": 2 }
+  ],
+  "notify_whatsapp": "boolean (optional, default: false)"
+}
+
+Response (201):
+{
+  "order_id": 123,
+  "status": "SEARCHING",
+  "created_at": "timestamp"
+}
+```
+
+**GET /orders**
+```json
+Query Parameters:
+- status: "SEARCHING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "EXPIRED" (optional)
+- service_date: "YYYY-MM-DD" (optional)
+
+Response (200):
+{
+  "orders": [
+    {
+      "id": 123,
+      "service_date": "2024-01-15",
+      "time_of_day": "LUNCH",
+      "guest_count": 4,
+      "status": "SEARCHING",
+      "items": [...],
+      "created_at": "timestamp"
+    }
+  ]
+}
+```
+
+**GET /orders/:id**
+```json
+Response (200):
+{
+  "order": {
+    "id": 123,
+    "service_date": "2024-01-15",
+    "time_of_day": "LUNCH",
+    "guest_count": 4,
+    "status": "CONFIRMED",
+    "confirmed_venture": "Parador Don Esteban",
+    "created_at": "timestamp"
+  },
+  "details": [
+    { "catalog_item_id": 1, "name": "Guiso", "quantity": 2, "price": 15.00 }
+  ],
+  "cascade_history": [
+    { "venture": "Parador A", "status": "REJECTED", "reason": null },
+    { "venture": "Parador B", "status": "ACCEPTED", "reason": null }
+  ]
+}
+```
+
+#### 4.2.3 Entrepreneur Endpoints (Auth Required)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/orders/pending` | Get pending orders for entrepreneur's ventures |
+| POST | `/orders/:id/accept` | Accept an order |
+| POST | `/orders/:id/reject` | Reject an order |
+| GET | `/calendar` | Get confirmed orders by date range |
+| GET | `/ventures` | Get entrepreneur's ventures |
+| PUT | `/ventures/:id/pause` | Toggle general pause |
+| PUT | `/ventures/:id/items/:item_id/pause` | Toggle individual pause |
+| PUT | `/profile` | Update entrepreneur profile |
+
+**GET /orders/pending**
+```json
+Response (200):
+{
+  "assignments": [
+    {
+      "order_id": 123,
+      "venture_id": 1,
+      "venture_name": "Parador Don Esteban",
+      "service_date": "2024-01-15",
+      "time_of_day": "LUNCH",
+      "guest_count": 4,
+      "items": [
+        { "name": "Guiso", "quantity": 2 }
+      ],
+      "customer_alias": "Gomez Family",
+      "deadline": "timestamp",
+      "remaining_minutes": 25
+    }
+  ]
+}
+```
+
+**POST /orders/:id/accept**
+```json
+Response (200):
+{
+  "order_id": 123,
+  "status": "CONFIRMED",
+  "confirmed_venture_id": 1
+}
+```
+
+**POST /orders/:id/reject**
+```json
+Response (200):
+{
+  "order_id": 123,
+  "status": "REJECTED",
+  "next_venture_triggered": true
+}
+```
+
+**GET /calendar**
+```json
+Query Parameters:
+- start_date: "YYYY-MM-DD" (required)
+- end_date: "YYYY-MM-DD" (required)
+
+Response (200):
+{
+  "days": [
+    {
+      "date": "2024-01-15",
+      "time_slots": [
+        {
+          "time_of_day": "LUNCH",
+          "orders": [
+            {
+              "order_id": 123,
+              "customer_alias": "Gomez Family",
+              "guest_count": 4,
+              "items": ["Guiso x2"],
+              "status": "CONFIRMED"
+            }
+          ],
+          "occupied_seats": 12,
+          "max_capacity": 20
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### 4.2.4 Admin Endpoints (Auth Required + ADMIN role)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin/entrepreneurs` | List all entrepreneurs |
+| PUT | `/admin/entrepreneurs/:id/enable` | Enable/disable entrepreneur |
+| POST | `/admin/entrepreneurs` | Create new entrepreneur + access_user |
+| GET | `/admin/ventures` | List all ventures |
+| PUT | `/admin/ventures/:id` | Update venture |
+| PUT | `/admin/ventures/reorder` | Reorder cascade |
+| GET | `/admin/catalog` | List catalog items |
+| POST | `/admin/catalog` | Create catalog item |
+| PUT | `/admin/catalog/:id` | Update catalog item |
+| PUT | `/admin/catalog/:id/pause` | Toggle global pause |
+| DELETE | `/admin/catalog/:id` | Delete catalog item |
+| GET | `/admin/kpis` | Get KPIs dashboard data |
+| GET | `/admin/projects` | List projects |
+| PUT | `/admin/projects/:id` | Update project settings |
+
+**GET /admin/kpis**
+```json
+Query Parameters:
+- project_id: "integer (optional)"
+- start_date: "YYYY-MM-DD (required)"
+- end_date: "YYYY-MM-DD (required)"
+
+Response (200):
+{
+  "summary": {
+    "total_orders": 156,
+    "acceptance_rate": 0.89,
+    "timeout_rate": 0.08,
+    "completed_rate": 0.85,
+    "no_show_rate": 0.03
+  },
+  "by_day": [
+    { "date": "2024-01-15", "orders": 12, "acceptance_rate": 0.92 },
+    { "date": "2024-01-14", "orders": 8, "acceptance_rate": 0.87 }
+  ],
+  "by_venture": [
+    { "venture_id": 1, "name": "Parador A", "orders": 45, "acceptance_rate": 0.95 },
+    { "venture_id": 2, "name": "Parador B", "orders": 38, "acceptance_rate": 0.82 }
+  ]
+}
+```
+
+### 4.3 Real-Time Notifications
+
+The system uses a hybrid approach: **Push Notifications** (primary) + **Polling** (fallback).
+
+#### 4.3.1 Push Notifications (Primary)
+
+**Providers:** Firebase Cloud Messaging (FCM) or Expo Push Notifications
+
+**Flow:**
+1. App registers with FCM → obtains device push token
+2. Push token stored in `Notification_Preference`
+3. When event occurs → backend sends to FCM → FCM delivers to device
+
+**Device Registration Endpoint:**
+```
+POST /notifications/register
+Request: { "push_token": "ExponentPushToken[xxx]" }
+Response: { "success": true }
+```
+
+**Events that trigger Push Notifications:**
+
+| Event | Recipient | Channel | Content |
+|-------|-----------|---------|---------|
+| `ORDER_RECEIVED` | Entrepreneur | Push | "Nuevo pedido: X personas, [items]" |
+| `ORDER_CANCELLED` | Entrepreneur | Push | "El cliente canceló el pedido #X" |
+| `ORDER_CONFIRMED` | Tourist | Push + WhatsApp | "Tu reserva está confirmada para [fecha] en [venture]" |
+| `ORDER_EXPIRED` | Tourist | Push | "Lo sentimos, no hay disponibilidad para tu solicitud" |
+| `MORNING_REMINDER` | Entrepreneur | Push + WhatsApp | "Hoy tienes X pedidos confirmados" |
+
+#### 4.3.2 Polling (Fallback)
+
+For devices without push token or when push fails, the app polls periodically.
+
+**Polling Endpoint:**
+```
+GET /orders/pending?last_check=timestamp
+Response: { "has_new": true/false, "orders": [...] }
+```
+
+**Polling Strategy:**
+
+| Scenario | Interval | Trigger |
+|----------|----------|---------|
+| App in foreground | 30 seconds | Automatic |
+| App in background | 5 minutes | Background fetch |
+| On app resume | Immediate | Event listener |
+
+**Implementation:**
+```typescript
+// Frontend polling
+const startPolling = () => {
+  setInterval(async () => {
+    const response = await fetch('/orders/pending');
+    const { orders } = await response.json();
+    if (orders.length > 0) showLocalNotification(orders);
+  }, 30000);
+};
+```
+
+#### 4.3.3 WhatsApp Notifications
+
+For high-priority notifications to tourists (confirmation, expiration).
+
+**Provider:** WhatsApp Business API (Meta)
+
+**Flow:**
+1. Tourist provides WhatsApp number in profile
+2. Backend sends via WhatsApp Business API
+3. Message ID stored in `Notification.external_id`
+
+**Endpoint:**
+```
+POST /notifications/whatsapp
+Request: { "to": "+54911...", "template": "order_confirmed", "params": {...} }
+Response: { "message_id": "wamid.xxx" }
+```
+
+#### 4.3.4 Notification Preference
+
+Users can configure their notification preferences:
+
+```
+PUT /notifications/preferences
+Request: {
+  "push_enabled": true,
+  "whatsapp_enabled": true,
+  "email_enabled": false
+}
+Response: { "success": true }
+```
+
+### 4.4 Error Responses
+
+All errors follow a consistent format:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input",
+    "details": [
+      { "field": "guest_count", "message": "Must be between 1 and 100" }
+    ]
+  }
+}
+```
+
+**Common Error Codes:**
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| VALIDATION_ERROR | 400 | Invalid input data |
+| UNAUTHORIZED | 401 | Missing or invalid token |
+| FORBIDDEN | 403 | Insufficient permissions |
+| NOT_FOUND | 404 | Resource not found |
+| RATE_LIMITED | 429 | Too many requests |
+| INTERNAL_ERROR | 500 | Server error |
+
 ---
 
 ## 5. Data Structure (Multi-Project ERD)
@@ -223,6 +641,8 @@ erDiagram
     Project {
         int id PK
         string name "e.g. 'Impenetrable', 'Patagonia'"
+        string default_language "Default language code, e.g. 'es'"
+        jsonb supported_languages "Array of supported language codes, e.g. ['es', 'en']"
         int cascade_timeout_minutes "Default: 30. Timeout per attempt before cascading to next venture"
         int max_cascade_attempts "Default: 10. Maximum times the engine will try before marking order as EXPIRED"
         boolean is_active
@@ -286,6 +706,11 @@ erDiagram
         int project_id FK
         int entrepreneur_id FK
         string name "e.g. Parador Don Esteban"
+        string description "Optional venture description"
+        string address "Physical address"
+        decimal latitude "Geolocation"
+        decimal longitude "Geolocation"
+        string image_url "Optional venture photo"
         int role_type_id FK
         int cascade_order "Isolated rotation per project. Default: creation order (1, 2, 3...)"
         int max_capacity "Maximum number of guests per service (e.g. 20 seats)"
@@ -298,6 +723,9 @@ erDiagram
         int id PK
         int project_id FK "Isolates catalog by region"
         jsonb name_i18n "e.g. {'es':'Guiso','en':'Stew'}"
+        jsonb description_i18n "Optional description (e.g. {'es':'Delicious stew'})"
+        jsonb allergens_i18n "Allergen info (e.g. {'es':'Contiene gluten'})"
+        jsonb ingredients_i18n "Ingredient list (e.g. {'es':'Carne, papas, cebolla'})"
         int category_id FK
         decimal price
         int max_participants "Maximum participants for activities (null for gastronomy)"
@@ -323,6 +751,7 @@ erDiagram
         date service_date "Used for Calendar view"
         int time_of_day_id FK "Used for Calendar view"
         int guest_count 
+        string notes "Special requests or dietary restrictions from tourist"
         enum global_status "SEARCHING, CONFIRMED, COMPLETED, NO_SHOW, CANCELLED, EXPIRED"
         enum cancel_reason "null, BY_TOURIST, NO_VENTURE_AVAILABLE, SYSTEM_ERROR"
         timestamp cancelled_at "Nullable. Set when status becomes CANCELLED or EXPIRED"
@@ -353,6 +782,30 @@ erDiagram
     }
 
     %% ==========================================
+    %% NOTIFICATIONS
+    %% ==========================================
+    Notification {
+        int id PK
+        uuid person_id FK "Nullable. For tourist notifications"
+        int venture_id FK "Nullable. For entrepreneur notifications"
+        int order_id FK "Nullable. Associated order"
+        enum channel "PUSH, WHATSAPP, EMAIL, IN_APP"
+        enum event_type "ORDER_RECEIVED, ORDER_CONFIRMED, ORDER_EXPIRED, ORDER_CANCELLED, MORNING_REMINDER"
+        jsonb payload "Message content and metadata"
+        boolean is_sent default FALSE
+        timestamp sent_at "Nullable. Set when notification is sent"
+        string external_id "Nullable. Provider message ID (e.g. WhatsApp message ID)"
+        timestamp created_at
+    }
+
+    Notification_Preference {
+        uuid person_id PK "For tourists"
+        boolean push_enabled default TRUE
+        boolean whatsapp_enabled default FALSE
+        boolean email_enabled default FALSE
+    }
+
+    %% ==========================================
     %% RELATIONSHIPS
     %% ==========================================
     Project ||--o{ Venture : "groups businesses"
@@ -378,6 +831,12 @@ erDiagram
     
     Order ||--o{ Cascade_Assignment : "processed by engine"
     Venture ||--o{ Cascade_Assignment : "receives offer"
+
+    Person ||--o{ Notification : "receives"
+    Venture ||--o{ Notification : "receives"
+    Order ||--o{ Notification : "triggers"
+
+    Person ||--|| Notification_Preference : "has"
 
 
 --------------------------------------------------------------------------------
