@@ -24,7 +24,7 @@ To achieve this, the system features an automated engine that replaces manual as
 ### 2.2. Entrepreneur **[MVP]**
 *   **Intention:** Organize daily work and receive clients equitably through the rotation system [1, 2].
 *   **Behavior & UX Constraints:**
-    *   Each entrepreneur manages ONE Venture (business). Multiple entrepreneurs can manage the same Venture (e.g., family business).
+    *   Each entrepreneur can manage ONE OR MORE Ventures through the Venture_Manager relationship. Multiple entrepreneurs can manage the same Venture (e.g., family business).
     *   The entrepreneur can only offer items from the **Master Catalog** defined by the Admin for that Project, filtered by the Venture's Catalog_Type [2].
     *   The engine routes orders to the entrepreneur's Venture, and from their dashboard, they can accept or reject the request [2].
     *   **Calendar View:** The dashboard includes a simple calendar view to track assigned orders based on the service date and the specific time of day [2].
@@ -431,7 +431,7 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 ```typescript
 // Access Token (JWT) - 1 hour
 {
-  "sub": "person_id",
+  "sub": "user_id",
   "device_fingerprint": "sha256(browser_fingerprint)",
   "type": "access",
   "exp": 1234567890,
@@ -441,7 +441,7 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 // Refresh Token - Opaque, 30 days
 {
   "id": "uuid",
-  "person_id": "uuid",
+  "user_id": "uuid",
   "device_fingerprint": "sha256(...)",
   "expires_at": "2024-02-01T00:00:00Z",
   "is_revoked": false
@@ -485,7 +485,7 @@ Each refresh request generates a new token, invalidating the old one:
 // Refresh Token - Single-use
 {
   "id": "uuid",
-  "person_id": "uuid",
+  "user_id": "uuid",
   "device_fingerprint": "sha256(...)",
   "hashed_token": "bcrypt_hash",
   "expires_at": "2024-02-01T00:00:00Z",
@@ -509,7 +509,7 @@ Each refresh request generates a new token, invalidating the old one:
 POST /auth/tourist/revoke-all
 Request:
 {
-  "person_id": "uuid (required)"
+  "user_id": "uuid (required)"
 }
 
 Response (200):
@@ -552,13 +552,13 @@ Request:
   "last_name": "string (optional, max 100)",
   "whatsapp": "string (optional, e.g. +54911...)",
   "project_id": "integer (required, from QR code)",
-  "device_id": "string (required, device fingerprint)",
+  "device_fingerprint": "string (required, browser fingerprint)",
   "push_token": "string (optional, for push notifications)"
 }
 
 Response (201):
 {
-  "person_id": "uuid",
+  "user_id": "uuid",
   "access_token": "jwt (1 hour)",
   "refresh_token": "uuid (opaque, 30 days)",
   "expires_in": 3600
@@ -570,7 +570,7 @@ Response (201):
 Request:
 {
   "refresh_token": "uuid (opaque token)",
-  "device_id": "string (device fingerprint)"
+  "device_fingerprint": "string (browser fingerprint)"
 }
 
 Response (200):
@@ -586,7 +586,7 @@ Response (200):
 Request:
 {
   "refresh_token": "uuid (optional, specific token to revoke)",
-  "device_id": "string (optional, revoke all tokens for this device)"
+  "device_fingerprint": "string (optional, revoke all tokens for this device)"
 }
 
 Response (200):
@@ -595,7 +595,7 @@ Response (200):
 }
 ```
 
-> **Note:** Use this endpoint when tourist loses device or wants to logout. Can revoke by refresh_token (specific) or device_id (all tokens for that device). This replaces the 7-day JWT approach.
+> **Note:** Use this endpoint when tourist loses device or wants to logout. Can revoke by refresh_token (specific) or device_fingerprint (all tokens for that device). This replaces the 7-day JWT approach.
 
 **GET /catalog**
 ```json
@@ -737,7 +737,7 @@ Response (200) - Entrepreneur/Admin View:
 
 #### 4.2.3 Entrepreneur Endpoints (Auth Required) **[MVP]**
 
-> **Note:** Each entrepreneur manages ONE venture. Cascade iterates through Ventures.
+> **Note:** Each entrepreneur can manage ONE OR MORE ventures. Cascade iterates through Ventures.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1599,7 +1599,7 @@ erDiagram
     %% ==========================================
     User_Session {
         uuid id PK
-        int user_id FK "References Access_User"
+        int user_id FK "References User"
         string access_token_hash "Hash of JWT access token"
         string refresh_token_hash "Hash of refresh token"
         timestamp access_token_expires_at
@@ -1755,8 +1755,7 @@ erDiagram
     %% ==========================================
     Notification {
         int id PK
-        uuid user_id FK "Nullable. For tourist notifications"
-        int entrepreneur_id FK "Nullable. For entrepreneur notifications"
+        uuid user_id FK "Nullable. Links to User (any type: tourist, entrepreneur, admin)"
         int order_id FK "Nullable. Associated order"
         enum channel "PUSH, WHATSAPP, EMAIL, IN_APP"
         enum event_type "ORDER_RECEIVED, ORDER_CONFIRMED, ORDER_EXPIRED, ORDER_CANCELLED, MORNING_REMINDER"
@@ -1769,9 +1768,8 @@ erDiagram
 
     Notification_Preference {
         int id PK
-        uuid user_id FK "Nullable. For tourists"
-        int entrepreneur_id FK "Nullable. For entrepreneurs"
-        int venture_id FK "Nullable. For ventures"
+        uuid user_id FK "Links to User (any type)"
+        int venture_id FK "Nullable. For venture-specific preferences"
         boolean push_enabled default TRUE
         boolean whatsapp_enabled default FALSE
         boolean email_enabled default FALSE
@@ -1871,13 +1869,13 @@ When generating UI components or screens, adhere strictly to the following const
          - Notification preferences:
              - Toggle: Enable WhatsApp notifications
          - Save button (prominent)
-         - Danger zone:
-             - "Clear my data" button (deletes Person record)
-             - "Logout" button (clears auth_token but keeps Person)
+          - Danger zone:
+              - "Clear my data" button (deletes User record)
+              - "Logout" button (clears auth_token but keeps User)
 
 ### 6.3 Entrepreneur Flow (Operational Journey) **[MVP]**
 
-> **Note:** Entrepreneur manages ONE Venture. Multiple entrepreneurs can manage the same Venture.
+> **Note:** Entrepreneur can manage ONE OR MORE Ventures. Multiple entrepreneurs can manage the same Venture.
 
     Navigation: Bottom tab bar with 3 large icons (simplified from 4):
         - Orders: Order Reception Dashboard (selected by default)
