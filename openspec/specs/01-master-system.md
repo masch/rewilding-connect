@@ -1597,22 +1597,22 @@ erDiagram
     %% ==========================================
     %% SECURITY & ACCESS LAYER
     %% ==========================================
-    Access_User {
-        int id PK
-        string email "Unique"
-        string password_hash "bcrypt or argon2 hash"
-        enum system_role "ADMIN, ENTREPRENEUR"
-        int entrepreneur_id FK "Nullable. Ref: Physical person"
-        int failed_login_attempts "Default 0. Lock after 5 failed attempts"
-        timestamp locked_until "Nullable. Lockout expiration time"
-        timestamp last_login_at
-        boolean is_enabled "Default TRUE. Manual enable/disable by admin"
+    User_Session {
+        uuid id PK
+        int user_id FK "References Access_User"
+        string access_token_hash "Hash of JWT access token"
+        string refresh_token_hash "Hash of refresh token"
+        timestamp access_token_expires_at
+        timestamp refresh_token_expires_at
+        timestamp created_at
+        timestamp last_used_at
+        boolean is_revoked "Default FALSE"
     }
 
     Tourist_Device {
         uuid id PK
-        uuid person_id FK "Links to Person"
-        string device_id "Device fingerprint for binding"
+        uuid user_id FK "Links to User"
+        string device_fingerprint "Browser fingerprint (User-Agent + Screen + Timezone)"
         string refresh_token_hash "Opaque refresh token (not JWT)"
         string push_token "Optional push notification token"
         timestamp expires_at "When this refresh token expires"
@@ -1636,12 +1636,19 @@ erDiagram
     %% ==========================================
     %% MAIN ENTITIES (Business Core)
     %% ==========================================
-    Person {
+    User {
         uuid id PK
-        string alias "Mandatory"
+        string alias "Nullable - tourists only"
+        string email "Nullable - admin/entrepreneur only"
+        string password_hash "bcrypt or argon2 - admin/entrepreneur only"
         string first_name "Nullable"
         string last_name "Nullable"
         string whatsapp "Nullable. For order notifications"
+        enum user_type "TOURIST, ADMIN, ENTREPRENEUR"
+        int failed_login_attempts "Default 0. Lock after 5 failed attempts"
+        timestamp locked_until "Nullable. Lockout expiration time"
+        timestamp last_login_at
+        boolean is_active "Default TRUE"
         timestamp created_at
     }
 
@@ -1679,19 +1686,13 @@ erDiagram
         boolean is_active "Can be disabled per day"
     }
 
-    Venture_Entrepreneur {
+    Venture_Manager {
         int id PK
         int venture_id FK "Venture being managed"
-        int entrepreneur_id FK "Person managing this venture"
-        string role "e.g. OWNER, STAFF"
-        timestamp created_at
-    }
-
-    Entrepreneur {
-        int id PK
-        uuid person_id FK "Links to Person (user account)"
+        uuid user_id FK "Links to User (admin/entrepreneur)"
         string whatsapp_contact "Used for Morning Reminder"
         boolean is_active "Enabled by admin"
+        timestamp created_at
     }
 
     Catalog_Item {
@@ -1712,7 +1713,7 @@ erDiagram
     %% ==========================================
     Order {
         int id PK
-        uuid person_id FK
+        uuid user_id FK "Links to User (tourist)"
         int catalog_item_id FK "The requested item"
         int quantity "Number of items requested"
         decimal price_at_purchase "Price recorded at order time (historical)"
@@ -1747,7 +1748,7 @@ erDiagram
     %% ==========================================
     Notification {
         int id PK
-        uuid person_id FK "Nullable. For tourist notifications"
+        uuid user_id FK "Nullable. For tourist notifications"
         int entrepreneur_id FK "Nullable. For entrepreneur notifications"
         int order_id FK "Nullable. Associated order"
         enum channel "PUSH, WHATSAPP, EMAIL, IN_APP"
@@ -1761,7 +1762,7 @@ erDiagram
 
     Notification_Preference {
         int id PK
-        uuid person_id FK "Nullable. For tourists"
+        uuid user_id FK "Nullable. For tourists"
         int entrepreneur_id FK "Nullable. For entrepreneurs"
         int venture_id FK "Nullable. For ventures"
         boolean push_enabled default TRUE
@@ -1787,25 +1788,15 @@ erDiagram
 
     Venture ||--o{ Cascade_Assignment : "receives offers (cascade iterates ventures)"
     Venture ||--o{ Order : "confirmed in"
-    Venture ||--|{ Venture_Entrepreneur : "managed by"
-    
-    Venture_Entrepreneur }o--|| Entrepreneur : "links"
 
-    Entrepreneur ||--o{ Notification : "receives"
-    Entrepreneur ||--o{ Notification_Preference : "has"
-
-    Access_User |o--|| Entrepreneur : "authenticates"
-    
-    Role_Type ||--o{ Venture : "classifies"
-    
-    Time_Of_Day ||--o{ Order : "occurs at"
-    
-    Person ||--o{ Order : "places"
-    Person ||--o{ Notification : "receives"
-    Person ||--o{ Notification_Preference : "has"
-    Person ||--o{ Tourist_Device : "has devices"
+    User ||--o{ Order : "places"
+    User ||--o{ Notification : "receives"
+    User ||--o{ Notification_Preference : "has"
+    User ||--o{ Tourist_Device : "has devices"
+    User ||--o{ Venture_Manager : "manages ventures"
 
     Venture ||--o{ Venture_Schedule : "has schedule"
+    Venture ||--o{ Venture_Manager : "managed by"
 
     Order ||--o{ Cascade_Assignment : "processed by engine"
     Order ||--o{ Notification : "triggers"
