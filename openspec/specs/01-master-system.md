@@ -59,7 +59,7 @@ When a tourist submits a request:
 2.  **Filter Phase**: For each venture in rotation order:
     - Skip if `venture.is_active = false` → record `skip_reason = VENTURE_INACTIVE`
     - Skip if `venture.is_paused = true` → record `skip_reason = GENERAL_PAUSE`
-    - Skip if `catalog_item_id` is in `venture.paused_items` → record `skip_reason = INDIVIDUAL_PAUSE`
+    - Skip if `catalog_item_id` is in `Venture_Paused_Item` for this venture → record `skip_reason = INDIVIDUAL_PAUSE`
     - Skip if `(current_occupation + guest_count) > venture.max_capacity` → record `skip_reason = CAPACITY_EXCEEDED`
     - Skip if no matching `Venture_Schedule` for service_date day → record `skip_reason = CLOSED_THAT_DAY`
     - Skip if requested time is outside `Venture_Schedule` range → record `skip_reason = OUTSIDE_OPENING_HOURS`
@@ -283,7 +283,7 @@ Before offering an order to a venture, the engine validates:
 | Capacity | `(current_occupation + order.guest_count) <= venture.max_capacity` | `CAPACITY_EXCEEDED` |
 
 > **Note:** Capacity is measured by **number of guests (personas)**, not by number of items/dishes. A Venture with `max_capacity = 20` can serve 20 people regardless of how many dishes they order.
-| Individual Pause | `catalog_item_id NOT IN venture.paused_items` | `INDIVIDUAL_PAUSE` |
+| Individual Pause | `catalog_item_id NOT IN (SELECT catalog_item_id FROM venture_paused_item WHERE venture_id = venture.id)` | `INDIVIDUAL_PAUSE` |
 | **Opening Hours** | Order time within `venture.opening_hours` for the day | `CLOSED_THAT_DAY` |
 
 **Opening Hours Logic:**
@@ -332,7 +332,7 @@ Complete list of skip reasons in `Cascade_Assignment.skip_reason`:
 |--------|-------------|
 | `null` | Venture was offered (not skipped) |
 | `GENERAL_PAUSE` | Venture has is_paused = true |
-| `INDIVIDUAL_PAUSE` | catalog_item_id is in venture.paused_items |
+| `INDIVIDUAL_PAUSE` | catalog_item_id is in Venture_Paused_Item for this venture |
 | `CAPACITY_EXCEEDED` | (current_occupation + guest_count) > venture.max_capacity |
 | `CLOSED_THAT_DAY` | Venture is closed on the requested day (not in opening_hours) |
 | `OUTSIDE_OPENING_HOURS` | Requested time is outside venture's operating hours |
@@ -1672,9 +1672,16 @@ erDiagram
         int role_type_id FK
         int cascade_order "Isolated rotation per project. Default: creation order (1, 2, 3...)"
         int max_capacity "Maximum number of guests per service (e.g. 20 seats)"
-        jsonb paused_items "Array of catalog_item_ids paused by this venture"
         boolean is_paused "General pause - venture cannot receive orders"
         boolean is_active "Enabled by admin"
+    }
+
+    Venture_Paused_Item {
+        int venture_id FK "References Venture"
+        int catalog_item_id FK "References Catalog_Item"
+        timestamp paused_at "When the item was paused"
+        
+        PK(venture_id, catalog_item_id)
     }
 
     Venture_Schedule {
@@ -1797,6 +1804,7 @@ erDiagram
 
     Venture ||--o{ Venture_Schedule : "has schedule"
     Venture ||--o{ Venture_Manager : "managed by"
+    Venture ||--o{ Venture_Paused_Item : "has paused items"
 
     Order ||--o{ Cascade_Assignment : "processed by engine"
     Order ||--o{ Notification : "triggers"
