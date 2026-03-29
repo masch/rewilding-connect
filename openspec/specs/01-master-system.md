@@ -19,7 +19,7 @@ To achieve this, the system features an automated engine that replaces manual as
     *   Eliminates the need for traditional user account creation to avoid friction [2].
     *   Accesses the platform by scanning a QR code (which already contains the Project ID, e.g., Impenetrable) [2].
     *   Identifies themselves using a mandatory "Alias" [2].
-    *   **Authentication:** Uses short-lived JWT access tokens (1 hour) + opaque refresh tokens (30 days) with device binding. Tokens are revokable per device. This replaces the previous 7-day JWT approach to allow device loss protection.
+    *   **Authentication (Tourist - No Login):** No login required. Access tokens (1 hour) + refresh tokens (30 days) bound to browser fingerprint. This replaces the previous 7-day JWT approach.
 
 ### 2.2. Entrepreneur **[MVP]**
 *   **Intention:** Organize daily work and receive clients equitably through the rotation system [1, 2].
@@ -404,11 +404,122 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 
 ### 4.1 Security Requirements
 
-*   **Authentication:**
-    *   **Entrepreneur/Admin:** JWT-based authentication with email/password. Tokens stored in httpOnly cookies (web) or secure storage (mobile).
-    *   **Tourist:** JWT token with 7-day expiration. Auto-renewal before expiration. No traditional login required — token generated on first visit.
-*   **Password Security:** Use bcrypt or argon2 for password hashing with cost factor 10+.
-*   **Rate Limiting:**
+*   **Authentication - Tourist (No Login):**
+    *   No traditional login — token generated on first visit
+    *   Browser fingerprint binds session to browser instance
+    *   Access token: 1 hour expiry
+    *   Refresh token: 30 days, opaque
+
+*   **Authentication - Entrepreneur/Admin (Password Login):**
+    *   JWT-based authentication with email/password
+    *   Tokens stored in httpOnly cookies (web) or secure storage (mobile)
+    *   Password hashed with bcrypt or argon2 (cost factor 10+)
+
+*   **Tourist Device Binding & Security **[MVP]****
+
+> **Note:** Tourists access via **Web** (React Native Expo web), NOT a native app. This section applies ONLY to tourists.
+
+> **MVP Implementation:**
+
+| Layer | Protection | Implementation |
+|-------|------------|----------------|
+| **Browser Fingerprint** | Tie tokens to browser instance | JWT contains `device_fingerprint` (User-Agent + Screen + Timezone) |
+| **Refresh Token** | 30-day opaque token | Stored in localStorage, sent on refresh requests |
+
+**Token Structure (MVP - Web):**
+
+```typescript
+// Access Token (JWT) - 1 hour
+{
+  "sub": "person_id",
+  "device_fingerprint": "sha256(browser_fingerprint)",
+  "type": "access",
+  "exp": 1234567890,
+  "iat": 1234564290
+}
+
+// Refresh Token - Opaque, 30 days
+{
+  "id": "uuid",
+  "person_id": "uuid",
+  "device_fingerprint": "sha256(...)",
+  "expires_at": "2024-02-01T00:00:00Z",
+  "is_revoked": false
+}
+```
+
+**Browser Fingerprint Generation (MVP):**
+
+```typescript
+function generateBrowserFingerprint(): string {
+  const components = [
+    navigator.userAgent,
+    navigator.language,
+    screen.width + 'x' + screen.height,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+  ];
+  return sha256(components.join('|'));
+}
+```
+
+### 4.1.2. Refresh Token Rotation for Password Login **[POST-MVP]**
+
+> **Problem:** If a refresh token is stolen (Entrepreneur/Admin login), attacker can use it indefinitely until expiration.
+
+> **Applies to:** Entrepreneur and Admin authentication (password-based login).
+
+**Solution: Single-Use Refresh Tokens**
+
+Each refresh request generates a new token, invalidating the old one:
+
+```
+1. Client sends: { refresh_token: "uuid" }
+2. Server validates and generates NEW token
+3. Old token is marked as "rotated" (one-time use only)
+4. Returns: { new_access_token, new_refresh_token }
+```
+
+**Token Structure (POST-MVP):**
+
+```typescript
+// Refresh Token - Single-use
+{
+  "id": "uuid",
+  "person_id": "uuid",
+  "device_fingerprint": "sha256(...)",
+  "hashed_token": "bcrypt_hash",
+  "expires_at": "2024-02-01T00:00:00Z",
+  "rotated_at": null,
+  "is_revoked": false
+}
+```
+
+**Refresh Token Rotation Flow:**
+
+```
+1. Client sends: { refresh_token: "uuid" }
+2. Server validates and generates NEW token
+3. Old token is marked as "rotated" (one-time use only)
+4. Returns: { new_access_token, new_refresh_token }
+```
+
+**Revocation Endpoint (POST-MVP):**
+
+```
+POST /auth/tourist/revoke-all
+Request:
+{
+  "person_id": "uuid (required)"
+}
+
+Response (200):
+{
+  "message": "All sessions revoked successfully",
+  "revoked_count": 3
+}
+```
+
+**Password Security:**
     *   Global: 100 requests/minute per IP
     *   Order creation: 10 orders/minute per device token
     *   Auth endpoints: 5 attempts/minute per IP
