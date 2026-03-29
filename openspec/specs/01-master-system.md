@@ -19,7 +19,7 @@ To achieve this, the system features an automated engine that replaces manual as
     *   Eliminates the need for traditional user account creation to avoid friction [2].
     *   Accesses the platform by scanning a QR code (which already contains the Project ID, e.g., Impenetrable) [2].
     *   Identifies themselves using a mandatory "Alias" [2].
-    *   The system uses a JWT auth_token (stored in secure storage) to recognize them for future requests [2]. Token auto-refreshes before expiration (7 days).
+    *   **Authentication:** Uses short-lived JWT access tokens (1 hour) + opaque refresh tokens (30 days) with device binding. Tokens are revokable per device. This replaces the previous 7-day JWT approach to allow device loss protection.
 
 ### 2.2. Entrepreneur **[MVP]**
 *   **Intention:** Organize daily work and receive clients equitably through the rotation system [1, 2].
@@ -52,17 +52,17 @@ To achieve this, the system features an automated engine that replaces manual as
 
 ### 3.1. Cascading Routing Flow (Project-Isolated) **[MVP]**
 
-> **Note:** Cascade iterates through **Ventures** (sorted by cascade_order). Each Venture has a Catalog_Type that determines which Master Catalog items it can offer.
+> **Note:** Cascade iterates through **Ventures** (sorted by cascade_order). The engine infers the required Catalog_Type from `order.catalog_item_id` → `Catalog_Item.catalog_type_id`, then filters ventures that match that type.
 
 When a tourist submits a request:
-1.  **Order Init**: Order is created with status `SEARCHING`. The engine starts iterating through **Ventures** sorted by `cascade_order` (ascending).
+1.  **Order Init**: Order is created with status `SEARCHING`. The engine starts iterating through **Ventures** (filtered by Catalog_Type) sorted by `cascade_order` (ascending).
 2.  **Filter Phase**: For each venture in rotation order:
     - Skip if `venture.is_active = false` → record `skip_reason = VENTURE_INACTIVE`
     - Skip if `venture.is_paused = true` → record `skip_reason = GENERAL_PAUSE`
     - Skip if `catalog_item_id` is in `venture.paused_items` → record `skip_reason = INDIVIDUAL_PAUSE`
-    - Skip if `guest_count > venture.max_capacity` → record `skip_reason = CAPACITY_EXCEEDED`
-    - Skip if `service_date` day is not in `venture.opening_hours` → record `skip_reason = CLOSED_THAT_DAY`
-    - Skip if requested time is outside `venture.opening_hours` range → record `skip_reason = OUTSIDE_OPENING_HOURS`
+    - Skip if `(current_occupation + guest_count) > venture.max_capacity` → record `skip_reason = CAPACITY_EXCEEDED`
+    - Skip if no matching `Venture_Schedule` for service_date day → record `skip_reason = CLOSED_THAT_DAY`
+    - Skip if requested time is outside `Venture_Schedule` range → record `skip_reason = OUTSIDE_OPENING_HOURS`
 3.  **Offer Phase**: First venture that passes filters gets the offer:
     - Create Cascade_Assignment with `offer_status = WAITING_FOR_RESPONSE`
     - Set `response_deadline = now + project.cascade_timeout_minutes`
@@ -118,9 +118,8 @@ When a tourist creates an order, the following validations must pass:
 | `guest_count` | Required | "Number of guests is required" |
 | `guest_count` | Must be >= 1 | "At least 1 guest is required" |
 | `guest_count` | Must be <= 100 | "Maximum 100 guests per order" |
-| `items` | Required, array, min 1 | "At least 1 item is required" |
-| `items` | Max 10 unique catalog_item_ids | "Maximum 10 items per order" |
-| `items[].catalog_item_id` | Required, must belong to same catalog_type | "All items must be of the same type" |
+| `items` | Required, array, min 1, max 1 | "Only 1 item per order" |
+| `items[].catalog_item_id` | Required | "Item is required" |
 | `items[].quantity` | Required, min 1 | "Quantity must be at least 1" |
 | `time_of_day_id` | Required | "Time of day is required" |
 
@@ -134,7 +133,7 @@ Before offering an order to a venture, the engine validates:
 |-------|-----------|-------------|
 | Venture Active | `venture.is_active = true` | `VENTURE_INACTIVE` |
 | General Pause | `venture.is_paused = false` | `GENERAL_PAUSE` |
-| Capacity | `order.guest_count <= venture.max_capacity` | `CAPACITY_EXCEEDED` |
+| Capacity | `(current_occupation + order.guest_count) <= venture.max_capacity` | `CAPACITY_EXCEEDED` |
 
 > **Note:** Capacity is measured by **number of guests (personas)**, not by number of items/dishes. A Venture with `max_capacity = 20` can serve 20 people regardless of how many dishes they order.
 | Individual Pause | `catalog_item_id NOT IN venture.paused_items` | `INDIVIDUAL_PAUSE` |
@@ -160,15 +159,18 @@ function isVentureOpen(venture: Venture, serviceDate: Date, timeOfDayId: number)
 Valid transitions between order states:
 
 ```
-SEARCHING ──accept──> CONFIRMED ──complete──> COMPLETED
-   │                     │
-   ├──cancel──> CANCELLED   ├──cancel──> SEARCHING (cascade restarts)
-   │                     │
-   └──expire──> EXPIRED    ├──no_show──> NO_SHOW
+SEARCHING ──offer──> OFFER_PENDING ──accept──> CONFIRMED ──complete──> COMPLETED
+    │                     │                      │
+    ├──cancel──> CANCELLED ├──cancel──> CANCELLED ├──cancel──> SEARCHING
+    │                     │                      │
+    └──expire──> EXPIRED  └──expire──> EXPIRED   └──no_show──> NO_SHOW
 ```
 
 **State Transition Rules:**
-- `SEARCHING` → `CONFIRMED`: When linked entrepreneur accepts for their venture
+- `SEARCHING` → `OFFER_PENDING`: When engine offers order to a venture (intermediate state prevents race conditions)
+- `OFFER_PENDING` → `CONFIRMED`: When linked entrepreneur accepts for their venture
+- `OFFER_PENDING` → `SEARCHING`: When venture rejects or times out (cascade continues to next venture)
+- `OFFER_PENDING` → `CANCELLED`: When tourist cancels while venture has pending offer
 - `SEARCHING` → `CANCELLED`: When tourist cancels (only if status = SEARCHING)
 - `SEARCHING` → `EXPIRED`: When max cascade attempts reached or all ventures skipped
 - `CONFIRMED` → `SEARCHING`: When linked entrepreneur cancels (cascade restarts from next venture)
@@ -184,7 +186,7 @@ Complete list of skip reasons in `Cascade_Assignment.skip_reason`:
 | `null` | Venture was offered (not skipped) |
 | `GENERAL_PAUSE` | Venture has is_paused = true |
 | `INDIVIDUAL_PAUSE` | catalog_item_id is in venture.paused_items |
-| `CAPACITY_EXCEEDED` | guest_count > venture.max_capacity |
+| `CAPACITY_EXCEEDED` | (current_occupation + guest_count) > venture.max_capacity |
 | `CLOSED_THAT_DAY` | Venture is closed on the requested day (not in opening_hours) |
 | `OUTSIDE_OPENING_HOURS` | Requested time is outside venture's operating hours |
 | `VENTURE_INACTIVE` | Venture.is_active = false |
@@ -197,14 +199,14 @@ A tourist cannot have multiple active orders for the same:
 
 If such order exists with status `SEARCHING` or `CONFIRMED`, the system returns error: "You already have an order for this time slot"
 
-#### 3.3.6 Capacity Calculation
+#### 3.3.6 Capacity Calculation (Occupation Tracking)
 
-When checking if a venture can accept an order:
+When checking if a venture can accept an order, the system calculates **accumulated occupation** from all CONFIRMED orders for that time slot:
 
 ```typescript
-function getCurrentGuestCount(ventureId: number, serviceDate: Date, timeOfDayId: number): number {
+function getCurrentOccupation(ventureId: number, serviceDate: Date, timeOfDayId: number): number {
     // Sum of guest_count for CONFIRMED orders at same date/time
-    // Only CONFIRMED orders count toward capacity - SEARCHING orders are not yet assigned
+    // Only CONFIRMED orders count toward capacity - SEARCHING/OFFER_PENDING orders are not yet assigned
     return SUM(o.guest_count) FROM Order o
     WHERE o.confirmed_venture_id = ventureId
       AND o.service_date = serviceDate
@@ -212,9 +214,33 @@ function getCurrentGuestCount(ventureId: number, serviceDate: Date, timeOfDayId:
       AND o.status = 'CONFIRMED';
 }
 
-function canAcceptOrder(venture: Venture, order: Order): boolean {
-    const currentGuests = getCurrentGuestCount(venture.id, order.service_date, order.time_of_day_id);
-    return (currentGuests + order.guest_count) <= venture.max_capacity;
+async function canAcceptOrder(venture: Venture, order: Order): Promise<boolean> {
+    const currentOccupation = await getCurrentOccupation(
+        venture.id, 
+        order.service_date, 
+        order.time_of_day_id
+    );
+    // Check if adding new guests would exceed capacity
+    return (currentOccupation + order.guest_count) <= venture.max_capacity;
+}
+```
+
+**Cascade Filter Phase**: When the engine evaluates a venture, it calculates current occupation:
+```typescript
+if (currentOccupation + order.guest_count > venture.max_capacity) {
+    return { skip: true, reason: 'CAPACITY_EXCEEDED', currentOccupation, maxCapacity: venture.max_capacity };
+}
+```
+
+**Calendar Response** now includes occupation details:
+```json
+{
+  "time_slots": [{
+    "time_of_day_id": 1,
+    "current_occupation": 12,
+    "max_capacity": 20,
+    "available_seats": 8
+  }]
 }
 ```
 
@@ -267,14 +293,17 @@ Request:
   "first_name": "string (optional, max 100)",
   "last_name": "string (optional, max 100)",
   "whatsapp": "string (optional, e.g. +54911...)",
-  "project_id": "integer (required, from QR code)"
+  "project_id": "integer (required, from QR code)",
+  "device_id": "string (required, device fingerprint)",
+  "push_token": "string (optional, for push notifications)"
 }
 
 Response (201):
 {
   "person_id": "uuid",
-  "auth_token": "jwt",
-  "expires_at": "timestamp"
+  "access_token": "jwt (1 hour)",
+  "refresh_token": "uuid (opaque, 30 days)",
+  "expires_in": 3600
 }
 ```
 
@@ -282,13 +311,15 @@ Response (201):
 ```json
 Request:
 {
-  "auth_token": "string (current token)"
+  "refresh_token": "uuid (opaque token)",
+  "device_id": "string (device fingerprint)"
 }
 
 Response (200):
 {
-  "auth_token": "jwt (new)",
-  "expires_at": "timestamp"
+  "access_token": "jwt (new, 1 hour)",
+  "refresh_token": "uuid (new, rotated)",
+  "expires_in": 3600
 }
 ```
 
@@ -296,16 +327,17 @@ Response (200):
 ```json
 Request:
 {
-  "auth_token": "string (token to revoke)"
+  "refresh_token": "uuid (optional, specific token to revoke)",
+  "device_id": "string (optional, revoke all tokens for this device)"
 }
 
 Response (200):
 {
-  "message": "Token revoked successfully"
+  "message": "Token(s) revoked successfully"
 }
 ```
 
-> **Note:** Use this endpoint when tourist loses device or wants to logout. Invalidates the token immediately.
+> **Note:** Use this endpoint when tourist loses device or wants to logout. Can revoke by refresh_token (specific) or device_id (all tokens for that device). This replaces the 7-day JWT approach.
 
 **GET /catalog**
 ```json
@@ -364,14 +396,16 @@ Response (200):
 
 **POST /orders**
 ```json
+Headers:
+- Idempotency-Key: "uuid (required, unique per request)"
+
 Request:
 {
   "service_date": "string (required, YYYY-MM-DD)",
   "time_of_day_id": "integer (required)",
   "guest_count": "integer (required, 1-100)",
-  "items": [
-    { "catalog_item_id": "integer (required)", "quantity": "integer (required, min 1)" }
-  ],
+  "catalog_item_id": "integer (required)",
+  "quantity": "integer (required, min 1)",
   "notify_whatsapp": "boolean (optional, default: false)"
 }
 
@@ -407,7 +441,7 @@ Response (200):
 
 **GET /orders/:id**
 ```json
-Response (200):
+Response (200) - Tourist View:
 {
   "order": {
     "id": 123,
@@ -418,9 +452,22 @@ Response (200):
     "confirmed_venture": "Parador Don Esteban",
     "created_at": "timestamp"
   },
-  "details": [
-    { "catalog_item_id": 1, "name": "Guiso", "quantity": 2, "price": 15.00 }
-  ],
+  "item": {
+    "catalog_item_id": 1,
+    "name": "Guiso",
+    "quantity": 2,
+    "price": 15.00
+  },
+  "cascade_summary": {
+    "total_attempts": 2,
+    "status": "CONFIRMED"
+  }
+}
+
+Response (200) - Entrepreneur/Admin View:
+{
+  "order": { ... },
+  "item": { ... },
   "cascade_history": [
     { "venture": "Parador A", "status": "REJECTED", "reason": null },
     { "venture": "Parador B", "status": "ACCEPTED", "reason": null }
@@ -428,7 +475,7 @@ Response (200):
 }
 ```
 
-> **Security Note:** `cascade_history` exposes venture names and their decisions. Consider obfuscating venture names for tourist-facing responses (e.g., show only attempt count) if revealing rejection patterns is a concern.
+> **Privacy Note:** Tourist-facing responses only show `cascade_summary` (attempt count). Full `cascade_history` is only exposed to the confirmed venture owner and Admins to protect the fairness rotation system from being gamed.
 
 #### 4.2.3 Entrepreneur Endpoints (Auth Required) **[MVP]**
 
@@ -1304,6 +1351,17 @@ erDiagram
         boolean is_enabled "Default TRUE. Manual enable/disable by admin"
     }
 
+    Tourist_Device {
+        uuid id PK
+        uuid person_id FK "Links to Person"
+        string device_id "Device fingerprint for binding"
+        string refresh_token_hash "Opaque refresh token (not JWT)"
+        string push_token "Optional push notification token"
+        timestamp expires_at "When this refresh token expires"
+        timestamp created_at
+        timestamp last_used_at
+    }
+
     %% ==========================================
     %% PARAMETRIC TABLES (Dictionaries)
     %% ==========================================
@@ -1349,10 +1407,18 @@ erDiagram
         int role_type_id FK
         int cascade_order "Isolated rotation per project. Default: creation order (1, 2, 3...)"
         int max_capacity "Maximum number of guests per service (e.g. 20 seats)"
-        jsonb opening_hours "e.g. {'mon': '08:00-20:00', 'tue': '08:00-20:00'}"
         jsonb paused_items "Array of catalog_item_ids paused by this venture"
         boolean is_paused "General pause - venture cannot receive orders"
         boolean is_active "Enabled by admin"
+    }
+
+    Venture_Schedule {
+        int id PK
+        int venture_id FK "References Venture"
+        string day_of_week "mon, tue, wed, thu, fri, sat, sun"
+        time open_time "Opening time (e.g., 08:00)"
+        time close_time "Closing time (e.g., 20:00)"
+        boolean is_active "Can be disabled per day"
     }
 
     Venture_Entrepreneur {
@@ -1389,27 +1455,21 @@ erDiagram
     Order {
         int id PK
         uuid person_id FK
-        int catalog_item_id FK "The requested item (determines type/project for cascade)"
+        int catalog_item_id FK "The requested item"
+        int quantity "Number of items requested"
+        decimal price_at_purchase "Price recorded at order time (historical)"
         int confirmed_venture_id FK "Nullable. Set when status becomes CONFIRMED"
         date service_date "Used for Calendar view"
         int time_of_day_id FK "Used for Calendar view"
         int guest_count 
         string notes "Special requests or dietary restrictions from tourist"
-        enum global_status "SEARCHING, CONFIRMED, COMPLETED, NO_SHOW, CANCELLED, EXPIRED"
+        enum global_status "SEARCHING, OFFER_PENDING, CONFIRMED, COMPLETED, NO_SHOW, CANCELLED, EXPIRED"
         enum cancel_reason "null, BY_TOURIST, NO_VENTURE_AVAILABLE, SYSTEM_ERROR"
         timestamp cancelled_at "Nullable. Set when status becomes CANCELLED or EXPIRED"
         timestamp created_at
         
         %% Notification preferences for this order
         boolean notify_whatsapp "Whether to send WhatsApp notifications for this order"
-    }
-
-    Order_Detail {
-        int id PK
-        int order_id FK
-        int catalog_item_id FK
-        int quantity 
-        decimal historical_price
     }
 
     Cascade_Assignment {
@@ -1451,6 +1511,14 @@ erDiagram
         boolean email_enabled default FALSE
     }
 
+    Idempotency_Key {
+        varchar key PK "Client-provided unique key (UUID)"
+        int response_status "HTTP status code of original response"
+        jsonb response_body "Cached response body"
+        timestamp created_at
+        timestamp expires_at "Key expires after 24 hours"
+    }
+
     %% ==========================================
     %% RELATIONSHIPS
     %% ==========================================
@@ -1477,10 +1545,10 @@ erDiagram
     Person ||--o{ Order : "places"
     Person ||--o{ Notification : "receives"
     Person ||--o{ Notification_Preference : "has"
-    
-    Order ||--|{ Order_Detail : "contains"
-    Catalog_Item ||--o{ Order_Detail : "includes"
-    
+    Person ||--o{ Tourist_Device : "has devices"
+
+    Venture ||--o{ Venture_Schedule : "has schedule"
+
     Order ||--o{ Cascade_Assignment : "processed by engine"
     Order ||--o{ Notification : "triggers"
 
