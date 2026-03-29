@@ -859,6 +859,276 @@ pg_dump -h $DB_HOST -U $DB_USER $DB_NAME | gzip > backup_$(date +%Y%m%d).sql.gz
 
 ---
 
+## 4.6 Testing Strategy
+
+### 4.6.1 Testing Pyramid
+
+```
+        /\
+       /  \
+      / E2E \         ← Few, slow, expensive
+     /--------\
+    /Integration\    ← Medium, test component interaction
+   /--------------\
+  /    Unit        \ ← Many, fast, cheap
+ /__________________\
+```
+
+### 4.6.2 Unit Tests
+
+**Framework:** Vitest
+
+**Coverage Target:** 80% minimum
+
+**What to Test:**
+
+| Module | Test Cases |
+|--------|------------|
+| **CascadeEngine** | Skip logic for all 8 skip reasons, capacity calculation, max attempts |
+| **i18n** | Fallback strategy, missing language handling |
+| **Auth** | Token refresh, lockout logic, JWT validation |
+| **Validation** | All validation rules from Section 3.3 |
+| **Order** | Status transitions, duplication prevention |
+
+**Example:**
+```typescript
+describe('CascadeEngine', () => {
+  describe('filterVenture', () => {
+    it('skips when venture.is_active = false', () => {
+      const venture = { is_active: false, ... };
+      const result = filterVenture(venture, order);
+      expect(result.skip).toBe(true);
+      expect(result.reason).toBe('VENTURE_INACTIVE');
+    });
+
+    it('skips when general_pause = true', () => {
+      const venture = { general_pause: true, ... };
+      const result = filterVenture(venture, order);
+      expect(result.skip).toBe(true);
+      expect(result.reason).toBe('GENERAL_PAUSE');
+    });
+
+    it('skips when guest_count > max_capacity', () => {
+      const venture = { max_capacity: 10, ... };
+      const order = { guest_count: 15 };
+      const result = filterVenture(venture, order);
+      expect(result.skip).toBe(true);
+      expect(result.reason).toBe('CAPACITY_EXCEEDED');
+    });
+
+    it('skips when outside opening_hours', () => {
+      const venture = { opening_hours: { mon: '08:00-20:00' } };
+      const order = { service_date: '2024-01-15', time_of_day_id: LUNCH }; // 12:00
+      const result = filterVenture(venture, order);
+      expect(result.skip).toBe(false);
+    });
+  });
+
+  describe('cascadeLoop', () => {
+    it('marks EXPIRED after max_attempts', async () => {
+      const ventures = [...Array(10).keys()].map(i => ({ id: i, ... }));
+      const result = await cascadeLoop(order, ventures, { max_attempts: 10 });
+      expect(result.status).toBe('EXPIRED');
+    });
+
+    it('returns CONFIRMED on first accept', async () => {
+      const ventures = [{ id: 1, ... }];
+      const result = await cascadeLoop(order, ventures, {});
+      expect(result.status).toBe('CONFIRMED');
+    });
+  });
+});
+```
+
+### 4.6.3 Integration Tests
+
+**Framework:** Supertest (API) + Test Database
+
+**What to Test:**
+
+| Scenario | Description |
+|----------|-------------|
+| **Order Flow** | Tourist creates order → enters SEARCHING → entrepreneur accepts → becomes CONFIRMED |
+| **Cascade Flow** | Order creates → skips paused ventures → reaches active venture → accepts |
+| **Auth Flow** | Tourist creates identity → gets JWT → refreshes token → token invalidates old |
+| **Notification Flow** | Order confirmed → notification created → sent via provider |
+
+**Example:**
+```typescript
+describe('Order API', () => {
+  it('creates order and triggers cascade', async () => {
+    // Create order
+    const orderRes = await request(app)
+      .post('/orders')
+      .send({ ... });
+    
+    expect(orderRes.status).toBe(201);
+    expect(orderRes.body.status).toBe('SEARCHING');
+
+    // Check cascade assignment created
+    const assignment = await db.query(
+      'SELECT * FROM cascade_assignment WHERE order_id = ?',
+      [orderRes.body.order_id]
+    );
+    expect(assignment).toHaveLength(1);
+    expect(assignment[0].offer_status).toBe('WAITING_FOR_RESPONSE');
+  });
+
+  it('accepts order and confirms', async () => {
+    // Given: order in SEARCHING
+    const order = await createOrder({ status: 'SEARCHING' });
+
+    // When: entrepreneur accepts
+    const acceptRes = await request(app)
+      .post(`/orders/${order.id}/accept`)
+      .set('Authorization', `Bearer ${entrepreneurToken}`);
+
+    // Then: order is CONFIRMED
+    expect(acceptRes.body.status).toBe('CONFIRMED');
+    
+    const updatedOrder = await getOrder(order.id);
+    expect(updatedOrder.status).toBe('CONFIRMED');
+  });
+});
+```
+
+### 4.6.4 E2E Tests
+
+**Framework:** Playwright (recommended)
+
+**Scenarios:**
+
+| Scenario | Steps |
+|----------|-------|
+| **Tourist: Create Order** | 1. Open app → 2. Enter alias → 3. Browse catalog → 4. Select item → 5. Choose date/time → 6. Submit → 7. See "SEARCHING" status |
+| **Entrepreneur: Accept Order** | 1. Login → 2. See pending order → 3. Tap Accept → 4. See confirmation |
+| **Full Cascade** | 1. Tourist creates order → 2. Venture A rejects → 3. Venture B accepts → 4. Tourist sees CONFIRMED |
+
+**Example:**
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('tourist creates order', async ({ page }) => {
+  await page.goto('/');
+  
+  // Welcome screen
+  await page.fill('[name=alias]', 'Test Family');
+  await page.click('button:has-text("Start")');
+  
+  // Catalog
+  await expect(page.locator('text=Service Catalog')).toBeVisible();
+  await page.click('text=Guiso');
+  
+  // Order modal
+  await page.selectOption('[name=time_of_day]', 'LUNCH');
+  await page.fill('[name=guest_count]', '4');
+  await page.click('button:has-text("Confirm")');
+  
+  // Orders screen
+  await expect(page.locator('text=SEARCHING')).toBeVisible();
+});
+```
+
+### 4.6.5 Load Testing
+
+**Tool:** k6 or Artillery
+
+**Scenarios:**
+
+| Scenario | Target |
+|----------|--------|
+| **Order Creation** | 100 orders/minute |
+| **Cascade Engine** | 50 ventures, 10 attempts each |
+| **Concurrent Accepts** | 10 entrepreneurs accepting simultaneously |
+| **Calendar View** | 1000 confirmed orders |
+
+**Example (k6):**
+```javascript
+import http from 'k6/http';
+
+export const options = {
+  vus: 10,
+  duration: '1m',
+  thresholds: {
+    http_req_duration: ['p(95)<500'],
+    http_req_failed: ['rate<0.01'],
+  },
+};
+
+export default function () {
+  const order = {
+    project_id: 1,
+    service_date: '2024-01-15',
+    time_of_day_id: 1,
+    guest_count: 4,
+    items: [{ catalog_item_id: 1, quantity: 2 }],
+  };
+
+  http.post('http://localhost:3000/v1/orders', 
+    JSON.stringify(order),
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+}
+```
+
+### 4.6.6 Test Database Strategy
+
+**Development:**
+- Use `testcontainers-node` for isolated PostgreSQL
+- Each test gets clean database state
+
+**CI/CD:**
+- Use ephemeral database per build
+- Run migrations before tests
+- Seed with minimal data
+
+```typescript
+// Test setup
+beforeAll(async () => {
+  const container = await new PostgreSqlContainer().start();
+  await runMigrations(container.getConnectionUrl());
+});
+
+afterAll(async () => {
+  await container.stop();
+});
+
+beforeEach(async () => {
+  await truncateAllTables();
+  await seedTestData();
+});
+```
+
+### 4.6.7 Test Coverage Requirements
+
+| Type | Minimum Coverage | Tools |
+|------|-----------------|-------|
+| Unit | 80% | Vitest/Jest + coverage report |
+| Integration | All API endpoints | Supertest |
+| E2E | Critical paths only | Playwright |
+| Load | Key endpoints | k6 |
+
+### 4.6.8 Running Tests
+
+```bash
+# Unit tests (fast, runs on every commit)
+npm run test:unit
+
+# Integration tests (slower, runs on PR)
+npm run test:integration
+
+# E2E tests (slowest, runs on staging)
+npm run test:e2e
+
+# All tests
+npm run test:all
+
+# With coverage
+npm run test:coverage
+```
+
+---
+
 ## 5. Data Structure (Multi-Project ERD)
 
 Below is the relational data model prepared for AI generation using PostgreSQL. Operational states are kept as Enums to protect the cascading engine's strict logic, while expansible categories use parametric tables [6].
