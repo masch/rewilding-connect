@@ -280,68 +280,75 @@ When generating UI components or screens, adhere strictly to the following const
 
 6.2 Tourist Flow (Zero Friction Journey)
 
+    Navigation: Bottom tab bar with 3 large icons:
+        - Home: Service Catalog (selected by default after first visit)
+        - Orders: Orders Status
+        - Settings: Profile & Preferences
+
     Screen 1: Welcome & Access:
-        Spec: No traditional login/signup forms.
+        Spec: First-time access. Creates tourist identity with alias.
         UI Elements: 
          - A single required input field, prominent text input asking for an "Alias" (e.g., "Gomez Family").
          - Optional secondaries inputs fields:
-            - Whatsapp number.
-            - First name.
-            - Last name.
+             - Whatsapp number.
+             - First name.
+             - Last name.
          - A massive "Start" button.
-         - Without bottom navigation bar.
-    Screen 2: Service Catalog:
+         - Without bottom navigation bar (shown only after successful access).
+        Notes: If device already has valid auth_token, skip directly to Home tab.
+    Screen 2: Service Catalog (Home Tab):
         Spec: A simple list to request multiple activities or meals.
         UI Elements:
          - Visual cards for available dishes/activities. Hidden entirely if under an "Individual Pause" or "Global Pause".
-         - When the user clicks on a card, a modal opens to :
-            - Time of day: breakfast, lunch, snack, dinner.
-            - Quantity of people.
-            - A "Confirm" button.
-         - With bottom navigation bar with the following tabs:
-            - Home: Service Catalog (selected)
-            - Orders: Orders Status
-            - Settings: Settings
-    Screen 3: Orders Status (Waiting Room):
-        Spec: Interactive waiting screen while the cascading engine works on each order.
-        UI Elements for each order:
-            - Display the order details (date, time of day, quantity of people, items).
-            - Display the status of the order (waiting for entrepreneur, accepted, rejected, timeout).
-            - A "Cancel" button.
-         - With bottom navigation bar with the following tabs:
-            - Home: Service Catalog
-            - Orders: Orders Status (selected)
-            - Settings: Settings
-    Screen 4: Settings:
-        Spec: Settings screen for the tourist.
+         - Each card displays: name (translated), price, category icon.
+         - When the user clicks on a card, a modal opens to:
+             - Time of day: breakfast, lunch, snack, dinner
+             - Quantity of people
+             - A "Confirm" button
+         - Pull-to-refresh to reload catalog
+    Screen 3: Orders Status (Orders Tab):
+        Spec: Interactive waiting screen while the cascading engine works on each order. Also shows historical orders.
         UI Elements:
-         - A single required input field, prominent text input asking for an "Alias" (e.g., "Gomez Family").
-         - Optional secondaries inputs fields:
-            - Whatsapp number.
-            - First name.
-            - Last name.
-         - A button to save changes.
-         - A "Logout" button.
-         - With bottom navigation bar with the following tabs:
-            - Home: Service Catalog
-            - Orders: Orders Status
-            - Settings: Settings (selected)
+         - Segmented control: "Active" | "History"
+         - For each active order:
+             - Order details (date, time of day, quantity of people, items)
+             - Status badge: SEARCHING (yellow), CONFIRMED (green), EXPIRED (red)
+             - Cancel button (only enabled when status = SEARCHING)
+         - For each historical order:
+             - Order details with final status
+             - Status: COMPLETED (gray), CANCELLED (red), NO_SHOW (red)
+    Screen 4: Settings (Settings Tab):
+        Spec: Profile management and preferences for the tourist.
+        UI Elements:
+         - Profile section:
+             - Alias (required, editable)
+             - First name (optional, editable)
+             - Last name (optional, editable)
+             - WhatsApp (optional, editable)
+         - Notification preferences:
+             - Toggle: Enable WhatsApp notifications
+         - Save button (prominent)
+         - Danger zone:
+             - "Clear my data" button (deletes Person record)
+             - "Logout" button (clears auth_token but keeps Person)
 
 6.3 Entrepreneur Flow (Operational Journey)
 
-    Navigation: Bottom tab bar with 3 large icons:
+    Navigation: Bottom tab bar with 4 large icons:
         - Orders: Order Reception Dashboard (selected by default)
         - Calendar: Daily Agenda
+        - Ventures: My Ventures List
         - Settings: Availability & Profile
+        - Badge indicator on Orders tab when General Pause is active
 
     Screen 0: Login:
-        Spec: Secure access for entrepreneurs.
+        Spec: Secure access for entrepreneurs and admins.
         UI Elements:
          - Email input field (keyboard type: email)
          - Password input field (with show/hide toggle)
          - "Remember me" checkbox
          - Large "Login" button
-         - Error messages for invalid credentials or account disabled
+         - Error messages: "Invalid credentials" / "Account locked" / "Account disabled"
 
     Screen 1: Order Reception Dashboard:
         Spec: The main hub where the engine routes incoming requests to the business.
@@ -366,7 +373,16 @@ When generating UI components or screens, adhere strictly to the following const
          - Visual occupation indicator (e.g., "12/20 seats filled")
          - Color coding: confirmed (green), completed (gray), no-show (red)
 
-    Screen 3: Settings & Availability Control Panel:
+    Screen 3: My Ventures (Ventures Tab):
+        Spec: List of ventures managed by the entrepreneur. Quick access to pause controls.
+        UI Elements:
+         - List of venture cards
+         - Each card shows: Name, Role, Capacity, Status badge (Active/Paused)
+         - Quick toggle: General Pause switch on each card
+         - "Add Venture" floating action button (FAB)
+         - Empty state: "You don't have any ventures yet"
+
+    Screen 4: Settings & Availability Control Panel:
         Spec: Quick toggles for capacity, stock management, and profile.
         UI Elements:
          - Profile section:
@@ -377,16 +393,85 @@ When generating UI components or screens, adhere strictly to the following const
          - Individual Pause: List of Venture_Items with individual toggles for "Individual Pause" (out of stock). Each item shows the catalog item name.
          - Logout button at the bottom
 
+    Screen 4: Create/Edit Venture (Modal):
+        Spec: Form to create a new venture or edit existing one.
+        UI Elements:
+         - Venture name input
+         - Role Type dropdown (Hostel, Guide, Restaurant, etc.)
+         - Max capacity input (number)
+         - Opening hours: Day-by-day toggles with start/end time pickers
+         - "Add to Catalog" section: Multi-select from available Catalog_Items
+         - Save / Cancel buttons
+
 6.4 Admin Impenetrable Flow (Management & Auditing)
-This interface will be accessed primarily via Web (Desktop) but must remain uncluttered.
+This interface will be accessed primarily via Web (Desktop).
+
+    Navigation: Left sidebar (collapsible) with menu items:
+        - Dashboard: Monthly Reporting KPIs (selected by default)
+        - Catalog: Master Catalog & Global Pause
+        - Hosts: Host Management
+        - Ventures: Venture Management
+        - Settings: Project Configuration
+        - Logout
+
+    Screen 0: Login:
+        Spec: Secure access for admins.
+        UI Elements:
+         - Email input field (keyboard type: email)
+         - Password input field (with show/hide toggle)
+         - "Remember me" checkbox
+         - Large "Login" button
+         - Error messages: "Invalid credentials" / "Account disabled"
 
     Screen 1: Monthly Reporting Dashboard (KPIs):
         Spec: A bird's-eye view to audit the ecosystem without manual assignment intervention.
-        UI Elements: Large metric cards at the top displaying core KPIs: Acceptance Rates, Timeouts, and Completed Services. Simple data tables filterable by Project.
+        UI Elements:
+         - Date range picker: Today | This Week | This Month | Custom
+         - Project filter dropdown
+         - KPI Cards (top row):
+             - Total Orders
+             - Acceptance Rate (%)
+             - Timeout Rate (%)
+             - Completed Rate (%)
+         - Chart: Orders per day (last 30 days)
+         - Table: Venture rankings by acceptance rate
+
     Screen 2: Master Catalog & Global Pause:
         Spec: Regional control over available activities and gastronomy.
-        UI Elements: A list/table of all catalog items associated with a project. Each item must feature a prominent, high-contrast toggle switch for "Global Pause", allowing the admin to disable an item across the entire region instantly.
+        UI Elements:
+         - Project filter dropdown
+         - "Add Item" button (opens modal)
+         - Search/filter bar
+         - Table columns: Name (i18n), Category, Price, Global Pause toggle, Actions
+         - Each row has: Name, Category badge, Price, Global Pause toggle (high-contrast)
+         - Actions: Edit, Delete
+
     Screen 3: Host Management:
         Spec: Simple onboarding interface for local hosts.
-        UI Elements: A clean list of registered entrepreneurs with a clear "Enable" or "Disable" action to authorize their access to the platform.
+        UI Elements:
+         - Project filter dropdown
+         - "Add Host" button
+         - Search bar
+         - Table columns: Name, Email, WhatsApp, Ventures count, Status, Actions
+         - Status toggle: Enable/Disable (inline button)
+         - Actions: Edit, View Ventures
+
+    Screen 4: Venture Management:
+        Spec: View and manage ventures, reorder cascade rotation.
+        UI Elements:
+         - Project filter dropdown
+         - "Add Venture" button
+         - Drag-and-drop reorder handle for cascade_order
+         - Table columns: Name, Owner, Role, Capacity, General Pause, Cascade Order
+         - Actions: Edit, Delete, Enable/Disable
+
+    Screen 5: Project Settings:
+        Spec: Configuration for project-level settings.
+        UI Elements:
+         - Project selector (if admin has access to multiple)
+         - Form fields:
+             - Cascade Timeout (minutes): number input
+             - Max Cascade Attempts: number input
+             - Default Language: dropdown
+         - "Save Changes" button
 
