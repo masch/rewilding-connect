@@ -118,8 +118,10 @@ When a tourist creates an order, the following validations must pass:
 | `guest_count` | Required | "Number of guests is required" |
 | `guest_count` | Must be >= 1 | "At least 1 guest is required" |
 | `guest_count` | Must be <= 100 | "Maximum 100 guests per order" |
-| `items` | Required, min 1 | "At least 1 item is required" |
-| `items` | Max 10 unique items | "Maximum 10 items per order" |
+| `items` | Required, array, min 1 | "At least 1 item is required" |
+| `items` | Max 10 unique catalog_item_ids | "Maximum 10 items per order" |
+| `items[].catalog_item_id` | Required, must belong to same catalog_type | "All items must be of the same type" |
+| `items[].quantity` | Required, min 1 | "Quantity must be at least 1" |
 | `time_of_day_id` | Required | "Time of day is required" |
 
 #### 3.3.2 Venture Availability Validations (Filter Phase)
@@ -133,6 +135,8 @@ Before offering an order to a venture, the engine validates:
 | Venture Active | `venture.is_active = true` | `VENTURE_INACTIVE` |
 | General Pause | `venture.is_paused = false` | `GENERAL_PAUSE` |
 | Capacity | `order.guest_count <= venture.max_capacity` | `CAPACITY_EXCEEDED` |
+
+> **Note:** Capacity is measured by **number of guests (personas)**, not by number of items/dishes. A Venture with `max_capacity = 20` can serve 20 people regardless of how many dishes they order.
 | Individual Pause | `catalog_item_id NOT IN venture.paused_items` | `INDIVIDUAL_PAUSE` |
 | **Opening Hours** | Order time within `venture.opening_hours` for the day | `CLOSED_THAT_DAY` |
 
@@ -249,7 +253,7 @@ All endpoints follow RESTful conventions. Base URL: `https://api.elimpenetrable.
 |--------|----------|-------------|
 | POST | `/auth/tourist/create` | Create tourist identity with alias |
 | POST | `/auth/tourist/refresh` | Refresh tourist JWT token |
-| GET | `/catalog` | Get available catalog items for a project |
+| GET | `/catalog` | Get all catalog items for a project |
 
 **POST /auth/tourist/create**
 ```json
@@ -287,7 +291,7 @@ Response (200):
 **GET /catalog**
 ```json
 Query Parameters:
-- project_id (required): integer
+- project_id (required): integer "Filter by project (Impenetrable Chaco, etc.)"
 
 Headers:
 - Accept-Language: "es" or "en" (optional, defaults to project default)
@@ -297,10 +301,10 @@ Response (200):
   "items": [
     {
       "id": 1,
+      "catalog_type": "Gastronomy",
       "name": "Guiso",
       "description": "Traditional stew",
       "price": 15.00,
-      "category": "GASTRONOMY",
       "image_url": "https://...",
       "max_participants": null
     }
@@ -322,12 +326,11 @@ Response (200):
 ```json
 Request:
 {
-  "project_id": "integer (required)",
   "service_date": "string (required, YYYY-MM-DD)",
   "time_of_day_id": "integer (required)",
   "guest_count": "integer (required, 1-100)",
   "items": [
-    { "catalog_item_id": 1, "quantity": 2 }
+    { "catalog_item_id": "integer (required)", "quantity": "integer (required, min 1)" }
   ],
   "notify_whatsapp": "boolean (optional, default: false)"
 }
@@ -352,7 +355,7 @@ Response (200):
     {
       "id": 123,
       "service_date": "2024-01-15",
-      "time_of_day": "LUNCH",
+      "time_of_day_id": 1,
       "guest_count": 4,
       "status": "SEARCHING",
       "items": [...],
@@ -369,7 +372,7 @@ Response (200):
   "order": {
     "id": 123,
     "service_date": "2024-01-15",
-    "time_of_day": "LUNCH",
+    "time_of_day_id": 1,
     "guest_count": 4,
     "status": "CONFIRMED",
     "confirmed_venture": "Parador Don Esteban",
@@ -411,7 +414,7 @@ Response (200):
       "venture_id": 1,
       "venture_name": "Parador Don Esteban",
       "service_date": "2024-01-15",
-      "time_of_day": "LUNCH",
+      "time_of_day_id": 1,
       "guest_count": 4,
       "items": [
         { "name": "Guiso", "quantity": 2 }
@@ -457,7 +460,7 @@ Response (200):
       "date": "2024-01-15",
       "time_slots": [
         {
-          "time_of_day": "LUNCH",
+          "time_of_day_id": 1,
           "orders": [
             {
               "order_id": 123,
@@ -1140,11 +1143,12 @@ export const options = {
 
 export default function () {
   const order = {
-    project_id: 1,
     service_date: '2024-01-15',
     time_of_day_id: 1,
     guest_count: 4,
-    items: [{ catalog_item_id: 1, quantity: 2 }],
+    items: [
+      { "catalog_item_id": 1, "quantity": 2 }
+    ],
   };
 
   http.post('http://localhost:3000/v1/orders', 
