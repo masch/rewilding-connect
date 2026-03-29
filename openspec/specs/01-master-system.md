@@ -50,9 +50,12 @@ To achieve this, the system features an automated engine that replaces manual as
 When a tourist submits a request:
 1.  **Order Init**: Order is created with status `SEARCHING`. The engine starts iterating through ventures sorted by `cascade_order` (ascending).
 2.  **Filter Phase**: For each venture in rotation order:
+    - Skip if `venture.is_active = false` → record `skip_reason = VENTURE_INACTIVE`
     - Skip if `general_pause = true` → record `skip_reason = GENERAL_PAUSE`
     - Skip if Venture_Item has `individual_pause = true` for requested Catalog_Item → record `skip_reason = INDIVIDUAL_PAUSE`
     - Skip if `guest_count > venture.max_capacity` → record `skip_reason = CAPACITY_EXCEEDED`
+    - Skip if `service_date` day is not in `venture.opening_hours` → record `skip_reason = CLOSED_THAT_DAY`
+    - Skip if requested time is outside `venture.opening_hours` range → record `skip_reason = OUTSIDE_OPENING_HOURS`
 3.  **Offer Phase**: First venture that passes filters gets the offer:
     - Create Cascade_Assignment with `offer_status = WAITING_FOR_RESPONSE`
     - Set `response_deadline = now + project.cascade_timeout_minutes`
@@ -71,7 +74,115 @@ When a tourist submits a request:
 
 ### 3.2. Internationalization (i18n)
 *   Dynamic Catalog data (dish and activity names) are stored in the database using PostgreSQL's native `JSONB` type [6].
-*   This allows the system to quickly extract translations (e.g., `{"es": "Guiso", "en": "Stew"}`) based on the tourist's browser `Accept-Language` header [6].
+*   This allows the system to quickly extract translations (e.g., `{"es": "Guiso", "en": "Stew"}) based on the tourist's browser `Accept-Language` header [6].
+
+### 3.3. Validation Rules
+
+#### 3.3.1 Order Creation Validations
+
+When a tourist creates an order, the following validations must pass:
+
+| Field | Validation Rule | Error Message |
+|-------|----------------|--------------|
+| `service_date` | Required | "Date is required" |
+| `service_date` | Must be >= TODAY | "Cannot order for past dates" |
+| `service_date` | Must be <= TODAY + 30 days | "Cannot order more than 30 days in advance" |
+| `guest_count` | Required | "Number of guests is required" |
+| `guest_count` | Must be >= 1 | "At least 1 guest is required" |
+| `guest_count` | Must be <= 100 | "Maximum 100 guests per order" |
+| `items` | Required, min 1 | "At least 1 item is required" |
+| `items` | Max 10 unique items | "Maximum 10 items per order" |
+| `time_of_day_id` | Required | "Time of day is required" |
+
+#### 3.3.2 Venture Availability Validations (Filter Phase)
+
+Before offering an order to a venture, the engine validates:
+
+| Check | Condition | Skip Reason |
+|-------|-----------|-------------|
+| Venture Active | `venture.is_active = true` | `VENTURE_INACTIVE` |
+| General Pause | `venture.general_pause = false` | `GENERAL_PAUSE` |
+| Capacity | `order.guest_count <= venture.max_capacity` | `CAPACITY_EXCEEDED` |
+| Individual Pause | `venture_item.individual_pause = false` for all items | `INDIVIDUAL_PAUSE` |
+| **Opening Hours** | Order time within `venture.opening_hours` for the day | `CLOSED_THAT_DAY` |
+
+**Opening Hours Logic:**
+```typescript
+function isVentureOpen(venture: Venture, serviceDate: Date, timeOfDayId: number): boolean {
+    const dayOfWeek = getDayOfWeek(serviceDate); // 'mon', 'tue', ...
+    const hours = venture.opening_hours[dayOfWeek];
+    
+    if (!hours) return false; // Venture is closed that day
+    
+    const [openTime, closeTime] = hours.split('-');
+    const orderTime = getStartTimeForTimeOfDay(timeOfDayId); // e.g., '12:00' for LUNCH
+    
+    return orderTime >= openTime && orderTime < closeTime;
+}
+```
+
+#### 3.3.3 Order Status Transitions
+
+Valid transitions between order states:
+
+```
+SEARCHING ──accept──> CONFIRMED ──complete──> COMPLETED
+   │                          │
+   │                          └──no-show──> NO_SHOW
+   │
+   ├──cancel──> CANCELLED (by tourist)
+   │
+   └──expire──> EXPIRED (no venture available / all skipped)
+```
+
+**State Transition Rules:**
+- `SEARCHING` → `CONFIRMED`: When entrepreneur accepts
+- `SEARCHING` → `CANCELLED`: When tourist cancels (only if status = SEARCHING)
+- `SEARCHING` → `EXPIRED`: When max cascade attempts reached or all ventures skipped
+- `CONFIRMED` → `COMPLETED`: When service date passes + no NO_SHOW reported
+- `CONFIRMED` → `NO_SHOW`: When entrepreneur marks tourist as no-show
+
+#### 3.3.4 Cascade Skip Reasons
+
+Complete list of skip reasons in `Cascade_Assignment.skip_reason`:
+
+| Reason | Description |
+|--------|-------------|
+| `null` | Venture was offered (not skipped) |
+| `GENERAL_PAUSE` | Venture has general_pause = true |
+| `INDIVIDUAL_PAUSE` | Venture_Item has individual_pause = true for requested item |
+| `CAPACITY_EXCEEDED` | guest_count > venture.max_capacity |
+| `CLOSED_THAT_DAY` | Venture is closed on the requested day (not in opening_hours) |
+| `OUTSIDE_OPENING_HOURS` | Requested time is outside venture's operating hours |
+| `VENTURE_INACTIVE` | Venture.is_active = false |
+| `NOT_OFFERED` | Venture was not in the rotation list |
+
+#### 3.3.5 Order Duplication Prevention
+
+A tourist cannot have multiple active orders for the same:
+- `service_date` + `time_of_day_id`
+
+If such order exists with status `SEARCHING` or `CONFIRMED`, the system returns error: "You already have an order for this time slot"
+
+#### 3.3.6 Capacity Calculation
+
+When checking if a venture can accept an order:
+
+```typescript
+function getCurrentGuestCount(ventureId: number, serviceDate: Date, timeOfDayId: number): number {
+    // Sum of guest_count for CONFIRMED orders at same date/time
+    return SUM(o.guest_count) FROM Order o
+    WHERE o.confirmed_venture_id = ventureId
+      AND o.service_date = serviceDate
+      AND o.time_of_day_id = timeOfDayId
+      AND o.status IN ('SEARCHING', 'CONFIRMED');
+}
+
+function canAcceptOrder(venture: Venture, order: Order): boolean {
+    const currentGuests = getCurrentGuestCount(venture.id, order.service_date, order.time_of_day_id);
+    return (currentGuests + order.guest_count) <= venture.max_capacity;
+}
+```
 
 ---
 
@@ -235,7 +346,7 @@ erDiagram
         int venture_id FK "Assigned to the business, not the person"
         int attempt_number
         enum offer_status "WAITING_FOR_RESPONSE, ACCEPTED, REJECTED, TIMEOUT, AUTO_REJECTED"
-        enum skip_reason "null, GENERAL_PAUSE, INDIVIDUAL_PAUSE, CAPACITY_EXCEEDED, NOT_OFFERED"
+        enum skip_reason "null, GENERAL_PAUSE, INDIVIDUAL_PAUSE, CAPACITY_EXCEEDED, CLOSED_THAT_DAY, OUTSIDE_OPENING_HOURS, VENTURE_INACTIVE, NOT_OFFERED"
         timestamp offer_sent_at
         timestamp response_deadline 
         timestamp resolved_at
