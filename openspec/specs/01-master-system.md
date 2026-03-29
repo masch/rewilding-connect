@@ -83,6 +83,101 @@ When a tourist submits a request:
 
 > **Problem:** In conservation areas, entrepreneurs have intermittent connectivity. A venture may be offline when the timeout expires, causing confusion and lost business opportunities.
 
+### 3.1.2. Race Condition Prevention in Cascade Accept **[POST-MVP]**
+
+> **Problem:** When an entrepreneur accepts an order while another is processing, or when an accept request arrives after the timeout has already expired, the system must handle this gracefully without leaving the order in an inconsistent state.
+
+**Race Condition Scenarios:**
+
+| Scenario | Description |
+|----------|-------------|
+| **Simultaneous Accepts** | Two entrepreneurs (in rare cases of system misconfiguration) attempt to accept the same order at the exact same time |
+| **Accept After Timeout** | An entrepreneur's accept request arrives after the timeout has expired and the order was already offered to the next venture |
+| **Network Delay** | Entrepreneur sends accept, network is slow, timeout expires during transit, accept arrives late |
+
+**Solution: First-Write-Wins with Atomic Transactions**
+
+The system uses atomic database operations to ensure only the first accepted offer succeeds:
+
+```
+ACCEPT REQUEST FLOW:
+
+1. START TRANSACTION (SERIALIZABLE isolation level)
+
+2. SELECT order FROM Order WHERE id = :orderId 
+   FOR UPDATE  ← Lock the row to prevent concurrent modifications
+
+3. VALIDATE current status:
+   - If status = 'CONFIRMED' → REJECT (already accepted by another)
+   - If status = 'EXPIRED' → REJECT (cascade already finished)
+   - If status = 'CANCELLED' → REJECT (tourist cancelled)
+   - If status = 'OFFER_PENDING' AND venture_id matches → PROCEED
+   - If status = 'OFFER_PENDING' AND venture_id does NOT match → REJECT (not your turn)
+
+4. UPDATE Order SET status = 'CONFIRMED', confirmed_venture_id = :ventureId
+
+5. UPDATE Cascade_Assignment SET offer_status = 'ACCEPTED', resolved_at = now()
+   WHERE order_id = :orderId AND venture_id = :ventureId
+
+6. CREATE notification for tourist: ORDER_CONFIRMED
+
+7. COMMIT TRANSACTION
+```
+
+**Response to Late Accepts:**
+
+| Scenario | Server Response | Message to Entrepreneur |
+|----------|-----------------|------------------------|
+| Order already CONFIRMED by another | HTTP 409 Conflict | "Este pedido ya fue confirmado por otro emprendimiento" |
+| Order EXPIRED | HTTP 410 Gone | "El pedido expiró y fue reasignado. Lo sentimos!" |
+| Order CANCELLED | HTTP 410 Gone | "El cliente canceló este pedido" |
+| Not your turn (OFFER_PENDING but different venture) | HTTP 409 Conflict | "No es tu turno de responder este pedido" |
+| **SUCCESS** | HTTP 200 OK | "¡Pedido confirmado! El cliente fue notificado" |
+
+**Database Constraint (Defense in Depth):**
+
+Add a partial unique index to prevent any possibility of double confirmation:
+
+```sql
+CREATE UNIQUE INDEX idx_order_single_confirmed 
+ON Order (id) 
+WHERE status = 'CONFIRMED';
+```
+
+This ensures at the database level that only ONE row can have status = 'CONFIRMED' for any order.
+
+### 3.1.3. Idempotency for Accept/Reject Operations **[POST-MVP]**
+
+To handle network retries and duplicate requests:
+
+```
+- Accept/Reject requests MUST include Idempotency-Key header
+- Server stores (order_id, idempotency_key, result) with 24-hour TTL
+- If duplicate request arrives:
+  - Return cached result without re-processing
+  - Do NOT execute cascade logic again
+```
+
+### 3.1.4. Cascade Snapshot (Frozen Rotation Order) **[POST-MVP]**
+
+> **Problem:** If an admin reorders ventures while an order is in cascade, the order might skip or double-visit ventures unexpectedly.
+
+**Solution:** When an order enters the cascade flow, snapshot the current `cascade_order`:
+
+```sql
+ALTER TABLE Order ADD COLUMN cascade_snapshot JSONB;
+
+-- When order is created:
+UPDATE Order SET cascade_snapshot = (
+    SELECT jsonb_object_agg(id, cascade_order)
+    FROM Venture 
+    WHERE catalog_type_id = :requiredTypeId
+);
+
+-- Cascade always reads from snapshot, not current table:
+SELECT * FROM jsonb_each_text(cascade_snapshot) ORDER BY value::int;
+```
+
 **Timeout Processor (Background Job):**
 
 A scheduled job runs every 30 seconds to process expired offers:
