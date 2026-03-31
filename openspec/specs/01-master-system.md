@@ -40,6 +40,8 @@ To achieve this, the system features an automated engine that replaces manual as
     *   Manages the master catalog separated *by project* [3]. Can apply a **Global Pause** to an item across an entire region [3].
     *   Consumes a Monthly Reporting Dashboard (KPIs for acceptance rates, timeouts, and completed services) [3].
 
+> **MVP Alternative:** In the absence of the Admin Panel, all data management (creating Projects, Catalog Types, Catalog Items, Ventures, Entrepreneurs, and Venture Schedules) is performed via **CLI seed scripts** (`bun run db:seed`). The seed script reads from a structured JSON/TS configuration file that can be versioned in the repository. This is sufficient for the initial deployment with a single project (Impenetrable) and a known set of entrepreneurs.
+
 ### 2.4. Autonomous Engine (Platform Backend) **[MVP]**
 *   **Intention:** Guarantee the fair distribution of work per region without human intervention [4].
 *   **Behavior:** 
@@ -1182,33 +1184,81 @@ CMD ["bun", "run", "dist/main.js"]
 
 ### 4.5.2 Database Migrations
 
-**Tool:** Knex.js or Prisma Migrate
+**Tool:** Drizzle Kit (`drizzle-kit`)
 
 **Migration Files Structure:**
 ```
-migrations/
-  20240101000000_create_users.sql
-  20240102000000_create_projects.sql
-  20240103000000_create_orders.sql
+drizzle/
+  0001_create_enums.sql
+  0002_create_project.sql
+  0003_create_users.sql
   ...
 ```
 
 **Commands:**
 ```bash
-# Run migrations
-bun run migrate
+# Generate migrations from schema changes
+bun run drizzle-kit generate
 
-# Rollback last migration
-bun run migrate:rollback
+# Apply migrations to database
+bun run drizzle-kit migrate
 
-# Create new migration
-bun run migrate:make create_new_table
+# Open Drizzle Studio (visual DB browser)
+bun run drizzle-kit studio
 ```
 
-**Seeding:**
+**Seeding (MVP — CLI Seed Script):**
+
+> **MVP Scope:** Since the Admin Panel is [POST-MVP], all initial data is loaded via CLI seed scripts. This covers: Projects, Catalog Types, Catalog Items, Ventures, Entrepreneurs, and Venture Schedules.
+
 ```bash
-# Seed database with initial data
+# Seed database with Impenetrable project data
 bun run db:seed
+
+# Seed with custom data file
+bun run db:seed --file seeds/impenetrable.ts
+```
+
+**Seed Data Structure (TypeScript):**
+```typescript
+// seeds/impenetrable.ts
+export const seedData = {
+  project: {
+    name: 'Impenetrable',
+    default_language: 'es',
+    supported_languages: ['es'],
+    cascade_timeout_minutes: 30,
+    max_cascade_attempts: 10,
+  },
+  catalogTypes: [
+    { name: 'Gastronomy', description: 'Local food experiences' },
+    { name: 'Guide Services', description: 'Guided tours and activities' },
+  ],
+  catalogItems: [
+    { type: 'Gastronomy', name_i18n: { es: 'Guiso' }, price: 15.00 },
+    { type: 'Gastronomy', name_i18n: { es: 'Empanadas' }, price: 12.00 },
+    // ... more items
+  ],
+  ventures: [
+    {
+      name: 'Parador Don Esteban',
+      catalogType: 'Gastronomy',
+      max_capacity: 20,
+      cascade_order: 1,
+      schedule: { mon: '08:00-20:00', tue: '08:00-20:00', /* ... */ },
+    },
+    // ... more ventures
+  ],
+  entrepreneurs: [
+    {
+      email: 'juan@example.com',
+      password: 'temp-password',  // Changed on first login
+      full_name: 'Juan Perez',
+      venture: 'Parador Don Esteban',
+    },
+    // ... more entrepreneurs
+  ],
+};
 ```
 
 ### 4.5.3 Environments
