@@ -2245,3 +2245,76 @@ This interface will be accessed primarily via Web (Desktop).
              - Default Language: dropdown
          - "Save Changes" button
 
+---
+
+## 7. Implementation Roadmap
+
+### 7.1 Team Context
+
+| Attribute | Value |
+|-----------|-------|
+| Team Size | 1 developer (solo) |
+| Availability | Part-time (~20 hours/week) |
+| Primary Experience | Backend: C++, Java, Go (20 years) |
+| Secondary Experience | React, React Native, TypeScript APIs (some experience) |
+
+> **Strategy (Frontend-First with Mocks):** Although the developer's strength is backend, to reduce product risk, the project will follow a "Frontend-First" approach. The `shared` package will define the data contracts (TypeScript interfaces, Zod validators). Then, the React Native mobile app will be built using **Zustand** to mock API responses. This allows rapid iteration and UX validation with the client using a real APK/Web app before investing time in the complex database and routing engine.
+
+### 7.2 MVP Implementation Timeline (Frontend-First)
+
+| Phase | Focus | Duration (Part-time) |
+|-------|-------|----------------------|
+| **Phase 1: Foundation (UI & Types)** | Monorepo Setup, Shared Types (Contracts), Expo Foundation, UI Components Package | 3-4 weeks |
+| **Phase 2: Mobile Mocks (UX Validation)** | Tourist Flow (Zustand mocks), Entrepreneur Flow (Zustand mocks), Client UX Iteration | 4-5 weeks |
+| **Phase 3: Core Backend (The Engine)** | DB Schema, Drizzle, Hono API (Auth, Catalog, Orders), Cascade Engine algorithm | 5-6 weeks |
+| **Phase 4: Integration & Polish** | Connect Mobile `fetch` to Hono API, Expo Push Notifications, DevOps, Staging | 3-5 weeks |
+| **Total** | | **~15-20 weeks (3.5-5 months)** |
+
+> **Note:** This timeline reduces the risk of building the wrong backend. Once Phase 2 is approved by the client, Phase 3 (the developer's strong suit) can be built rapidly against validated and locked-in data contracts.
+
+### 7.3 POST-MVP Roadmap
+
+```mermaid
+graph TD
+    MVP["✅ MVP Complete"] --> P2["P2 Race Conditions<br/>Atomic Transactions"]
+    MVP --> P3["P3 Offline Handling<br/>Reconnection Flow"]
+    MVP --> P8["P8 Token Rotation<br/>Single-use Refresh"]
+    MVP --> P6["P6 WhatsApp Notifications<br/>Business API"]
+    MVP --> P1["P1 Admin Panel<br/>Web Dashboard"]
+
+    P2 --> P4["P4 Idempotency<br/>Cache + TTL (requires Redis)"]
+    P2 --> P5["P5 Cascade Snapshot<br/>Frozen Rotation"]
+
+    P6 --> P9["P9 Morning Reminder<br/>Cron Job"]
+    P3 --> P7["P7 Polling Fallback<br/>Background Fetch"]
+
+    P1 --> P11["P11 Multi-Project<br/>Patagonia, etc."]
+    P11 --> P10["P10 i18n Active<br/>Multi-language"]
+
+    MVP --> P12["P12 E2E + Load Tests<br/>Playwright + k6"]
+```
+
+| Priority | Epic | Description |
+|----------|------|-------------|
+| **P0** | Race Condition Prevention | Atomic transactions, `FOR UPDATE` locks, partial unique index |
+| **P1** | Admin Panel | Web dashboard: CRUD catalog, ventures, entrepreneurs, KPIs |
+| **P1** | Offline Handling | Heartbeat, reconnection flow, lost offer notification |
+| **P1** | WhatsApp Notifications | WhatsApp Business API integration |
+| **P1** | Token Rotation | Single-use refresh tokens, revoke-all endpoint |
+| **P2** | Idempotency | Idempotency-Key header, cached responses, 24h TTL (requires Redis) |
+| **P2** | Cascade Snapshot | Frozen rotation order per order |
+| **P2** | Polling Fallback | 30s foreground, 5min background |
+| **P2** | Morning Reminder | Cron job: daily agenda via push + WhatsApp |
+| **P2** | E2E & Load Testing | Playwright E2E, k6 load testing |
+| **P3** | i18n Active | Multi-language support beyond Spanish |
+| **P3** | Multi-Project | Support for multiple conservation projects |
+
+### 7.4 Redis Dependency (POST-MVP Only)
+
+> **MVP does NOT require Redis.** Rate limiting uses in-memory storage, timeout processing uses `setInterval`, and sessions use JWT + PostgreSQL.
+
+Redis is introduced in POST-MVP for:
+- **Job Queues (BullMQ):** Reliable timeout processing with full cascade retry, morning reminders
+- **Idempotency Cache:** 24h TTL for request deduplication
+- **Distributed Rate Limiting:** Required when running multiple server instances
+- **Pub/Sub:** Real-time event distribution across instances
