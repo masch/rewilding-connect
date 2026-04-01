@@ -432,7 +432,7 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 #### 4.0.1 Project Structure (Bun Workspaces Monorepo)
 
 ```
-rewilding-connect/
+impenetrable-connect/
 ├── apps/
 │   ├── backend/                 # Hono API server (Bun runtime)
 │   │   ├── src/
