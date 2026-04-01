@@ -1540,6 +1540,17 @@ pg_dump -h $DB_HOST -U $DB_USER $DB_NAME | gzip > backup_$(date +%Y%m%d).sql.gz
 
 ---
 
+### 4.5.8 Repository & Workflow Rules (GitHub)
+
+To guarantee a clean git history and prevent broken builds on the main branch, the repository is configured with the following strict Branch Protection Rules for `main`:
+
+*   **No Direct Pushes:** All changes must go through a Pull Request matching standard branching conventions (e.g., `feat/`, `chore/`). Direct pushes to `main` are strictly forbidden.
+*   **PR and Automated Validation Required:** Pull Requests must pass all CI actions (linting, tests, build) before the "Merge" option is unlocked.
+*   **Linear History (Squash on Merge):** Rebase and Merge Commits are blocked. All Pull Requests must use the "Squash and Merge" methodology to compress branching history into a single, clean conventional commit on `main`.
+*   **Always Up-To-Date (`Require branches to be up to date before merging`):** GitHub requires the origin branch to fetch and merge the latest version of `main` to pass checks before a merge can be executed. This prevents "logical merge conflicts" where tests pass in the branch but break when integrated.
+
+---
+
 ## 4.6 Testing Strategy **[MVP]**
 
 > **MVP:** Only Unit Tests for Cascade Engine required. Integration/E2E are **[POST-MVP]**.
