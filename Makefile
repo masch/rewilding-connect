@@ -1,4 +1,4 @@
-.PHONY: setup install dev mobile mobile-android mobile-ios mobile-web backend clean lint
+.PHONY: setup install dev mobile mobile-android mobile-ios mobile-web backend clean lint format
 
 # Install all dependencies and setup monorepo symlinks
 setup:
@@ -13,6 +13,11 @@ install: setup
 # Run ESLint on mobile app
 lint:
 	cd apps/mobile && bun run lint
+
+# Format the entire monorepo
+format:
+	bun run format
+
 
 # ==========================================
 # 📱 MOBILE APP (Expo)

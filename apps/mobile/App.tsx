@@ -16,7 +16,7 @@ export default function App() {
       <Text style={styles.subtitle}>[Frontend-First Mock Mode]</Text>
 
       {isLoading && <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />}
-      
+
       {error && <Text style={styles.error}>{error}</Text>}
 
       {!isLoading && !error && (
@@ -27,8 +27,12 @@ export default function App() {
           renderItem={({ item }) => (
             <View style={styles.card}>
               <Text style={styles.projectName}>{item.name}</Text>
-              <Text style={styles.projectLang}>Default Language: {item.default_language.toUpperCase()}</Text>
-              <Text style={styles.projectStatus}>{item.is_active ? "🟢 Active" : "🔴 Inactive"}</Text>
+              <Text style={styles.projectLang}>
+                Default Language: {item.default_language.toUpperCase()}
+              </Text>
+              <Text style={styles.projectStatus}>
+                {item.is_active ? "🟢 Active" : "🔴 Inactive"}
+              </Text>
             </View>
           )}
           ListEmptyComponent={<Text>No projects found in mocks.</Text>}

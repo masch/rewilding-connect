@@ -24,18 +24,14 @@ metadata:
 ## Code Examples
 
 ```typescript
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
+import { Hono } from "hono";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
 
-const app = new Hono()
+const app = new Hono();
 
-app.post(
-  '/post',
-  zValidator('json', z.object({ title: z.string() })),
-  (c) => {
-    const data = c.req.valid('json')
-    return c.json({ success: true, title: data.title })
-  }
-)
+app.post("/post", zValidator("json", z.object({ title: z.string() })), (c) => {
+  const data = c.req.valid("json");
+  return c.json({ success: true, title: data.title });
+});
 ```
