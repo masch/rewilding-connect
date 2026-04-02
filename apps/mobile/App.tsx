@@ -1,19 +1,40 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-// Monorepo magic!
-import { OrderSchema } from '@repo/shared';
+import { useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, Text, View, ActivityIndicator, FlatList } from "react-native";
+import { useProjectStore } from "./src/stores/project.store";
 
 export default function App() {
+  const { projects, isLoading, error, fetchProjects } = useProjectStore();
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🌱 Impenetrable Connect</Text>
-      <Text style={styles.subtitle}>Workspace Test (@repo/shared):</Text>
+      <Text style={styles.title}>Impenetrable Connect</Text>
+      <Text style={styles.subtitle}>[Frontend-First Mock Mode]</Text>
+
+      {isLoading && <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />}
       
-      {/* Printing Zod schema keys to verify successful import */}
-      <Text style={styles.code}>
-        OrderSchema Keys: {Object.keys(OrderSchema.shape).join(', ')}
-      </Text>
-      
+      {error && <Text style={styles.error}>{error}</Text>}
+
+      {!isLoading && !error && (
+        <FlatList
+          data={projects}
+          keyExtractor={(item) => item.id.toString()}
+          style={styles.list}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.projectName}>{item.name}</Text>
+              <Text style={styles.projectLang}>Default Language: {item.default_language.toUpperCase()}</Text>
+              <Text style={styles.projectStatus}>{item.is_active ? "🟢 Active" : "🔴 Inactive"}</Text>
+            </View>
+          )}
+          ListEmptyComponent={<Text>No projects found in mocks.</Text>}
+        />
+      )}
+
       <StatusBar style="auto" />
     </View>
   );
@@ -22,26 +43,55 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    backgroundColor: "#f9f9f9",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 80,
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#1a1a1a",
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 10,
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 20,
+    fontStyle: "italic",
   },
-  code: {
-    backgroundColor: '#eee',
-    padding: 10,
-    borderRadius: 5,
-    fontFamily: 'monospace',
-    textAlign: 'center',
-  }
+  error: {
+    color: "red",
+    marginTop: 20,
+  },
+  list: {
+    width: "100%",
+  },
+  card: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#eee",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  projectName: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  projectLang: {
+    fontSize: 14,
+    color: "#555",
+  },
+  projectStatus: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginTop: 6,
+  },
 });
