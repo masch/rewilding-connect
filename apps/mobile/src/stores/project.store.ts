@@ -33,7 +33,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
       logger.error("Error fetching projects", err);
       set({ error: "Failed to fetch projects", isLoading: false });
     }
-
   },
 
   selectProject: async (id: number) => {
@@ -45,6 +44,5 @@ export const useProjectStore = create<ProjectState>((set) => ({
       logger.error(`Error fetching project with ID: ${id}`, err);
       set({ error: "Project not found", isLoading: false });
     }
-
   },
 }));

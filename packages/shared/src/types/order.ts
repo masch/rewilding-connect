@@ -26,7 +26,7 @@ export const OrderSchema = z.object({
   completed_at: z.date().nullable().optional(),
   confirmed_at: z.date().nullable().optional(),
   created_at: z.date(),
-  notify_whatsapp: z.boolean().default(false)
+  notify_whatsapp: z.boolean().default(false),
 });
 
 export interface Order extends z.infer<typeof OrderSchema> {}

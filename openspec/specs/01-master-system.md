@@ -3,7 +3,8 @@
 > **Tech Stack:** Bun (runtime) + Bun (package manager) — No npm/pnpm/yarn
 
 ## 1. System Overview
-The platform is a reservation application designed for local residents and entrepreneurs within conservation projects, starting with the IMPE (Impenetrable) region [1]. The main goal is to manage requests for activities and gastronomic services using a fair and equitable rotation logic [1]. 
+
+The platform is a reservation application designed for local residents and entrepreneurs within conservation projects, starting with the IMPE (Impenetrable) region [1]. The main goal is to manage requests for activities and gastronomic services using a fair and equitable rotation logic [1].
 
 To achieve this, the system features an automated engine that replaces manual assignments, routing orders in a way that allows the entrepreneur to accept or reject the service [1]. Additionally, it provides a frictionless experience so tourists can easily access the app to request their daily activities or meals [1].
 
@@ -14,39 +15,43 @@ To achieve this, the system features an automated engine that replaces manual as
 > **MVP Scope:** Tourist (2.1), Entrepreneur (2.2), Engine Core (2.4 without Morning Reminder)
 
 ### 2.1. Tourist (Zero Friction) **[MVP]**
-*   **Intention:** Request an activity or service quickly [1].
-*   **Behavior & UX Constraints:**
-    *   Eliminates the need for traditional user account creation to avoid friction [2].
-    *   Accesses the platform by scanning a QR code (which already contains the Project ID, e.g., Impenetrable) [2].
-    *   Identifies themselves using a mandatory "Alias" [2].
-    *   **Authentication (Tourist - No Login):** No login required. Access tokens (1 hour) + refresh tokens (30 days) bound to browser fingerprint. This replaces the previous 7-day JWT approach.
+
+- **Intention:** Request an activity or service quickly [1].
+- **Behavior & UX Constraints:**
+  - Eliminates the need for traditional user account creation to avoid friction [2].
+  - Accesses the platform by scanning a QR code (which already contains the Project ID, e.g., Impenetrable) [2].
+  - Identifies themselves using a mandatory "Alias" [2].
+  - **Authentication (Tourist - No Login):** No login required. Access tokens (1 hour) + refresh tokens (30 days) bound to browser fingerprint. This replaces the previous 7-day JWT approach.
 
 ### 2.2. Entrepreneur **[MVP]**
-*   **Intention:** Organize daily work and receive clients equitably through the rotation system [1, 2].
-*   **Behavior & UX Constraints:**
-    *   Each entrepreneur can manage ONE OR MORE Ventures through the Venture_Manager relationship. Multiple entrepreneurs can manage the same Venture (e.g., family business).
-    *   The entrepreneur can only offer items from the **Master Catalog** defined by the Admin for that Project, filtered by the Venture's Catalog_Type [2].
-    *   The engine routes orders to the entrepreneur's Venture, and from their dashboard, they can accept or reject the request [2].
-    *   **Calendar View:** The dashboard includes a simple calendar view to track assigned orders based on the service date and the specific time of day [2].
-    *   **Individual Pause (Stock Control):** Can pause a specific catalog item if they run out of ingredients [2].
-    *   **General Pause (Capacity Control):** Can disable the reception of all new requests if their business is full or closed [2].
-    *   *UX Priority:* The dashboard must be native-feeling on Android, avoiding complex menus. Actions like "Accept/Reject" must be prominent and error-proof.
+
+- **Intention:** Organize daily work and receive clients equitably through the rotation system [1, 2].
+- **Behavior & UX Constraints:**
+  - Each entrepreneur can manage ONE OR MORE Ventures through the Venture_Manager relationship. Multiple entrepreneurs can manage the same Venture (e.g., family business).
+  - The entrepreneur can only offer items from the **Master Catalog** defined by the Admin for that Project, filtered by the Venture's Catalog_Type [2].
+  - The engine routes orders to the entrepreneur's Venture, and from their dashboard, they can accept or reject the request [2].
+  - **Calendar View:** The dashboard includes a simple calendar view to track assigned orders based on the service date and the specific time of day [2].
+  - **Individual Pause (Stock Control):** Can pause a specific catalog item if they run out of ingredients [2].
+  - **General Pause (Capacity Control):** Can disable the reception of all new requests if their business is full or closed [2].
+  - _UX Priority:_ The dashboard must be native-feeling on Android, avoiding complex menus. Actions like "Accept/Reject" must be prominent and error-proof.
 
 ### 2.3. Impenetrable Admin **[POST-MVP]**
-*   **Intention:** Audit the ecosystems, enable local hosts, and control regional catalogs [3].
-*   **Behavior:**
-    *   Enables the entrepreneur in the platform [3].
-    *   *Evolution:* No longer performs manual request routing; this is now handled by the Backend Autonomous Engine [3].
-    *   Manages the master catalog separated *by project* [3]. Can apply a **Global Pause** to an item across an entire region [3].
-    *   Consumes a Monthly Reporting Dashboard (KPIs for acceptance rates, timeouts, and completed services) [3].
+
+- **Intention:** Audit the ecosystems, enable local hosts, and control regional catalogs [3].
+- **Behavior:**
+  - Enables the entrepreneur in the platform [3].
+  - _Evolution:_ No longer performs manual request routing; this is now handled by the Backend Autonomous Engine [3].
+  - Manages the master catalog separated _by project_ [3]. Can apply a **Global Pause** to an item across an entire region [3].
+  - Consumes a Monthly Reporting Dashboard (KPIs for acceptance rates, timeouts, and completed services) [3].
 
 > **MVP Alternative:** In the absence of the Admin Panel, all data management (creating Projects, Catalog Types, Catalog Items, Ventures, Entrepreneurs, and Venture Schedules) is performed via **CLI seed scripts** (`bun run db:seed`). The seed script reads from a structured JSON/TS configuration file that can be versioned in the repository. This is sufficient for the initial deployment with a single project (Impenetrable) and a known set of entrepreneurs.
 
 ### 2.4. Autonomous Engine (Platform Backend) **[MVP]**
-*   **Intention:** Guarantee the fair distribution of work per region without human intervention [4].
-*   **Behavior:** 
-    *   **Router:** Executes the Cascading Routing Algorithm, isolating the rotation lists for each Project [4].
-    *   **Morning Reminder (Cron Job):** **[POST-MVP]** Runs a scheduled task early in the morning to find confirmed orders for the current day and sends the entrepreneur an automated reminder (via WhatsApp/Email) with their daily agenda [4].
+
+- **Intention:** Guarantee the fair distribution of work per region without human intervention [4].
+- **Behavior:**
+  - **Router:** Executes the Cascading Routing Algorithm, isolating the rotation lists for each Project [4].
+  - **Morning Reminder (Cron Job):** **[POST-MVP]** Runs a scheduled task early in the morning to find confirmed orders for the current day and sends the entrepreneur an automated reminder (via WhatsApp/Email) with their daily agenda [4].
 
 ---
 
@@ -57,6 +62,7 @@ To achieve this, the system features an automated engine that replaces manual as
 > **Note:** Cascade iterates through **Ventures** (sorted by cascade_order). The engine infers the required Catalog_Type from `order.catalog_item_id` → `Catalog_Item.catalog_type_id`, then filters ventures that match that type.
 
 When a tourist submits a request:
+
 1.  **Order Init**: Order is created with status `SEARCHING`. The engine starts iterating through **Ventures** (filtered by Catalog_Type) sorted by `cascade_order` (ascending).
 2.  **Filter Phase**: For each venture in rotation order:
     - Skip if `venture.is_active = false` → record `skip_reason = VENTURE_INACTIVE`
@@ -87,6 +93,7 @@ When a tourist submits a request:
 > **MVP Scope:** Uses a lightweight in-process timer (`setInterval` every 30 seconds) running inside the Hono server. When an offer times out, the engine **auto-assigns** the order to the next available venture — no additional offer/wait cycle.
 
 **MVP Timeout Flow:**
+
 1. `setInterval` runs every 30 seconds inside Hono process
 2. Scan `Cascade_Assignment` where `offer_status = WAITING_FOR_RESPONSE` AND `response_deadline < now()`
 3. Mark timed-out assignment as `offer_status = TIMEOUT`
@@ -109,11 +116,11 @@ When a tourist submits a request:
 
 **Race Condition Scenarios:**
 
-| Scenario | Description |
-|----------|-------------|
-| **Simultaneous Accepts** | Two entrepreneurs (in rare cases of system misconfiguration) attempt to accept the same order at the exact same time |
+| Scenario                 | Description                                                                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Simultaneous Accepts** | Two entrepreneurs (in rare cases of system misconfiguration) attempt to accept the same order at the exact same time         |
 | **Accept After Timeout** | An entrepreneur's accept request arrives after the timeout has expired and the order was already offered to the next venture |
-| **Network Delay** | Entrepreneur sends accept, network is slow, timeout expires during transit, accept arrives late |
+| **Network Delay**        | Entrepreneur sends accept, network is slow, timeout expires during transit, accept arrives late                              |
 
 **Solution: First-Write-Wins with Atomic Transactions**
 
@@ -124,7 +131,7 @@ ACCEPT REQUEST FLOW:
 
 1. START TRANSACTION (SERIALIZABLE isolation level)
 
-2. SELECT order FROM Order WHERE id = :orderId 
+2. SELECT order FROM Order WHERE id = :orderId
    FOR UPDATE  ← Lock the row to prevent concurrent modifications
 
 3. VALIDATE current status:
@@ -146,21 +153,21 @@ ACCEPT REQUEST FLOW:
 
 **Response to Late Accepts:**
 
-| Scenario | Server Response | Message to Entrepreneur |
-|----------|-----------------|------------------------|
-| Order already CONFIRMED by another | HTTP 409 Conflict | "Este pedido ya fue confirmado por otro emprendimiento" |
-| Order EXPIRED | HTTP 410 Gone | "El pedido expiró y fue reasignado. Lo sentimos!" |
-| Order CANCELLED | HTTP 410 Gone | "El cliente canceló este pedido" |
-| Not your turn (OFFER_PENDING but different venture) | HTTP 409 Conflict | "No es tu turno de responder este pedido" |
-| **SUCCESS** | HTTP 200 OK | "¡Pedido confirmado! El cliente fue notificado" |
+| Scenario                                            | Server Response   | Message to Entrepreneur                                 |
+| --------------------------------------------------- | ----------------- | ------------------------------------------------------- |
+| Order already CONFIRMED by another                  | HTTP 409 Conflict | "Este pedido ya fue confirmado por otro emprendimiento" |
+| Order EXPIRED                                       | HTTP 410 Gone     | "El pedido expiró y fue reasignado. Lo sentimos!"       |
+| Order CANCELLED                                     | HTTP 410 Gone     | "El cliente canceló este pedido"                        |
+| Not your turn (OFFER_PENDING but different venture) | HTTP 409 Conflict | "No es tu turno de responder este pedido"               |
+| **SUCCESS**                                         | HTTP 200 OK       | "¡Pedido confirmado! El cliente fue notificado"         |
 
 **Database Constraint (Defense in Depth):**
 
 Add a partial unique index to prevent any possibility of double confirmation:
 
 ```sql
-CREATE UNIQUE INDEX idx_order_single_confirmed 
-ON Order (id) 
+CREATE UNIQUE INDEX idx_order_single_confirmed
+ON Order (id)
 WHERE status = 'CONFIRMED';
 ```
 
@@ -190,7 +197,7 @@ ALTER TABLE Order ADD COLUMN cascade_snapshot JSONB;
 -- When order is created:
 UPDATE Order SET cascade_snapshot = (
     SELECT jsonb_object_agg(id, cascade_order)
-    FROM Venture 
+    FROM Venture
     WHERE catalog_type_id = :requiredTypeId
 );
 
@@ -227,45 +234,52 @@ When an offer expires due to timeout:
 
 **Offline Detection Strategy:**
 
-| Scenario | Detection | Action |
-|----------|-----------|--------|
-| App in foreground | Heartbeat every 30s | Mark as ONLINE |
-| App in background | Push token active | Mark as PENDING |
-| App closed | No heartbeat > 2 minutes | Mark as OFFLINE |
-| Network error on accept | HTTP 0 / timeout | Show retry UI, queue locally |
+| Scenario                | Detection                | Action                       |
+| ----------------------- | ------------------------ | ---------------------------- |
+| App in foreground       | Heartbeat every 30s      | Mark as ONLINE               |
+| App in background       | Push token active        | Mark as PENDING              |
+| App closed              | No heartbeat > 2 minutes | Mark as OFFLINE              |
+| Network error on accept | HTTP 0 / timeout         | Show retry UI, queue locally |
 
 **Entrepreneur Dashboard - Status Indicators:**
 
 The dashboard MUST show clear visual states:
 
-| State | Color | Message |
-|-------|-------|---------|
-| `WAITING_FOR_RESPONSE` | Yellow | "Esperando tu respuesta..." |
-| `ACCEPTED` | Green | "¡Confirmado! El cliente fue notificado" |
-| `REJECTED` | Gray | "Rechazaste este pedido" |
-| `TIMEOUT` | Red | "Expirado - El pedido fue reenviado" |
-| `EXPIRED` (final) | Red | "Lo sentimos, no hay disponibilidad" |
+| State                  | Color  | Message                                  |
+| ---------------------- | ------ | ---------------------------------------- |
+| `WAITING_FOR_RESPONSE` | Yellow | "Esperando tu respuesta..."              |
+| `ACCEPTED`             | Green  | "¡Confirmado! El cliente fue notificado" |
+| `REJECTED`             | Gray   | "Rechazaste este pedido"                 |
+| `TIMEOUT`              | Red    | "Expirado - El pedido fue reenviado"     |
+| `EXPIRED` (final)      | Red    | "Lo sentimos, no hay disponibilidad"     |
 
 ### 3.2. Internationalization (i18n) **[POST-MVP]**
 
 > **MVP:** Only Spanish (`es`) is required. i18n structure in place but not active.
-*   Dynamic Catalog data (dish and activity names) are stored in the database using PostgreSQL's native `JSONB` type [6].
-*   This allows the system to quickly extract translations (e.g., `{"es": "Guiso", "en": "Stew"}) based on the tourist's browser `Accept-Language` header [6].
+
+- Dynamic Catalog data (dish and activity names) are stored in the database using PostgreSQL's native `JSONB` type [6].
+- This allows the system to quickly extract translations (e.g., `{"es": "Guiso", "en": "Stew"}) based on the tourist's browser `Accept-Language` header [6].
 
 **Fallback Strategy:**
+
 1. Use the language from `Accept-Language` header (e.g., "es", "en", "fr")
 2. If the requested language is not available, fall back to the project's `default_language`
 3. If the default language is also not available, use the first available language in the translation object
 4. If no translation exists at all, return the key (e.g., "ORDER_CONFIRMED") as the message
 
 **Translation Helper:**
+
 ```typescript
-function getTranslation(translations: Record<string, string>, acceptLanguage: string, defaultLang: string): string {
-    const lang = acceptLanguage.split(',')[0].slice(0, 2); // 'es' from 'es,en;q=0.9'
-    
-    if (translations[lang]) return translations[lang];
-    if (translations[defaultLang]) return translations[defaultLang];
-    return Object.values(translations)[0] || lang; // First available or lang code
+function getTranslation(
+  translations: Record<string, string>,
+  acceptLanguage: string,
+  defaultLang: string,
+): string {
+  const lang = acceptLanguage.split(",")[0].slice(0, 2); // 'es' from 'es,en;q=0.9'
+
+  if (translations[lang]) return translations[lang];
+  if (translations[defaultLang]) return translations[defaultLang];
+  return Object.values(translations)[0] || lang; // First available or lang code
 }
 ```
 
@@ -277,18 +291,18 @@ function getTranslation(translations: Record<string, string>, acceptLanguage: st
 
 When a tourist creates an order, the following validations must pass:
 
-| Field | Validation Rule | Error Message |
-|-------|----------------|--------------|
-| `service_date` | Required | "Date is required" |
-| `service_date` | Must be >= TODAY | "Cannot order for past dates" |
-| `service_date` | Must be <= TODAY + 30 days | "Cannot order more than 30 days in advance" |
-| `guest_count` | Required | "Number of guests is required" |
-| `guest_count` | Must be >= 1 | "At least 1 guest is required" |
-| `guest_count` | Must be <= 100 | "Maximum 100 guests per order" |
-| `items` | Required, array, min 1, max 1 | "Only 1 item per order" |
-| `items[].catalog_item_id` | Required | "Item is required" |
-| `items[].quantity` | Required, min 1 | "Quantity must be at least 1" |
-| `time_of_day_id` | Required | "Time of day is required" |
+| Field                     | Validation Rule               | Error Message                               |
+| ------------------------- | ----------------------------- | ------------------------------------------- |
+| `service_date`            | Required                      | "Date is required"                          |
+| `service_date`            | Must be >= TODAY              | "Cannot order for past dates"               |
+| `service_date`            | Must be <= TODAY + 30 days    | "Cannot order more than 30 days in advance" |
+| `guest_count`             | Required                      | "Number of guests is required"              |
+| `guest_count`             | Must be >= 1                  | "At least 1 guest is required"              |
+| `guest_count`             | Must be <= 100                | "Maximum 100 guests per order"              |
+| `items`                   | Required, array, min 1, max 1 | "Only 1 item per order"                     |
+| `items[].catalog_item_id` | Required                      | "Item is required"                          |
+| `items[].quantity`        | Required, min 1               | "Quantity must be at least 1"               |
+| `time_of_day_id`          | Required                      | "Time of day is required"                   |
 
 #### 3.3.2 Venture Availability Validations (Filter Phase)
 
@@ -296,28 +310,29 @@ When a tourist creates an order, the following validations must pass:
 
 Before offering an order to a venture, the engine validates:
 
-| Check | Condition | Skip Reason |
-|-------|-----------|-------------|
-| Venture Active | `venture.is_active = true` | `VENTURE_INACTIVE` |
-| General Pause | `venture.is_paused = false` | `GENERAL_PAUSE` |
-| Capacity | `(current_occupation + order.guest_count) <= venture.max_capacity` | `CAPACITY_EXCEEDED` |
+| Check          | Condition                                                          | Skip Reason         |
+| -------------- | ------------------------------------------------------------------ | ------------------- |
+| Venture Active | `venture.is_active = true`                                         | `VENTURE_INACTIVE`  |
+| General Pause  | `venture.is_paused = false`                                        | `GENERAL_PAUSE`     |
+| Capacity       | `(current_occupation + order.guest_count) <= venture.max_capacity` | `CAPACITY_EXCEEDED` |
 
 > **⚠️ IMPORTANT — Capacity Unit:** Capacity is ALWAYS measured by **number of guests (personas/guest_count)**, NEVER by number of items or dishes ordered. A Venture with `max_capacity = 20` can serve 20 **people** regardless of how many dishes each person orders. All capacity checks (`CAPACITY_EXCEEDED`), occupation calculations (`getCurrentOccupation`), and calendar displays (`occupied_seats / max_capacity`) use `guest_count` as the unit.
-| Individual Pause | `catalog_item_id NOT IN (SELECT catalog_item_id FROM venture_paused_item WHERE venture_id = venture.id)` | `INDIVIDUAL_PAUSE` |
-| **Opening Hours** | Order time within `venture.opening_hours` for the day | `CLOSED_THAT_DAY` |
+> | Individual Pause | `catalog_item_id NOT IN (SELECT catalog_item_id FROM venture_paused_item WHERE venture_id = venture.id)` | `INDIVIDUAL_PAUSE` |
+> | **Opening Hours** | Order time within `venture.opening_hours` for the day | `CLOSED_THAT_DAY` |
 
 **Opening Hours Logic:**
+
 ```typescript
 function isVentureOpen(venture: Venture, serviceDate: Date, timeOfDayId: number): boolean {
-    const dayOfWeek = getDayOfWeek(serviceDate); // 'mon', 'tue', ...
-    const hours = venture.opening_hours[dayOfWeek];
-    
-    if (!hours) return false; // Venture is closed that day
-    
-    const [openTime, closeTime] = hours.split('-');
-    const orderTime = getStartTimeForTimeOfDay(timeOfDayId); // e.g., '12:00' for LUNCH
-    
-    return orderTime >= openTime && orderTime < closeTime;
+  const dayOfWeek = getDayOfWeek(serviceDate); // 'mon', 'tue', ...
+  const hours = venture.opening_hours[dayOfWeek];
+
+  if (!hours) return false; // Venture is closed that day
+
+  const [openTime, closeTime] = hours.split("-");
+  const orderTime = getStartTimeForTimeOfDay(timeOfDayId); // e.g., '12:00' for LUNCH
+
+  return orderTime >= openTime && orderTime < closeTime;
 }
 ```
 
@@ -334,6 +349,7 @@ SEARCHING ──offer──> OFFER_PENDING ──accept──> CONFIRMED ──c
 ```
 
 **State Transition Rules:**
+
 - `SEARCHING` → `OFFER_PENDING`: When engine offers order to a venture (intermediate state prevents race conditions)
 - `OFFER_PENDING` → `CONFIRMED`: When linked entrepreneur accepts for their venture
 - `OFFER_PENDING` → `SEARCHING`: When venture rejects or times out (cascade continues to next venture)
@@ -350,20 +366,21 @@ SEARCHING ──offer──> OFFER_PENDING ──accept──> CONFIRMED ──c
 
 Complete list of skip reasons in `Cascade_Assignment.skip_reason`:
 
-| Reason | Description |
-|--------|-------------|
-| `null` | Venture was offered (not skipped) |
-| `GENERAL_PAUSE` | Venture has is_paused = true |
-| `INDIVIDUAL_PAUSE` | catalog_item_id is in Venture_Paused_Item for this venture |
-| `CAPACITY_EXCEEDED` | (current_occupation + guest_count) > venture.max_capacity |
-| `CLOSED_THAT_DAY` | Venture is closed on the requested day (not in opening_hours) |
-| `OUTSIDE_OPENING_HOURS` | Requested time is outside venture's operating hours |
-| `VENTURE_INACTIVE` | Venture.is_active = false |
-| `NOT_OFFERED` | Venture was not in the rotation list |
+| Reason                  | Description                                                   |
+| ----------------------- | ------------------------------------------------------------- |
+| `null`                  | Venture was offered (not skipped)                             |
+| `GENERAL_PAUSE`         | Venture has is_paused = true                                  |
+| `INDIVIDUAL_PAUSE`      | catalog_item_id is in Venture_Paused_Item for this venture    |
+| `CAPACITY_EXCEEDED`     | (current_occupation + guest_count) > venture.max_capacity     |
+| `CLOSED_THAT_DAY`       | Venture is closed on the requested day (not in opening_hours) |
+| `OUTSIDE_OPENING_HOURS` | Requested time is outside venture's operating hours           |
+| `VENTURE_INACTIVE`      | Venture.is_active = false                                     |
+| `NOT_OFFERED`           | Venture was not in the rotation list                          |
 
 #### 3.3.5 Order Duplication Prevention
 
 A tourist cannot have multiple active orders for the same:
+
 - `service_date` + `time_of_day_id`
 
 If such order exists with status `SEARCHING` or `CONFIRMED`, the system returns error: "You already have an order for this time slot"
@@ -385,8 +402,8 @@ function getCurrentOccupation(ventureId: number, serviceDate: Date, timeOfDayId:
 
 async function canAcceptOrder(venture: Venture, order: Order): Promise<boolean> {
     const currentOccupation = await getCurrentOccupation(
-        venture.id, 
-        order.service_date, 
+        venture.id,
+        order.service_date,
         order.time_of_day_id
     );
     // Check if adding new guests would exceed capacity
@@ -395,21 +412,30 @@ async function canAcceptOrder(venture: Venture, order: Order): Promise<boolean> 
 ```
 
 **Cascade Filter Phase**: When the engine evaluates a venture, it calculates current occupation:
+
 ```typescript
 if (currentOccupation + order.guest_count > venture.max_capacity) {
-    return { skip: true, reason: 'CAPACITY_EXCEEDED', currentOccupation, maxCapacity: venture.max_capacity };
+  return {
+    skip: true,
+    reason: "CAPACITY_EXCEEDED",
+    currentOccupation,
+    maxCapacity: venture.max_capacity,
+  };
 }
 ```
 
 **Calendar Response** now includes occupation details:
+
 ```json
 {
-  "time_slots": [{
-    "time_of_day_id": 1,
-    "current_occupation": 12,
-    "max_capacity": 20,
-    "available_seats": 8
-  }]
+  "time_slots": [
+    {
+      "time_of_day_id": 1,
+      "current_occupation": 12,
+      "max_capacity": 20,
+      "available_seats": 8
+    }
+  ]
 }
 ```
 
@@ -419,15 +445,15 @@ if (currentOccupation + order.guest_count > venture.max_capacity) {
 
 To meet the requirement of running smoothly on low-end devices while serving Web and Android users efficiently:
 
-*   **Frontend Framework:** **React Native using Expo**. This allows writing a single codebase that compiles into a lightweight Android application (APK/AAB) and a responsive Web application.
-*   **Performance Constraint:** Avoid heavy UI animations and large client-side bundle sizes to ensure performance on low-end hardware.
-*   **Runtime:** **Bun**. High-performance JavaScript/TypeScript runtime used as both the package manager (`bun install`) and the execution environment (`bun run`). Chosen for native TypeScript support without transpilation, built-in test runner, and superior performance over Node.js for this workload.
-*   **Backend Framework:** **Hono** (on Bun). Ultralight (~14KB, zero deps) web framework built on Web Standards (Request/Response). Runs natively on `Bun.serve()` without compatibility layers, providing Express-like DX (routing, middleware, path params) at near-raw performance. Enables sharing TypeScript interfaces and type definitions between frontend and backend for end-to-end type safety.
-*   **ORM:** **Drizzle ORM**. Type-safe SQL-first ORM with zero runtime overhead. Schema defined in TypeScript with `pgEnum`, `pgTable`, and type inference via `$inferSelect`/`$inferInsert`.
-*   **Database:** PostgreSQL (ERD defined below).
-*   **State Management:** **Zustand**. Minimal, performant state management for React Native.
-*   **Styling:** **NativeWind v5** + Tailwind CSS v4 + `react-native-css`. CSS-first configuration with `@theme` tokens in CSS (not JS config). Components wrapped with `useCssElement` for `className` support.
-*   **Monorepo:** **Bun Workspaces**. Single repository with multiple projects sharing types and validators.
+- **Frontend Framework:** **React Native using Expo**. This allows writing a single codebase that compiles into a lightweight Android application (APK/AAB) and a responsive Web application.
+- **Performance Constraint:** Avoid heavy UI animations and large client-side bundle sizes to ensure performance on low-end hardware.
+- **Runtime:** **Bun**. High-performance JavaScript/TypeScript runtime used as both the package manager (`bun install`) and the execution environment (`bun run`). Chosen for native TypeScript support without transpilation, built-in test runner, and superior performance over Node.js for this workload.
+- **Backend Framework:** **Hono** (on Bun). Ultralight (~14KB, zero deps) web framework built on Web Standards (Request/Response). Runs natively on `Bun.serve()` without compatibility layers, providing Express-like DX (routing, middleware, path params) at near-raw performance. Enables sharing TypeScript interfaces and type definitions between frontend and backend for end-to-end type safety.
+- **ORM:** **Drizzle ORM**. Type-safe SQL-first ORM with zero runtime overhead. Schema defined in TypeScript with `pgEnum`, `pgTable`, and type inference via `$inferSelect`/`$inferInsert`.
+- **Database:** PostgreSQL (ERD defined below).
+- **State Management:** **Zustand**. Minimal, performant state management for React Native.
+- **Styling:** **NativeWind v5** + Tailwind CSS v4 + `react-native-css`. CSS-first configuration with `@theme` tokens in CSS (not JS config). Components wrapped with `useCssElement` for `className` support.
+- **Monorepo:** **Bun Workspaces**. Single repository with multiple projects sharing types and validators.
 
 #### 4.0.1 Project Structure (Bun Workspaces Monorepo)
 
@@ -507,32 +533,32 @@ apps/mobile  ──imports──► packages/ui     (CSS-wrapped components, tok
 graph TD
     A["📦 Monorepo Setup<br/>Bun Workspaces"] --> B["🔧 Shared Package<br/>Types + Validators + Constants"]
     A --> C["🗄️ DB Schema<br/>Drizzle + Migrations"]
-    
+
     B --> D["🔐 Auth System<br/>Tourist + Entrepreneur"]
     C --> D
-    
+
     B --> E["📋 Catalog & Ventures<br/>Public API"]
     C --> E
-    
+
     D --> F["🛒 Orders API<br/>CRUD + Validations"]
     E --> F
-    
+
     F --> G["⚡ Cascade Engine<br/>Core Algorithm"]
     C --> G
-    
+
     G --> H["🔔 Push Notifications<br/>Expo Push"]
-    
+
     D --> I["📱 Mobile - Tourist Flow<br/>Welcome + Catalog + Orders"]
     E --> I
     F --> I
-    
+
     D --> J["📱 Mobile - Entrepreneur Flow<br/>Login + Dashboard + Calendar"]
     F --> J
     G --> J
     H --> J
-    
+
     G --> K["⏰ Timeout Processor<br/>setInterval - MVP"]
-    
+
     B --> L["🌱 Seed Scripts<br/>CLI Data Loading"]
     C --> L
 ```
@@ -541,40 +567,40 @@ graph TD
 
 The following agent skills are installed to enforce patterns and best practices during development. These are NOT runtime dependencies — they guide the AI coding assistant.
 
-| Skill | Purpose | Applies To |
-|-------|---------|------------|
-| `drizzle-orm` | Schema patterns, relations, transactions, migration workflow | Backend DB layer |
-| `hono` | Routing, middleware (jwt, cors, zValidator), RPC client, `app.request()` testing | Backend API layer |
-| `expo-tailwind-setup` | NativeWind v5 + TW v4 + `react-native-css` wrapper setup | Mobile styling |
-| `expo-deployment` | EAS Build, Submit, Workflows for CI/CD | DevOps |
-| `expo-dev-client` | Development builds for TestFlight (only when custom native code needed) | DevOps |
-| `frontend-design` | Bold aesthetic direction — NO generic AI aesthetics | Mobile UI design |
-| `vercel-react-native-skills` | 38 RN best practices: FlashList, native navigators, Pressable, GPU animations | Mobile performance |
-| `web-design-guidelines` | UI audit against Vercel Web Interface Guidelines (a11y, usability) | Mobile QA |
+| Skill                        | Purpose                                                                          | Applies To         |
+| ---------------------------- | -------------------------------------------------------------------------------- | ------------------ |
+| `drizzle-orm`                | Schema patterns, relations, transactions, migration workflow                     | Backend DB layer   |
+| `hono`                       | Routing, middleware (jwt, cors, zValidator), RPC client, `app.request()` testing | Backend API layer  |
+| `expo-tailwind-setup`        | NativeWind v5 + TW v4 + `react-native-css` wrapper setup                         | Mobile styling     |
+| `expo-deployment`            | EAS Build, Submit, Workflows for CI/CD                                           | DevOps             |
+| `expo-dev-client`            | Development builds for TestFlight (only when custom native code needed)          | DevOps             |
+| `frontend-design`            | Bold aesthetic direction — NO generic AI aesthetics                              | Mobile UI design   |
+| `vercel-react-native-skills` | 38 RN best practices: FlashList, native navigators, Pressable, GPU animations    | Mobile performance |
+| `web-design-guidelines`      | UI audit against Vercel Web Interface Guidelines (a11y, usability)               | Mobile QA          |
 
 ### 4.1 Security Requirements
 
-*   **Authentication - Tourist (No Login):**
-    *   No traditional login — token generated on first visit
-    *   Browser fingerprint binds session to browser instance
-    *   Access token: 1 hour expiry
-    *   Refresh token: 30 days, opaque
+- **Authentication - Tourist (No Login):**
+  - No traditional login — token generated on first visit
+  - Browser fingerprint binds session to browser instance
+  - Access token: 1 hour expiry
+  - Refresh token: 30 days, opaque
 
-*   **Authentication - Entrepreneur/Admin (Password Login):**
-    *   JWT-based authentication with email/password
-    *   Tokens stored in httpOnly cookies (web) or secure storage (mobile)
-    *   Password hashed with bcrypt or argon2 (cost factor 10+)
+- **Authentication - Entrepreneur/Admin (Password Login):**
+  - JWT-based authentication with email/password
+  - Tokens stored in httpOnly cookies (web) or secure storage (mobile)
+  - Password hashed with bcrypt or argon2 (cost factor 10+)
 
-*   **Tourist Device Binding & Security **[MVP]****
+- **Tourist Device Binding & Security **[MVP]\*\*\*\*
 
 > **Note:** Tourists access via **Web** (React Native Expo web), NOT a native app. This section applies ONLY to tourists.
 
 > **MVP Implementation:**
 
-| Layer | Protection | Implementation |
-|-------|------------|----------------|
+| Layer                   | Protection                     | Implementation                                                     |
+| ----------------------- | ------------------------------ | ------------------------------------------------------------------ |
 | **Browser Fingerprint** | Tie tokens to browser instance | JWT contains `device_fingerprint` (User-Agent + Screen + Timezone) |
-| **Refresh Token** | 30-day opaque token | Stored in localStorage, sent on refresh requests |
+| **Refresh Token**       | 30-day opaque token            | Stored in localStorage, sent on refresh requests                   |
 
 **Token Structure (MVP - Web):**
 
@@ -605,10 +631,10 @@ function generateBrowserFingerprint(): string {
   const components = [
     navigator.userAgent,
     navigator.language,
-    screen.width + 'x' + screen.height,
+    screen.width + "x" + screen.height,
     Intl.DateTimeFormat().resolvedOptions().timeZone,
   ];
-  return sha256(components.join('|'));
+  return sha256(components.join("|"));
 }
 ```
 
@@ -670,12 +696,12 @@ Response (200):
 ```
 
 **Password Security:**
-    *   Global: 100 requests/minute per IP
-    *   Order creation: 10 orders/minute per device token
-    *   Auth endpoints: 5 attempts/minute per IP
-*   **Account Lockout:** After 5 failed login attempts, lock account for 15 minutes.
-*   **Input Validation:** All inputs sanitized. SQL injection prevented via parameterized queries (Knex/Prisma). XSS prevented via output encoding.
-*   **API Security:** All endpoints require authentication except: `POST /auth/login`, `POST /auth/tourist/create`, `POST /auth/tourist/refresh`, `POST /auth/tourist/revoke`, `POST /orders` (tourist), `GET /catalog`, `GET /ventures`.
+_ Global: 100 requests/minute per IP
+_ Order creation: 10 orders/minute per device token \* Auth endpoints: 5 attempts/minute per IP
+
+- **Account Lockout:** After 5 failed login attempts, lock account for 15 minutes.
+- **Input Validation:** All inputs sanitized. SQL injection prevented via parameterized queries (Knex/Prisma). XSS prevented via output encoding.
+- **API Security:** All endpoints require authentication except: `POST /auth/login`, `POST /auth/tourist/create`, `POST /auth/tourist/refresh`, `POST /auth/tourist/revoke`, `POST /orders` (tourist), `GET /catalog`, `GET /ventures`.
 
 ### 4.2 API Design
 
@@ -685,15 +711,16 @@ All endpoints follow RESTful conventions. Base URL: `https://api.elimpenetrable.
 
 #### 4.2.1 Public Endpoints (No Authentication Required) **[MVP]**
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/tourist/create` | Create tourist identity with alias |
-| POST | `/auth/tourist/refresh` | Refresh tourist JWT token |
-| POST | `/auth/tourist/revoke` | Revoke tourist JWT token (logout/lost device) |
-| GET | `/catalog` | Get all catalog items for a project |
-| GET | `/ventures` | List ventures (businesses) for a project |
+| Method | Endpoint                | Description                                   |
+| ------ | ----------------------- | --------------------------------------------- |
+| POST   | `/auth/tourist/create`  | Create tourist identity with alias            |
+| POST   | `/auth/tourist/refresh` | Refresh tourist JWT token                     |
+| POST   | `/auth/tourist/revoke`  | Revoke tourist JWT token (logout/lost device) |
+| GET    | `/catalog`              | Get all catalog items for a project           |
+| GET    | `/ventures`             | List ventures (businesses) for a project      |
 
 **POST /auth/tourist/create**
+
 ```json
 Request:
 {
@@ -716,6 +743,7 @@ Response (201):
 ```
 
 **POST /auth/tourist/refresh**
+
 ```json
 Request:
 {
@@ -732,6 +760,7 @@ Response (200):
 ```
 
 **POST /auth/tourist/revoke**
+
 ```json
 Request:
 {
@@ -748,6 +777,7 @@ Response (200):
 > **Note:** Use this endpoint when tourist loses device or wants to logout. Can revoke by refresh_token (specific) or device_fingerprint (all tokens for that device). This replaces the 7-day JWT approach.
 
 **GET /catalog**
+
 ```json
 Query Parameters:
 - project_id (required): integer "Filter by project (Impenetrable Chaco, etc.)"
@@ -772,6 +802,7 @@ Response (200):
 ```
 
 **GET /ventures**
+
 ```json
 Query Parameters:
 - project_id (required): integer "Filter by project"
@@ -794,15 +825,16 @@ Response (200):
 
 #### 4.2.2 Tourist Endpoints (Auth Required) **[MVP]**
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/orders` | Create a new order |
-| GET | `/orders` | Get tourist's orders |
-| GET | `/orders/:id` | Get order details |
+| Method | Endpoint      | Description                      |
+| ------ | ------------- | -------------------------------- |
+| POST   | `/orders`     | Create a new order               |
+| GET    | `/orders`     | Get tourist's orders             |
+| GET    | `/orders/:id` | Get order details                |
 | DELETE | `/orders/:id` | Cancel order (only if SEARCHING) |
-| PUT | `/profile` | Update tourist profile |
+| PUT    | `/profile`    | Update tourist profile           |
 
 **POST /orders**
+
 ```json
 Headers:
 - Idempotency-Key: "uuid (required, unique per request)"
@@ -826,6 +858,7 @@ Response (201):
 ```
 
 **GET /orders**
+
 ```json
 Query Parameters:
 - status: "SEARCHING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "EXPIRED" (optional)
@@ -848,6 +881,7 @@ Response (200):
 ```
 
 **GET /orders/:id**
+
 ```json
 Response (200) - Tourist View:
 {
@@ -889,22 +923,23 @@ Response (200) - Entrepreneur/Admin View:
 
 > **Note:** Each entrepreneur can manage ONE OR MORE ventures. Cascade iterates through Ventures.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/entrepreneur/me` | Get my details + linked venture |
-| GET | `/venture/me/items` | Get catalog items for my venture with pause status |
-| PUT | `/venture/me/items/:item_id/pause` | Toggle individual pause for item |
-| PUT | `/venture/me/pause` | Toggle general pause (business full/closed) |
-| GET | `/orders/pending` | Get pending orders for my venture |
-| POST | `/orders/:id/accept` | Accept an order (only if OFFER_PENDING and venture matches current offer) |
-| POST | `/orders/:id/reject` | Reject an order (only if OFFER_PENDING and venture matches current offer) |
-| POST | `/orders/:id/complete` | Mark order as completed - dish prepared/served (only if CONFIRMED) |
-| POST | `/orders/:id/no-show` | Mark tourist as no-show - did not arrive (only if CONFIRMED) |
-| POST | `/orders/:id/cancel` | Cancel confirmed order (only if CONFIRMED, restarts cascade) |
-| GET | `/calendar` | Get confirmed orders by date range |
-| PUT | `/profile` | Update entrepreneur profile |
+| Method | Endpoint                           | Description                                                               |
+| ------ | ---------------------------------- | ------------------------------------------------------------------------- |
+| GET    | `/entrepreneur/me`                 | Get my details + linked venture                                           |
+| GET    | `/venture/me/items`                | Get catalog items for my venture with pause status                        |
+| PUT    | `/venture/me/items/:item_id/pause` | Toggle individual pause for item                                          |
+| PUT    | `/venture/me/pause`                | Toggle general pause (business full/closed)                               |
+| GET    | `/orders/pending`                  | Get pending orders for my venture                                         |
+| POST   | `/orders/:id/accept`               | Accept an order (only if OFFER_PENDING and venture matches current offer) |
+| POST   | `/orders/:id/reject`               | Reject an order (only if OFFER_PENDING and venture matches current offer) |
+| POST   | `/orders/:id/complete`             | Mark order as completed - dish prepared/served (only if CONFIRMED)        |
+| POST   | `/orders/:id/no-show`              | Mark tourist as no-show - did not arrive (only if CONFIRMED)              |
+| POST   | `/orders/:id/cancel`               | Cancel confirmed order (only if CONFIRMED, restarts cascade)              |
+| GET    | `/calendar`                        | Get confirmed orders by date range                                        |
+| PUT    | `/profile`                         | Update entrepreneur profile                                               |
 
 **GET /orders/pending**
+
 ```json
 Response (200):
 {
@@ -928,6 +963,7 @@ Response (200):
 ```
 
 **POST /orders/:id/accept**
+
 ```json
 Response (200):
 {
@@ -938,6 +974,7 @@ Response (200):
 ```
 
 **POST /orders/:id/reject**
+
 ```json
 Response (200):
 {
@@ -948,6 +985,7 @@ Response (200):
 ```
 
 **POST /orders/:id/complete**
+
 ```json
 Response (200):
 {
@@ -967,6 +1005,7 @@ Response (200):
 | Venture is not the confirmed one | 403 Forbidden | "No tenés autorización para completar este pedido" |
 
 **POST /orders/:id/no-show**
+
 ```json
 Response (200):
 {
@@ -978,6 +1017,7 @@ Response (200):
 > **Note:** Only available when order status is `CONFIRMED` and the entrepreneur's venture is the `confirmed_venture`. Marks tourist as no-show (did not arrive).
 
 **POST /orders/:id/cancel**
+
 ```json
 Request:
 {
@@ -996,6 +1036,7 @@ Response (200):
 > **Note:** Only available when order status is `CONFIRMED` and the entrepreneur's venture is the `confirmed_venture`. When cancelled, the order restarts the cascade from the next venture (not from the beginning).
 
 **GET /calendar**
+
 ```json
 Query Parameters:
 - start_date: "YYYY-MM-DD" (required)
@@ -1028,6 +1069,7 @@ Response (200):
 ```
 
 **GET /entrepreneur/me**
+
 ```
 Response (200):
 {
@@ -1045,6 +1087,7 @@ Response (200):
 ```
 
 **PUT /entrepreneur/me/pause**
+
 ```
 Request:
 { "is_paused": true }
@@ -1057,6 +1100,7 @@ Response (200):
 ```
 
 **GET /entrepreneur/me/items**
+
 ```
 Response (200):
 {
@@ -1081,39 +1125,40 @@ Response (200):
 
 > **Note:** Cascade iterates through Ventures (sorted by cascade_order). Each Venture has a Catalog_Type.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| **Catalog Types** | | |
-| GET | `/admin/catalog-types` | List catalog types (Gastronomy, Guide, etc.) |
-| POST | `/admin/catalog-types` | Create catalog type |
-| PUT | `/admin/catalog-types/:id` | Update catalog type |
-| DELETE | `/admin/catalog-types/:id` | Delete catalog type |
-| **Catalog Items** | | |
-| GET | `/admin/catalog` | List master catalog items (by type/project) |
-| POST | `/admin/catalog` | Create catalog item |
-| PUT | `/admin/catalog/:id` | Update catalog item |
-| PUT | `/admin/catalog/:id/pause` | Toggle global pause (all ventures) |
-| DELETE | `/admin/catalog/:id` | Delete catalog item |
-| **Ventures** | | |
-| GET | `/admin/ventures` | List all ventures |
-| POST | `/admin/ventures` | Create new venture |
-| GET | `/admin/ventures/:id` | Get venture details |
-| PUT | `/admin/ventures/:id` | Update venture (capacity, hours, etc.) |
-| PUT | `/admin/ventures/:id/enable` | Enable/disable venture |
-| PUT | `/admin/ventures/:id/pause` | Toggle venture's general pause |
-| PUT | `/admin/ventures/reorder` | Reorder cascade (cascade_order on ventures) |
-| **Entrepreneurs** | | |
-| GET | `/admin/entrepreneurs` | List all entrepreneurs |
-| POST | `/admin/entrepreneurs` | Create new entrepreneur (link to venture) |
-| GET | `/admin/entrepreneurs/:id` | Get entrepreneur details |
-| PUT | `/admin/entrepreneurs/:id` | Update entrepreneur |
-| PUT | `/admin/entrepreneurs/:id/venture` | Link/unlink entrepreneur to venture |
-| **KPIs & Projects** | | |
-| GET | `/admin/kpis` | Get KPIs dashboard data |
-| GET | `/admin/projects` | List projects |
-| PUT | `/admin/projects/:id` | Update project settings |
+| Method              | Endpoint                           | Description                                  |
+| ------------------- | ---------------------------------- | -------------------------------------------- |
+| **Catalog Types**   |                                    |                                              |
+| GET                 | `/admin/catalog-types`             | List catalog types (Gastronomy, Guide, etc.) |
+| POST                | `/admin/catalog-types`             | Create catalog type                          |
+| PUT                 | `/admin/catalog-types/:id`         | Update catalog type                          |
+| DELETE              | `/admin/catalog-types/:id`         | Delete catalog type                          |
+| **Catalog Items**   |                                    |                                              |
+| GET                 | `/admin/catalog`                   | List master catalog items (by type/project)  |
+| POST                | `/admin/catalog`                   | Create catalog item                          |
+| PUT                 | `/admin/catalog/:id`               | Update catalog item                          |
+| PUT                 | `/admin/catalog/:id/pause`         | Toggle global pause (all ventures)           |
+| DELETE              | `/admin/catalog/:id`               | Delete catalog item                          |
+| **Ventures**        |                                    |                                              |
+| GET                 | `/admin/ventures`                  | List all ventures                            |
+| POST                | `/admin/ventures`                  | Create new venture                           |
+| GET                 | `/admin/ventures/:id`              | Get venture details                          |
+| PUT                 | `/admin/ventures/:id`              | Update venture (capacity, hours, etc.)       |
+| PUT                 | `/admin/ventures/:id/enable`       | Enable/disable venture                       |
+| PUT                 | `/admin/ventures/:id/pause`        | Toggle venture's general pause               |
+| PUT                 | `/admin/ventures/reorder`          | Reorder cascade (cascade_order on ventures)  |
+| **Entrepreneurs**   |                                    |                                              |
+| GET                 | `/admin/entrepreneurs`             | List all entrepreneurs                       |
+| POST                | `/admin/entrepreneurs`             | Create new entrepreneur (link to venture)    |
+| GET                 | `/admin/entrepreneurs/:id`         | Get entrepreneur details                     |
+| PUT                 | `/admin/entrepreneurs/:id`         | Update entrepreneur                          |
+| PUT                 | `/admin/entrepreneurs/:id/venture` | Link/unlink entrepreneur to venture          |
+| **KPIs & Projects** |                                    |                                              |
+| GET                 | `/admin/kpis`                      | Get KPIs dashboard data                      |
+| GET                 | `/admin/projects`                  | List projects                                |
+| PUT                 | `/admin/projects/:id`              | Update project settings                      |
 
 **GET /admin/kpis**
+
 ```json
 Query Parameters:
 - project_id: "integer (optional)"
@@ -1149,11 +1194,13 @@ Response (200):
 **Provider:** Expo Push Notifications (no Firebase configuration required)
 
 **Flow:**
+
 1. App registers with Expo Push → obtains `ExponentPushToken[xxx]`
 2. Push token stored in `Notification_Preference` / `Tourist_Device.push_token`
 3. When event occurs → backend sends to Expo Push API (`https://exp.host/--/api/v2/push/send`) → Expo delivers to device
 
 **Device Registration Endpoint:**
+
 ```
 POST /notifications/register
 Request: { "push_token": "ExponentPushToken[xxx]" }
@@ -1162,21 +1209,22 @@ Response: { "success": true }
 
 **Events that trigger Push Notifications:**
 
-| Event | Recipient | Channel | Content |
-|-------|-----------|---------|---------|
-| `ORDER_RECEIVED` | Entrepreneur | Push | "Nuevo pedido: X personas, [items]" |
-| `ORDER_CANCELLED` | Entrepreneur | Push | "El cliente canceló el pedido #X" |
-| `ORDER_CONFIRMED` | Tourist | Push + WhatsApp | "Tu reserva está confirmada para [fecha] en [venture]" |
-| `ORDER_COMPLETED` | Tourist | Push | "Tu experiencia en [venture] fue completada. ¡Gracias por visitar!" |
-| `ORDER_NO_SHOW` | Tourist | Push | "El emprendimiento reportó que no te presentaste. ¿Qué pasó?" |
-| `ORDER_EXPIRED` | Tourist | Push | "Lo sentimos, no hay disponibilidad para tu solicitud" |
-| `MORNING_REMINDER` | Entrepreneur | Push + WhatsApp | "Hoy tienes X pedidos confirmados" |
+| Event              | Recipient    | Channel         | Content                                                             |
+| ------------------ | ------------ | --------------- | ------------------------------------------------------------------- |
+| `ORDER_RECEIVED`   | Entrepreneur | Push            | "Nuevo pedido: X personas, [items]"                                 |
+| `ORDER_CANCELLED`  | Entrepreneur | Push            | "El cliente canceló el pedido #X"                                   |
+| `ORDER_CONFIRMED`  | Tourist      | Push + WhatsApp | "Tu reserva está confirmada para [fecha] en [venture]"              |
+| `ORDER_COMPLETED`  | Tourist      | Push            | "Tu experiencia en [venture] fue completada. ¡Gracias por visitar!" |
+| `ORDER_NO_SHOW`    | Tourist      | Push            | "El emprendimiento reportó que no te presentaste. ¿Qué pasó?"       |
+| `ORDER_EXPIRED`    | Tourist      | Push            | "Lo sentimos, no hay disponibilidad para tu solicitud"              |
+| `MORNING_REMINDER` | Entrepreneur | Push + WhatsApp | "Hoy tienes X pedidos confirmados"                                  |
 
 #### 4.3.2 Polling (Fallback) **[POST-MVP]**
 
 For devices without push token or when push fails, the app polls periodically.
 
 **Polling Endpoint:**
+
 ```
 GET /orders/pending?last_check=timestamp
 Response: { "has_new": true/false, "orders": [...] }
@@ -1184,18 +1232,19 @@ Response: { "has_new": true/false, "orders": [...] }
 
 **Polling Strategy:**
 
-| Scenario | Interval | Trigger |
-|----------|----------|---------|
-| App in foreground | 30 seconds | Automatic |
-| App in background | 5 minutes | Background fetch |
-| On app resume | Immediate | Event listener |
+| Scenario          | Interval   | Trigger          |
+| ----------------- | ---------- | ---------------- |
+| App in foreground | 30 seconds | Automatic        |
+| App in background | 5 minutes  | Background fetch |
+| On app resume     | Immediate  | Event listener   |
 
 **Implementation:**
+
 ```typescript
 // Frontend polling
 const startPolling = () => {
   setInterval(async () => {
-    const response = await fetch('/orders/pending');
+    const response = await fetch("/orders/pending");
     const { orders } = await response.json();
     if (orders.length > 0) showLocalNotification(orders);
   }, 30000);
@@ -1209,11 +1258,13 @@ For high-priority notifications to tourists (confirmation, expiration).
 **Provider:** WhatsApp Business API (Meta)
 
 **Flow:**
+
 1. Tourist provides WhatsApp number in profile
 2. Backend sends via WhatsApp Business API
 3. Message ID stored in `Notification.external_id`
 
 **Endpoint:**
+
 ```
 POST /notifications/whatsapp
 Request: { "to": "+54911...", "template": "order_confirmed", "params": {...} }
@@ -1243,23 +1294,21 @@ All errors follow a consistent format:
   "error": {
     "code": "VALIDATION_ERROR",
     "message": "Invalid input",
-    "details": [
-      { "field": "guest_count", "message": "Must be between 1 and 100" }
-    ]
+    "details": [{ "field": "guest_count", "message": "Must be between 1 and 100" }]
   }
 }
 ```
 
 **Common Error Codes:**
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| VALIDATION_ERROR | 400 | Invalid input data |
-| UNAUTHORIZED | 401 | Missing or invalid token |
-| FORBIDDEN | 403 | Insufficient permissions |
-| NOT_FOUND | 404 | Resource not found |
-| RATE_LIMITED | 429 | Too many requests |
-| INTERNAL_ERROR | 500 | Server error |
+| Code             | HTTP Status | Description              |
+| ---------------- | ----------- | ------------------------ |
+| VALIDATION_ERROR | 400         | Invalid input data       |
+| UNAUTHORIZED     | 401         | Missing or invalid token |
+| FORBIDDEN        | 403         | Insufficient permissions |
+| NOT_FOUND        | 404         | Resource not found       |
+| RATE_LIMITED     | 429         | Too many requests        |
+| INTERNAL_ERROR   | 500         | Server error             |
 
 ---
 
@@ -1270,8 +1319,9 @@ All errors follow a consistent format:
 The application runs in Docker containers for consistency across environments.
 
 **docker-compose.yml**
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -1307,6 +1357,7 @@ volumes:
 ```
 
 **Dockerfile (Production)**
+
 ```dockerfile
 FROM oven/bun:1-alpine AS builder
 WORKDIR /app
@@ -1329,6 +1380,7 @@ CMD ["bun", "run", "dist/main.js"]
 **Tool:** Drizzle Kit (`drizzle-kit`)
 
 **Migration Files Structure:**
+
 ```
 drizzle/
   0001_create_enums.sql
@@ -1338,6 +1390,7 @@ drizzle/
 ```
 
 **Commands:**
+
 ```bash
 # Generate migrations from schema changes
 bun run drizzle-kit generate
@@ -1362,41 +1415,42 @@ bun run db:seed --file seeds/impenetrable.ts
 ```
 
 **Seed Data Structure (TypeScript):**
+
 ```typescript
 // seeds/impenetrable.ts
 export const seedData = {
   project: {
-    name: 'Impenetrable',
-    default_language: 'es',
-    supported_languages: ['es'],
+    name: "Impenetrable",
+    default_language: "es",
+    supported_languages: ["es"],
     cascade_timeout_minutes: 30,
     max_cascade_attempts: 10,
   },
   catalogTypes: [
-    { name: 'Gastronomy', description: 'Local food experiences' },
-    { name: 'Guide Services', description: 'Guided tours and activities' },
+    { name: "Gastronomy", description: "Local food experiences" },
+    { name: "Guide Services", description: "Guided tours and activities" },
   ],
   catalogItems: [
-    { type: 'Gastronomy', name_i18n: { es: 'Guiso' }, price: 15.00 },
-    { type: 'Gastronomy', name_i18n: { es: 'Empanadas' }, price: 12.00 },
+    { type: "Gastronomy", name_i18n: { es: "Guiso" }, price: 15.0 },
+    { type: "Gastronomy", name_i18n: { es: "Empanadas" }, price: 12.0 },
     // ... more items
   ],
   ventures: [
     {
-      name: 'Parador Don Esteban',
-      catalogType: 'Gastronomy',
+      name: "Parador Don Esteban",
+      catalogType: "Gastronomy",
       max_capacity: 20,
       cascade_order: 1,
-      schedule: { mon: '08:00-20:00', tue: '08:00-20:00', /* ... */ },
+      schedule: { mon: "08:00-20:00", tue: "08:00-20:00" /* ... */ },
     },
     // ... more ventures
   ],
   entrepreneurs: [
     {
-      email: 'juan@example.com',
-      password: 'temp-password',  // Changed on first login
-      full_name: 'Juan Perez',
-      venture: 'Parador Don Esteban',
+      email: "juan@example.com",
+      password: "temp-password", // Changed on first login
+      full_name: "Juan Perez",
+      venture: "Parador Don Esteban",
     },
     // ... more entrepreneurs
   ],
@@ -1405,22 +1459,22 @@ export const seedData = {
 
 ### 4.5.3 Environments
 
-| Environment | Purpose | URL | Database |
-|------------|---------|-----|----------|
-| **development** | Local dev | http://localhost:3000 | Local Postgres |
-| **staging** | Pre-production testing | https://staging.api.elimpenetrable.org | Staging DB |
-| **production** | Live production | https://api.elimpenetrable.org | Production DB |
+| Environment     | Purpose                | URL                                    | Database       |
+| --------------- | ---------------------- | -------------------------------------- | -------------- |
+| **development** | Local dev              | http://localhost:3000                  | Local Postgres |
+| **staging**     | Pre-production testing | https://staging.api.elimpenetrable.org | Staging DB     |
+| **production**  | Live production        | https://api.elimpenetrable.org         | Production DB  |
 
 **Environment Variables:**
 
-| Variable | development | staging | production |
-|----------|-------------|---------|------------|
-| `NODE_ENV` | development | staging | production |
-| `DATABASE_URL` | localhost | staging-db | production-db |
-| `REDIS_URL` | *(POST-MVP)* | staging-redis | production-redis |
-| `JWT_SECRET` | dev-secret | staging-secret | (from secrets manager) |
-| `WHATSAPP_API_KEY` | *(POST-MVP)* | staging-key | (from secrets manager) |
-| `EXPO_ACCESS_TOKEN` | test-token | staging-token | (from secrets manager) |
+| Variable            | development  | staging        | production             |
+| ------------------- | ------------ | -------------- | ---------------------- |
+| `NODE_ENV`          | development  | staging        | production             |
+| `DATABASE_URL`      | localhost    | staging-db     | production-db          |
+| `REDIS_URL`         | _(POST-MVP)_ | staging-redis  | production-redis       |
+| `JWT_SECRET`        | dev-secret   | staging-secret | (from secrets manager) |
+| `WHATSAPP_API_KEY`  | _(POST-MVP)_ | staging-key    | (from secrets manager) |
+| `EXPO_ACCESS_TOKEN` | test-token   | staging-token  | (from secrets manager) |
 
 ### 4.5.4 CI/CD Pipeline (GitHub Actions)
 
@@ -1491,10 +1545,12 @@ jobs:
 ### 4.5.5 Monitoring & Logging
 
 **Logging:**
+
 - Use `pino` or `winston` for structured JSON logging
 - Log levels: ERROR, WARN, INFO, DEBUG
 
 **Monitoring:**
+
 - **Metrics:** Prometheus + Grafana
 - **Errors:** Sentry or Datadog
 - **Uptime:** UptimeRobot or Grafana synthetic checks
@@ -1511,16 +1567,19 @@ jobs:
 ### 4.5.6 Backup & Recovery
 
 **Database Backups:**
+
 - **Frequency:** Daily at 3am UTC
 - **Retention:** 30 days
 - **Storage:** AWS S3 or equivalent
 
 **Backup Command:**
+
 ```bash
 pg_dump -h $DB_HOST -U $DB_USER $DB_NAME | gzip > backup_$(date +%Y%m%d).sql.gz
 ```
 
 **Recovery Procedure:**
+
 1. Stop application
 2. Drop existing database
 3. Restore from latest backup: `gunzip < backup.sql.gz | psql`
@@ -1529,14 +1588,14 @@ pg_dump -h $DB_HOST -U $DB_USER $DB_NAME | gzip > backup_$(date +%Y%m%d).sql.gz
 
 ### 4.5.7 Security
 
-| Practice | Implementation |
-|----------|----------------|
-| Secrets | Use environment variables or secrets manager (AWS Secrets Manager, Doppler) |
-| HTTPS | TLS 1.3 required for all environments |
-| CORS | Whitelist only allowed domains |
-| Rate Limiting | Applied at API Gateway level |
-| SQL Injection | Parameterized queries only |
-| XSS | Output encoding + CSP headers |
+| Practice      | Implementation                                                              |
+| ------------- | --------------------------------------------------------------------------- |
+| Secrets       | Use environment variables or secrets manager (AWS Secrets Manager, Doppler) |
+| HTTPS         | TLS 1.3 required for all environments                                       |
+| CORS          | Whitelist only allowed domains                                              |
+| Rate Limiting | Applied at API Gateway level                                                |
+| SQL Injection | Parameterized queries only                                                  |
+| XSS           | Output encoding + CSP headers                                               |
 
 ---
 
@@ -1544,10 +1603,10 @@ pg_dump -h $DB_HOST -U $DB_USER $DB_NAME | gzip > backup_$(date +%Y%m%d).sql.gz
 
 To guarantee a clean git history and prevent broken builds on the main branch, the repository is configured with the following strict Branch Protection Rules for `main`:
 
-*   **No Direct Pushes:** All changes must go through a Pull Request matching standard branching conventions (e.g., `feat/`, `chore/`). Direct pushes to `main` are strictly forbidden.
-*   **PR and Automated Validation Required:** Pull Requests must pass all CI actions (linting, tests, build) before the "Merge" option is unlocked.
-*   **Linear History (Squash on Merge):** Rebase and Merge Commits are blocked. All Pull Requests must use the "Squash and Merge" methodology to compress branching history into a single, clean conventional commit on `main`.
-*   **Always Up-To-Date (`Require branches to be up to date before merging`):** GitHub requires the origin branch to fetch and merge the latest version of `main` to pass checks before a merge can be executed. This prevents "logical merge conflicts" where tests pass in the branch but break when integrated.
+- **No Direct Pushes:** All changes must go through a Pull Request matching standard branching conventions (e.g., `feat/`, `chore/`). Direct pushes to `main` are strictly forbidden.
+- **PR and Automated Validation Required:** Pull Requests must pass all CI actions (linting, tests, build) before the "Merge" option is unlocked.
+- **Linear History (Squash on Merge):** Rebase and Merge Commits are blocked. All Pull Requests must use the "Squash and Merge" methodology to compress branching history into a single, clean conventional commit on `main`.
+- **Always Up-To-Date (`Require branches to be up to date before merging`):** GitHub requires the origin branch to fetch and merge the latest version of `main` to pass checks before a merge can be executed. This prevents "logical merge conflicts" where tests pass in the branch but break when integrated.
 
 ---
 
@@ -1576,15 +1635,16 @@ To guarantee a clean git history and prevent broken builds on the main branch, t
 
 **What to Test:**
 
-| Module | Test Cases |
-|--------|------------|
+| Module            | Test Cases                                                            |
+| ----------------- | --------------------------------------------------------------------- |
 | **CascadeEngine** | Skip logic for all 8 skip reasons, capacity calculation, max attempts |
-| **i18n** | Fallback strategy, missing language handling |
-| **Auth** | Token refresh, lockout logic, JWT validation |
-| **Validation** | All validation rules from Section 3.3 |
-| **Order** | Status transitions, duplication prevention |
+| **i18n**          | Fallback strategy, missing language handling                          |
+| **Auth**          | Token refresh, lockout logic, JWT validation                          |
+| **Validation**    | All validation rules from Section 3.3                                 |
+| **Order**         | Status transitions, duplication prevention                            |
 
 **Example:**
+
 ```typescript
 describe('CascadeEngine', () => {
   describe('filterVenture', () => {
@@ -1640,14 +1700,15 @@ describe('CascadeEngine', () => {
 
 **What to Test:**
 
-| Scenario | Description |
-|----------|-------------|
-| **Order Flow** | Tourist creates order → enters SEARCHING → venture accepts → becomes CONFIRMED |
-| **Cascade Flow** | Order creates → skips paused ventures → reaches active venture → accepts |
-| **Auth Flow** | Tourist creates identity → gets JWT → refreshes token → token invalidates old |
-| **Notification Flow** | Order confirmed → notification created → sent via provider |
+| Scenario              | Description                                                                    |
+| --------------------- | ------------------------------------------------------------------------------ |
+| **Order Flow**        | Tourist creates order → enters SEARCHING → venture accepts → becomes CONFIRMED |
+| **Cascade Flow**      | Order creates → skips paused ventures → reaches active venture → accepts       |
+| **Auth Flow**         | Tourist creates identity → gets JWT → refreshes token → token invalidates old  |
+| **Notification Flow** | Order confirmed → notification created → sent via provider                     |
 
 **Example:**
+
 ```typescript
 describe('Order API', () => {
   it('creates order and triggers cascade', async () => {
@@ -1655,7 +1716,7 @@ describe('Order API', () => {
     const orderRes = await request(app)
       .post('/orders')
       .send({ ... });
-    
+
     expect(orderRes.status).toBe(201);
     expect(orderRes.body.status).toBe('SEARCHING');
 
@@ -1679,7 +1740,7 @@ describe('Order API', () => {
 
     // Then: order is CONFIRMED
     expect(acceptRes.body.status).toBe('CONFIRMED');
-    
+
     const updatedOrder = await getOrder(order.id);
     expect(updatedOrder.status).toBe('CONFIRMED');
   });
@@ -1692,34 +1753,35 @@ describe('Order API', () => {
 
 **Scenarios:**
 
-| Scenario | Steps |
-|----------|-------|
-| **Tourist: Create Order** | 1. Open app → 2. Enter alias → 3. Browse catalog → 4. Select item → 5. Choose date/time → 6. Submit → 7. See "SEARCHING" status |
-| **Entrepreneur: Accept Order** | 1. Login → 2. See pending order → 3. Tap Accept → 4. See confirmation |
-| **Full Cascade** | 1. Tourist creates order → 2. Venture A rejects → 3. Venture B accepts → 4. Tourist sees CONFIRMED |
+| Scenario                       | Steps                                                                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Tourist: Create Order**      | 1. Open app → 2. Enter alias → 3. Browse catalog → 4. Select item → 5. Choose date/time → 6. Submit → 7. See "SEARCHING" status |
+| **Entrepreneur: Accept Order** | 1. Login → 2. See pending order → 3. Tap Accept → 4. See confirmation                                                           |
+| **Full Cascade**               | 1. Tourist creates order → 2. Venture A rejects → 3. Venture B accepts → 4. Tourist sees CONFIRMED                              |
 
 **Example:**
-```typescript
-import { test, expect } from '@playwright/test';
 
-test('tourist creates order', async ({ page }) => {
-  await page.goto('/');
-  
+```typescript
+import { test, expect } from "@playwright/test";
+
+test("tourist creates order", async ({ page }) => {
+  await page.goto("/");
+
   // Welcome screen
-  await page.fill('[name=alias]', 'Test Family');
+  await page.fill("[name=alias]", "Test Family");
   await page.click('button:has-text("Start")');
-  
+
   // Catalog
-  await expect(page.locator('text=Service Catalog')).toBeVisible();
-  await page.click('text=Guiso');
-  
+  await expect(page.locator("text=Service Catalog")).toBeVisible();
+  await page.click("text=Guiso");
+
   // Order modal
-  await page.selectOption('[name=time_of_day]', 'LUNCH');
-  await page.fill('[name=guest_count]', '4');
+  await page.selectOption("[name=time_of_day]", "LUNCH");
+  await page.fill("[name=guest_count]", "4");
   await page.click('button:has-text("Confirm")');
-  
+
   // Orders screen
-  await expect(page.locator('text=SEARCHING')).toBeVisible();
+  await expect(page.locator("text=SEARCHING")).toBeVisible();
 });
 ```
 
@@ -1729,50 +1791,50 @@ test('tourist creates order', async ({ page }) => {
 
 **Scenarios:**
 
-| Scenario | Target |
-|----------|--------|
-| **Order Creation** | 100 orders/minute |
-| **Cascade Engine** | 50 ventures, 10 attempts each |
+| Scenario               | Target                               |
+| ---------------------- | ------------------------------------ |
+| **Order Creation**     | 100 orders/minute                    |
+| **Cascade Engine**     | 50 ventures, 10 attempts each        |
 | **Concurrent Accepts** | 10 ventures accepting simultaneously |
-| **Calendar View** | 1000 confirmed orders |
+| **Calendar View**      | 1000 confirmed orders                |
 
 **Example (k6):**
+
 ```javascript
-import http from 'k6/http';
+import http from "k6/http";
 
 export const options = {
   vus: 10,
-  duration: '1m',
+  duration: "1m",
   thresholds: {
-    http_req_duration: ['p(95)<500'],
-    http_req_failed: ['rate<0.01'],
+    http_req_duration: ["p(95)<500"],
+    http_req_failed: ["rate<0.01"],
   },
 };
 
 export default function () {
   const order = {
-    service_date: '2024-01-15',
+    service_date: "2024-01-15",
     time_of_day_id: 1,
     guest_count: 4,
-    items: [
-      { "catalog_item_id": 1, "quantity": 2 }
-    ],
+    items: [{ catalog_item_id: 1, quantity: 2 }],
   };
 
-  http.post('http://localhost:3000/v1/orders', 
-    JSON.stringify(order),
-    { headers: { 'Content-Type': 'application/json' } }
-  );
+  http.post("http://localhost:3000/v1/orders", JSON.stringify(order), {
+    headers: { "Content-Type": "application/json" },
+  });
 }
 ```
 
 ### 4.6.6 Test Database Strategy
 
 **Development:**
+
 - Use `testcontainers` for isolated PostgreSQL
 - Each test gets clean database state
 
 **CI/CD:**
+
 - Use ephemeral database per build
 - Run migrations before tests
 - Seed with minimal data
@@ -1796,12 +1858,12 @@ beforeEach(async () => {
 
 ### 4.6.7 Test Coverage Requirements
 
-| Type | Minimum Coverage | Tools |
-|------|-----------------|-------|
-| Unit | 80% | Bun Test + coverage report |
-| Integration | All API endpoints | Supertest |
-| E2E | Critical paths only | Playwright |
-| Load | Key endpoints | k6 |
+| Type        | Minimum Coverage    | Tools                      |
+| ----------- | ------------------- | -------------------------- |
+| Unit        | 80%                 | Bun Test + coverage report |
+| Integration | All API endpoints   | Supertest                  |
+| E2E         | Critical paths only | Playwright                 |
+| Load        | Key endpoints       | k6                         |
 
 ### 4.6.8 Running Tests
 
@@ -1967,7 +2029,7 @@ erDiagram
         int confirmed_venture_id FK "Nullable. Set when status becomes CONFIRMED"
         date service_date "Used for Calendar view"
         int time_of_day_id FK "Used for Calendar view"
-        int guest_count 
+        int guest_count
         string notes "Special requests or dietary restrictions from tourist"
         enum global_status "SEARCHING, OFFER_PENDING, CONFIRMED, COMPLETED, NO_SHOW, CANCELLED, EXPIRED"
         enum cancel_reason "null, BY_TOURIST, BY_ENTREPRENEUR, NO_VENTURE_AVAILABLE, SYSTEM_ERROR"
@@ -1975,7 +2037,7 @@ erDiagram
         timestamp completed_at "Nullable. Set when status becomes COMPLETED (explicit or auto)"
         timestamp confirmed_at "Nullable. Set when status becomes CONFIRMED"
         timestamp created_at
-        
+
         %% Notification preferences for this order
         boolean notify_whatsapp "Whether to send WhatsApp notifications for this order"
     }
@@ -1988,7 +2050,7 @@ erDiagram
         enum offer_status "WAITING_FOR_RESPONSE, ACCEPTED, REJECTED, TIMEOUT, AUTO_REJECTED"
         enum skip_reason "null, GENERAL_PAUSE, INDIVIDUAL_PAUSE, CAPACITY_EXCEEDED, CLOSED_THAT_DAY, OUTSIDE_OPENING_HOURS, VENTURE_INACTIVE, NOT_OFFERED"
         timestamp offer_sent_at
-        timestamp response_deadline 
+        timestamp response_deadline
         timestamp resolved_at
     }
 
@@ -2057,14 +2119,15 @@ erDiagram
     Order ||--o{ Notification : "triggers"
 ```
 
---------------------------------------------------------------------------------
+---
+
 ## 6. UI/UX Mockup Specifications (Google Stitch / Design Guidelines) **[MVP]**
 
 > **MVP:** Tourist Flow (6.2) + Entrepreneur Flow (6.3). Admin Flow (6.4) is **[POST-MVP]**.
-When generating UI components or screens, adhere strictly to the following constraints tailored for low-end Android devices and non-technical users.
-6.1 Global Design Guidelines
+> When generating UI components or screens, adhere strictly to the following constraints tailored for low-end Android devices and non-technical users.
+> 6.1 Global Design Guidelines
 
-    Visual & Accessible: Use high-contrast colors, extremely large buttons (wide touch areas), and highly legible typography. Use the colors of the Impenetrable Chaco: 
+    Visual & Accessible: Use high-contrast colors, extremely large buttons (wide touch areas), and highly legible typography. Use the colors of the Impenetrable Chaco:
     Performance: The UI must be lightweight. Strictly avoid complex animations, heavy shadows, or overlapping elements that consume RAM on low-end phones.
     Navigation: Avoid complex hamburger menus or multi-step wizard flows. Keep actions flat and immediate.
 
@@ -2077,7 +2140,7 @@ When generating UI components or screens, adhere strictly to the following const
 
     Screen 1: Welcome & Access:
         Spec: First-time access. Creates tourist identity with alias.
-        UI Elements: 
+        UI Elements:
          - A single required input field, prominent text input asking for an "Alias" (e.g., "Gomez Family").
          - Optional secondaries inputs fields:
              - Whatsapp number.
@@ -2183,6 +2246,7 @@ When generating UI components or screens, adhere strictly to the following const
 > **Note:** Creating Ventures and managing entrepreneurs is done by Admin in web interface.
 
 ### 6.4 Admin Impenetrable Flow (Management & Auditing) **[POST-MVP]**
+
 This interface will be accessed primarily via Web (Desktop).
 
     Navigation: Left sidebar (collapsible) with menu items:
@@ -2262,24 +2326,24 @@ This interface will be accessed primarily via Web (Desktop).
 
 ### 7.1 Team Context
 
-| Attribute | Value |
-|-----------|-------|
-| Team Size | 1 developer (solo) |
-| Availability | Part-time (~20 hours/week) |
-| Primary Experience | Backend: C++, Java, Go (20 years) |
+| Attribute            | Value                                                  |
+| -------------------- | ------------------------------------------------------ |
+| Team Size            | 1 developer (solo)                                     |
+| Availability         | Part-time (~20 hours/week)                             |
+| Primary Experience   | Backend: C++, Java, Go (20 years)                      |
 | Secondary Experience | React, React Native, TypeScript APIs (some experience) |
 
 > **Strategy (Frontend-First with Mocks):** Although the developer's strength is backend, to reduce product risk, the project will follow a "Frontend-First" approach. The `shared` package will define the data contracts (TypeScript interfaces, Zod validators). Then, the React Native mobile app will be built using **Zustand** to mock API responses. This allows rapid iteration and UX validation with the client using a real APK/Web app before investing time in the complex database and routing engine.
 
 ### 7.2 MVP Implementation Timeline (Frontend-First)
 
-| Phase | Focus | Duration (Part-time) |
-|-------|-------|----------------------|
-| **Phase 1: Foundation (UI & Types)** | Monorepo Setup, Shared Types (Contracts), Expo Foundation, UI Components Package | 3-4 weeks |
-| **Phase 2: Mobile Mocks (UX Validation)** | Tourist Flow (Zustand mocks), Entrepreneur Flow (Zustand mocks), Client UX Iteration | 4-5 weeks |
-| **Phase 3: Core Backend (The Engine)** | DB Schema, Drizzle, Hono API (Auth, Catalog, Orders), Cascade Engine algorithm | 5-6 weeks |
-| **Phase 4: Integration & Polish** | Connect Mobile `fetch` to Hono API, Expo Push Notifications, DevOps, Staging | 3-5 weeks |
-| **Total** | | **~15-20 weeks (3.5-5 months)** |
+| Phase                                     | Focus                                                                                | Duration (Part-time)            |
+| ----------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------- |
+| **Phase 1: Foundation (UI & Types)**      | Monorepo Setup, Shared Types (Contracts), Expo Foundation, UI Components Package     | 3-4 weeks                       |
+| **Phase 2: Mobile Mocks (UX Validation)** | Tourist Flow (Zustand mocks), Entrepreneur Flow (Zustand mocks), Client UX Iteration | 4-5 weeks                       |
+| **Phase 3: Core Backend (The Engine)**    | DB Schema, Drizzle, Hono API (Auth, Catalog, Orders), Cascade Engine algorithm       | 5-6 weeks                       |
+| **Phase 4: Integration & Polish**         | Connect Mobile `fetch` to Hono API, Expo Push Notifications, DevOps, Staging         | 3-5 weeks                       |
+| **Total**                                 |                                                                                      | **~15-20 weeks (3.5-5 months)** |
 
 > **Note:** This timeline reduces the risk of building the wrong backend. Once Phase 2 is approved by the client, Phase 3 (the developer's strong suit) can be built rapidly against validated and locked-in data contracts.
 
@@ -2305,26 +2369,27 @@ graph TD
     MVP --> P12["P12 E2E + Load Tests<br/>Playwright + k6"]
 ```
 
-| Priority | Epic | Description |
-|----------|------|-------------|
-| **P0** | Race Condition Prevention | Atomic transactions, `FOR UPDATE` locks, partial unique index |
-| **P1** | Admin Panel | Web dashboard: CRUD catalog, ventures, entrepreneurs, KPIs |
-| **P1** | Offline Handling | Heartbeat, reconnection flow, lost offer notification |
-| **P1** | WhatsApp Notifications | WhatsApp Business API integration |
-| **P1** | Token Rotation | Single-use refresh tokens, revoke-all endpoint |
-| **P2** | Idempotency | Idempotency-Key header, cached responses, 24h TTL (requires Redis) |
-| **P2** | Cascade Snapshot | Frozen rotation order per order |
-| **P2** | Polling Fallback | 30s foreground, 5min background |
-| **P2** | Morning Reminder | Cron job: daily agenda via push + WhatsApp |
-| **P2** | E2E & Load Testing | Playwright E2E, k6 load testing |
-| **P3** | i18n Active | Multi-language support beyond Spanish |
-| **P3** | Multi-Project | Support for multiple conservation projects |
+| Priority | Epic                      | Description                                                        |
+| -------- | ------------------------- | ------------------------------------------------------------------ |
+| **P0**   | Race Condition Prevention | Atomic transactions, `FOR UPDATE` locks, partial unique index      |
+| **P1**   | Admin Panel               | Web dashboard: CRUD catalog, ventures, entrepreneurs, KPIs         |
+| **P1**   | Offline Handling          | Heartbeat, reconnection flow, lost offer notification              |
+| **P1**   | WhatsApp Notifications    | WhatsApp Business API integration                                  |
+| **P1**   | Token Rotation            | Single-use refresh tokens, revoke-all endpoint                     |
+| **P2**   | Idempotency               | Idempotency-Key header, cached responses, 24h TTL (requires Redis) |
+| **P2**   | Cascade Snapshot          | Frozen rotation order per order                                    |
+| **P2**   | Polling Fallback          | 30s foreground, 5min background                                    |
+| **P2**   | Morning Reminder          | Cron job: daily agenda via push + WhatsApp                         |
+| **P2**   | E2E & Load Testing        | Playwright E2E, k6 load testing                                    |
+| **P3**   | i18n Active               | Multi-language support beyond Spanish                              |
+| **P3**   | Multi-Project             | Support for multiple conservation projects                         |
 
 ### 7.4 Redis Dependency (POST-MVP Only)
 
 > **MVP does NOT require Redis.** Rate limiting uses in-memory storage, timeout processing uses `setInterval`, and sessions use JWT + PostgreSQL.
 
 Redis is introduced in POST-MVP for:
+
 - **Job Queues (BullMQ):** Reliable timeout processing with full cascade retry, morning reminders
 - **Idempotency Cache:** 24h TTL for request deduplication
 - **Distributed Rate Limiting:** Required when running multiple server instances
@@ -2335,6 +2400,7 @@ Redis is introduced in POST-MVP for:
 > **Note:** Use this checklist as your day-to-day reference. Every task is small, actionable, and designed to support the **Frontend-First** strategy.
 
 #### Phase 1: Foundation (UI & Contracts)
+
 - [ ] **1.1 Monorepo**: Initialize Bun workspace root (`package.json`, `bunfig.toml`, `tsconfig.base.json`).
 - [ ] **1.2 Shared**: Create `@repo/shared` package with `package.json` and `tsconfig.json`.
 - [ ] **1.3 Shared**: Define Zod validators/Types for `Tourist`, `Entrepreneur`, `Venture`, `CatalogItem`.
@@ -2346,6 +2412,7 @@ Redis is introduced in POST-MVP for:
 - [ ] **1.9 Workspace**: Link `@repo/ui` and `@repo/shared` as dependencies in `apps/mobile`.
 
 #### Phase 2: Mobile Mocks (UX Validation)
+
 - [ ] **2.1 Store**: Setup Zustand `useTouristStore` with mock ventures and active orders data.
 - [ ] **2.2 Store**: Setup Zustand `useEntrepreneurStore` with mock incoming orders and calendar data.
 - [ ] **2.3 UI/Tourist**: Build Welcome & Authentication screen (Mock magic link).
@@ -2359,6 +2426,7 @@ Redis is introduced in POST-MVP for:
 > **Stop here:** Validate the interactive Mobile APK/Web prototype with the client before proceeding to Phase 3.
 
 #### Phase 3: Core Backend (The Engine)
+
 - [ ] **3.1 Backend**: Initialize Hono app in `apps/backend`.
 - [ ] **3.2 Infra**: Setup PostgreSQL via `docker-compose.yml` (NO Redis yet).
 - [ ] **3.3 DB**: Setup Drizzle ORM in `apps/backend/src/db` connecting to Postgres.
@@ -2373,6 +2441,7 @@ Redis is introduced in POST-MVP for:
 - [ ] **3.12 Engine**: Implement Timeout Processor MVP (`setInterval` every 30s to auto-assign expired offers).
 
 #### Phase 4: Integration & Polish
+
 - [ ] **4.1 Mobile**: Setup Expo Push Notification tokens and update backend schema `Notification_Preference`.
 - [ ] **4.2 Backend**: Implement push notification service to call Expo Push API.
 - [ ] **4.3 Mobile**: Replace Zustand mock actions with real `fetch` calls to the Hono API.

@@ -9,6 +9,10 @@
   "scripts": {
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
-    "lint": "bun run --filter '*' lint"
+    "lint": "bun run --filter '*' lint",
+    "format": "bunx prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.5.1"
   }
 }

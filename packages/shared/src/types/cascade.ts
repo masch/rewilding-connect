@@ -13,7 +13,7 @@ export const CascadeAssignmentSchema = z.object({
   skip_reason: SkipReasonSchema.nullable().optional(),
   offer_sent_at: z.date(),
   response_deadline: z.date(),
-  resolved_at: z.date().nullable().optional()
+  resolved_at: z.date().nullable().optional(),
 });
 
 export interface CascadeAssignment extends z.infer<typeof CascadeAssignmentSchema> {}
