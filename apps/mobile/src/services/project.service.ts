@@ -1,5 +1,6 @@
 import { Project } from "@repo/shared";
 import { MOCK_PROJECTS } from "../mocks/projects";
+import { logger } from "./logger.service";
 
 // EXPO_PUBLIC_ prefix makes vars available in the JS bundle at runtime
 const USE_MOCKS = process.env.EXPO_PUBLIC_USE_MOCKS === "true";
@@ -12,25 +13,60 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 interface ProjectServiceInterface {
   getProjects(): Promise<Project[]>;
   getProjectById(id: number): Promise<Project | null>;
-  saveProject(project: Partial<Project>): Promise<{ success: boolean }>;
+  createProject(project: Omit<Project, "id">): Promise<Project>;
+  updateProject(id: number, project: Partial<Project>): Promise<Project>;
+  deleteProject(id: number): Promise<boolean>;
 }
 
 /**
  * 🛠️ MOCK Implementation (Used during design/MVP phase)
  */
+let mockProjects = [...MOCK_PROJECTS];
+let nextId = 3;
+
 const MockProjectService: ProjectServiceInterface = {
   getProjects: async () => {
     await new Promise((r) => setTimeout(r, 800));
-    return MOCK_PROJECTS;
+    return [...mockProjects];
   },
-  getProjectById: async (id) => {
+
+  getProjectById: async (id: number) => {
     await new Promise((r) => setTimeout(r, 500));
-    return MOCK_PROJECTS.find((p) => p.id === id) || null;
+    return mockProjects.find((p) => p.id === id) || null;
   },
-  saveProject: async (project) => {
-    await new Promise((r) => setTimeout(r, 1200));
-    console.log("[MOCK API] Saving project:", project);
-    return { success: true };
+
+  createProject: async (project: Omit<Project, "id">) => {
+    await new Promise((r) => setTimeout(r, 800));
+    const newProject: Project = {
+      ...project,
+      id: nextId++,
+    };
+    mockProjects = [...mockProjects, newProject];
+    logger.info("[MOCK API] Created project:", newProject);
+    return newProject;
+  },
+
+  updateProject: async (id: number, project: Partial<Project>) => {
+    await new Promise((r) => setTimeout(r, 800));
+    const index = mockProjects.findIndex((p) => p.id === id);
+    if (index === -1) {
+      throw new Error("Project not found");
+    }
+    const updatedProject = { ...mockProjects[index], ...project };
+    mockProjects = mockProjects.map((p) => (p.id === id ? updatedProject : p));
+    logger.info("[MOCK API] Updated project:", updatedProject);
+    return updatedProject;
+  },
+
+  deleteProject: async (id: number) => {
+    await new Promise((r) => setTimeout(r, 800));
+    const exists = mockProjects.some((p) => p.id === id);
+    if (!exists) {
+      return false;
+    }
+    mockProjects = mockProjects.filter((p) => p.id !== id);
+    logger.info("[MOCK API] Deleted project with id:", id);
+    return true;
   },
 };
 
@@ -43,18 +79,38 @@ const RestProjectService: ProjectServiceInterface = {
     if (!response.ok) throw new Error("API error fetching projects");
     return response.json();
   },
-  getProjectById: async (id) => {
+
+  getProjectById: async (id: number) => {
     const response = await fetch(`${API_URL}/projects/${id}`);
     if (!response.ok) throw new Error("API error fetching project by ID");
     return response.json();
   },
-  saveProject: async (project) => {
+
+  createProject: async (project: Omit<Project, "id">) => {
     const response = await fetch(`${API_URL}/projects`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(project),
     });
-    return { success: response.ok };
+    if (!response.ok) throw new Error("API error creating project");
+    return response.json();
+  },
+
+  updateProject: async (id: number, project: Partial<Project>) => {
+    const response = await fetch(`${API_URL}/projects/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(project),
+    });
+    if (!response.ok) throw new Error("API error updating project");
+    return response.json();
+  },
+
+  deleteProject: async (id: number) => {
+    const response = await fetch(`${API_URL}/projects/${id}`, {
+      method: "DELETE",
+    });
+    return response.ok;
   },
 };
 

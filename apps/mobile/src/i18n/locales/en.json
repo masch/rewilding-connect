@@ -2,9 +2,22 @@
   "app_title": "Impenetrable Connect",
   "mock_mode": "[Frontend-First Mock Mode]",
   "loading": "Loading...",
+  "saving": "Saving...",
   "error": "Error",
   "no_projects": "No projects found",
   "default_language": "Default Language",
+  "supported_languages": "Supported Languages",
+  "cascade_timeout": "Timeout (min)",
+  "max_attempts": "Max Attempts",
   "active": "Active",
-  "inactive": "Inactive"
+  "inactive": "Inactive",
+  "add_project": "Add Project",
+  "create_project": "Create Project",
+  "edit_project": "Edit Project",
+  "project_name": "Project Name",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "confirm_delete": "Confirm Delete",
+  "delete_confirm_message": "Are you sure you want to delete"
 }
