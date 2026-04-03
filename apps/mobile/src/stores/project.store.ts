@@ -7,21 +7,27 @@ interface ProjectState {
   projects: Project[];
   selectedProject: Project | null;
   isLoading: boolean;
+  isSaving: boolean;
   error: string | null;
 
   // Actions
   fetchProjects: () => Promise<void>;
   selectProject: (id: number) => Promise<void>;
+  createProject: (project: Omit<Project, "id">) => Promise<Project | null>;
+  updateProject: (id: number, project: Partial<Project>) => Promise<Project | null>;
+  deleteProject: (id: number) => Promise<boolean>;
 }
 
 /**
  * Project Store (Zustand)
  * The UI consumes this store, oblivious to whether the data comes from a mock or a real API.
+ * Uses isLoading for read operations and isSaving for mutations.
  */
-export const useProjectStore = create<ProjectState>((set) => ({
+export const useProjectStore = create<ProjectState>((set, get) => ({
   projects: [],
   selectedProject: null,
   isLoading: false,
+  isSaving: false,
   error: null,
 
   fetchProjects: async () => {
@@ -43,6 +49,55 @@ export const useProjectStore = create<ProjectState>((set) => ({
     } catch (err) {
       logger.error(`Error fetching project with ID: ${id}`, err);
       set({ error: "Project not found", isLoading: false });
+    }
+  },
+
+  createProject: async (project: Omit<Project, "id">) => {
+    set({ isSaving: true, error: null });
+    try {
+      const newProject = await ProjectService.createProject(project);
+      const currentProjects = get().projects;
+      set({ projects: [...currentProjects, newProject], isSaving: false });
+      return newProject;
+    } catch (err) {
+      logger.error("Error creating project", err);
+      set({ error: "Failed to create project", isSaving: false });
+      return null;
+    }
+  },
+
+  updateProject: async (id: number, project: Partial<Project>) => {
+    set({ isSaving: true, error: null });
+    try {
+      const updatedProject = await ProjectService.updateProject(id, project);
+      const currentProjects = get().projects;
+      const updatedList = currentProjects.map((p) => (p.id === id ? updatedProject : p));
+      set({ projects: updatedList, selectedProject: updatedProject, isSaving: false });
+      return updatedProject;
+    } catch (err) {
+      logger.error(`Error updating project with ID: ${id}`, err);
+      set({ error: "Failed to update project", isSaving: false });
+      return null;
+    }
+  },
+
+  deleteProject: async (id: number) => {
+    set({ isSaving: true, error: null });
+    try {
+      const success = await ProjectService.deleteProject(id);
+      if (success) {
+        const currentProjects = get().projects;
+        set({
+          projects: currentProjects.filter((p) => p.id !== id),
+          selectedProject: null,
+          isSaving: false,
+        });
+      }
+      return success;
+    } catch (err) {
+      logger.error(`Error deleting project with ID: ${id}`, err);
+      set({ error: "Failed to delete project", isSaving: false });
+      return false;
     }
   },
 }));

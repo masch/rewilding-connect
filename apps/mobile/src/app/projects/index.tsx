@@ -1,108 +1,107 @@
-import { useEffect } from "react";
+import { useCallback } from "react";
+import { useFocusEffect, useRouter, Link } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Text, View, ActivityIndicator, FlatList, StyleSheet } from "react-native";
+import { Text, View, ActivityIndicator } from "react-native";
 import { useProjectStore } from "../../stores/project.store";
 import { useI18n } from "../../hooks/useI18n";
+import { Project } from "@repo/shared";
+import { Button } from "../../components/Button";
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 80,
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1a1a1a",
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 20,
-    fontStyle: "italic",
-  },
-  error: {
-    color: "red",
-    marginTop: 20,
-  },
-  list: {
-    width: "100%",
-  },
-  card: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#eee",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  projectName: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  projectLang: {
-    fontSize: 14,
-    color: "#555",
-  },
-  projectStatus: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginTop: 6,
-  },
-  loading: {
-    marginTop: 20,
-  },
-});
+interface ProjectCardProps {
+  project: Project;
+}
+
+function ProjectCard({ project }: ProjectCardProps) {
+  const { t } = useI18n();
+
+  return (
+    <Link href={`/projects/${project.id}`} className="block mb-3 w-full">
+      <View className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm w-full">
+        <Text className="text-lg font-bold text-gray-900 mb-2 text-center">{project.name}</Text>
+
+        <View className="flex-row gap-2 mb-2 justify-center">
+          <View className="bg-blue-100 px-2 py-1 rounded">
+            <Text className="text-xs text-blue-700">
+              {t("default_language")}: {project.default_language.toUpperCase()}
+            </Text>
+          </View>
+          <View
+            className={`px-2 py-1 rounded ${project.is_active ? "bg-green-100" : "bg-gray-100"}`}
+          >
+            <Text className={`text-xs ${project.is_active ? "text-green-700" : "text-gray-500"}`}>
+              {project.is_active ? "🟢 " + t("active") : "🔴 " + t("inactive")}
+            </Text>
+          </View>
+        </View>
+
+        <View className="border-t border-gray-100 pt-2 mt-2">
+          <Text className="text-xs text-gray-500 mb-1">
+            {t("supported_languages")}:{" "}
+            {project.supported_languages.map((l) => l.toUpperCase()).join(", ")}
+          </Text>
+          <View className="flex-row gap-4">
+            <Text className="text-xs text-gray-500">
+              ⏱️ {t("cascade_timeout")}: {project.cascade_timeout_minutes} min
+            </Text>
+            <Text className="text-xs text-gray-500">
+              🔄 {t("max_attempts")}: {project.max_cascade_attempts}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Link>
+  );
+}
 
 export default function ProjectsScreen() {
+  const router = useRouter();
   const { projects, isLoading, error, fetchProjects } = useProjectStore();
   const { t } = useI18n();
 
-  useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProjects();
+    }, [fetchProjects]),
+  );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{t("app_title")}</Text>
-      <Text style={styles.subtitle}>{t("mock_mode")}</Text>
+    <View className="flex-1 bg-gray-50 pt-20 px-5">
+      <View className="flex-1 max-w-md w-full mx-auto">
+        <View className="mb-5">
+          <Text className="text-3xl font-bold text-gray-900 text-center">{t("app_title")}</Text>
+          <Text className="text-sm text-gray-500 italic text-center mt-1">{t("mock_mode")}</Text>
+        </View>
 
-      {isLoading && <ActivityIndicator size="large" color="#0000ff" style={styles.loading} />}
+        {isLoading && (
+          <View className="mb-5">
+            <ActivityIndicator size="large" />
+          </View>
+        )}
 
-      {error && (
-        <Text style={styles.error}>
-          {t("error")}: {error}
-        </Text>
-      )}
+        {error && (
+          <View className="bg-red-100 p-4 rounded-lg mb-5">
+            <Text className="text-red-700">
+              {t("error")}: {error}
+            </Text>
+          </View>
+        )}
 
-      {!isLoading && !error && (
-        <FlatList
-          data={projects}
-          keyExtractor={(item) => item.id.toString()}
-          style={styles.list}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Text style={styles.projectName}>{item.name}</Text>
-              <Text style={styles.projectLang}>
-                {t("default_language")}: {item.default_language.toUpperCase()}
-              </Text>
-              <Text style={styles.projectStatus}>
-                {item.is_active ? `🟢 ${t("active")}` : `🔴 ${t("inactive")}`}
-              </Text>
-            </View>
-          )}
-          ListEmptyComponent={<Text>{t("no_projects")}</Text>}
-        />
-      )}
+        {!isLoading && !error && projects.length > 0 && (
+          <View className="w-full items-center mb-5">
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </View>
+        )}
+
+        {!isLoading && !error && projects.length === 0 && (
+          <Text className="text-gray-500 text-center mb-5">{t("no_projects")}</Text>
+        )}
+
+        <View className="w-full">
+          <Button title={t("add_project")} icon="+" onPress={() => router.push("/projects/new")} />
+        </View>
+      </View>
 
       <StatusBar style="auto" />
     </View>
