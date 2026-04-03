@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Impenetrable Connect",
+    "slug": "impenetrable-connect",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "rewilding-connect",
+    "scheme": "impenetrable-connect",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
