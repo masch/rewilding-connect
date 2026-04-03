@@ -8,21 +8,21 @@ const styles = {
   container: {
     flex: 1,
     backgroundColor: "#f9f9f9",
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
+    alignItems: "center",
+    justifyContent: "center",
     paddingTop: 80,
     paddingHorizontal: 20,
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold" as const,
+    fontWeight: "bold",
     color: "#1a1a1a",
   },
   subtitle: {
     fontSize: 14,
     color: "#666",
     marginBottom: 20,
-    fontStyle: "italic" as const,
+    fontStyle: "italic",
   },
   error: {
     color: "red",
@@ -46,7 +46,7 @@ const styles = {
   },
   projectName: {
     fontSize: 18,
-    fontWeight: "600" as const,
+    fontWeight: "600",
     marginBottom: 4,
   },
   projectLang: {
@@ -55,7 +55,7 @@ const styles = {
   },
   projectStatus: {
     fontSize: 14,
-    fontWeight: "500" as const,
+    fontWeight: "500",
     marginTop: 6,
   },
   loading: {
