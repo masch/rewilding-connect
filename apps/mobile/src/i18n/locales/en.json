@@ -5,6 +5,8 @@
   "saving": "Saving...",
   "error": "Error",
   "no_projects": "No projects found",
+  "active_projects": "Active Projects",
+  "inactive_projects": "Inactive Projects",
   "default_language": "Default Language",
   "supported_languages": "Supported Languages",
   "cascade_timeout": "Timeout (min)",
