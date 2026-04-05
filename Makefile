@@ -1,4 +1,4 @@
-.PHONY: help setup install dev clean lint format check mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-expo-fix-deps mobile-expo-doctor backend seed android-reset android-stop android-kill android-restart eas-login eas-whoami eas-init eas-build-configure eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator
+.PHONY: help setup install dev clean lint format check mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-dev mobile-expo-fix-deps mobile-expo-doctor backend seed android-reset android-stop android-kill android-restart eas-login eas-whoami eas-init eas-build-configure eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator
 
 # ==========================================
 # 📋 HELP
@@ -20,6 +20,7 @@ help:
 	@echo "    make mobile-android-native   - Start mobile Android native"
 	@echo "    make mobile-ios              - Start mobile iOS"
 	@echo "    make mobile-ios-native       - Start mobile iOS native"
+	@echo "    make mobile-dev              - Start mobile dev"
 	@echo "    make mobile-expo-fix-deps    - Fix mobile dependencies"
 	@echo "    make mobile-expo-doctor      - Doctor mobile dependencies"
 	@echo ""
@@ -38,6 +39,17 @@ help:
 	@echo "    make android-stop            - Stop emulator (graceful)"
 	@echo "    make android-kill            - Kill emulator (force)"
 	@echo "    make android-restart         - Restart emulator"
+	@echo ""
+	@echo "  🤖 EAS"
+	@echo "    make eas-login               - Login to EAS"
+	@echo "    make eas-whoami              - Whoami in EAS"
+	@echo "    make eas-init                - Init EAS"
+	@echo "    make eas-build-configure     - Configure EAS"
+	@echo "    make eas-build-dev           - Build dev"
+	@echo "    make eas-build-android-dev   - Build Android dev"
+	@echo "    make eas-build-android-preview - Build Android preview"
+	@echo "    make eas-build-android-production - Build Android production"
+	@echo "    make eas-build-ios-simulator - Build iOS simulator"
 
 # ==========================================
 # 🔧 CONFIG
@@ -67,6 +79,9 @@ mobile:
 
 mobile-native:
 	cd $(MOBILE_DIR) && bun run start:native
+
+mobile-dev:
+	cd $(MOBILE_DIR) && bun run start:dev
 
 mobile-clean:
 	cd $(MOBILE_DIR) && bun run start:clean
@@ -142,6 +157,9 @@ eas-init:
 
 eas-build-configure:
 	cd $(MOBILE_DIR) && eas build:configure
+
+eas-build-dev:
+	cd $(MOBILE_DIR) && eas build --profile development
 
 eas-build-android-dev:
 	cd $(MOBILE_DIR) && eas build --platform android --profile development
