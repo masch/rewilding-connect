@@ -14,13 +14,14 @@
     "ios:native": "expo run:ios",
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write src",
-    "expo-fix-deps": "expo install --fix"
+    "expo:fix:deps": "expo install --fix"
   },
   "dependencies": {
     "@expo/metro-config": "~55.0.9",
     "@repo/shared": "workspace:*",
     "expo": "~55.0.0",
     "expo-constants": "~55.0.11",
+    "expo-dev-client": "~55.0.22",
     "expo-linking": "~55.0.11",
     "expo-localization": "~55.0.11",
     "expo-router": "~55.0.10",
