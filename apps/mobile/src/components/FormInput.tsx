@@ -17,18 +17,22 @@ export function FormInput({
   ...rest
 }: FormInputProps) {
   return (
-    <View className="mb-5">
-      <Text className="text-sm font-medium text-gray-700 mb-2">{label}</Text>
+    <View className="mb-3">
+      <Text className="text-sm font-medium text-on-surface mb-2">{label}</Text>
       <TextInput
-        className={`bg-white border p-3 rounded-lg ${error ? "border-red-500" : "border-gray-300"}`}
+        className={`
+          bg-surface-container-highest p-4 min-h-touch
+          ${error ? "border-2 border-error-container" : "border-2 border-transparent"}
+        `}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         placeholder={placeholder}
+        placeholderTextColor="text-on-surface opacity-40"
         {...rest}
       />
-      {helperText && <Text className="text-xs text-gray-500 mt-1">{helperText}</Text>}
-      {error && <Text className="text-red-500 text-xs mt-1">{error}</Text>}
+      {helperText && <Text className="text-xs text-on-surface opacity-60 mt-1">{helperText}</Text>}
+      {error && <Text className="text-xs text-on-error-container mt-1">{error}</Text>}
     </View>
   );
 }

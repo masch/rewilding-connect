@@ -591,7 +591,18 @@ graph TD
 
     B --> L["🌱 Seed Scripts<br/>CLI Data Loading"]
     C --> L
+
+    L --> M["🎨 Design Tokens<br/>Colors + Typography<br/>see packages/ui/src/tokens/design.md"]
 ```
+
+#### 4.0.3 Design Tokens
+
+The design system is defined in:
+
+- `design.md` — Creative design system document (source of truth)
+- `packages/ui/src/tokens/design.md` — Implementation tokens for code
+- `apps/mobile/tailwind.config.js` — Tailwind CSS tokens (colors, fonts, spacing)
+- `apps/mobile/global.css` — Component styles and utilities
 
 #### 4.0.3 AI Agent Skills (Development Tooling)
 

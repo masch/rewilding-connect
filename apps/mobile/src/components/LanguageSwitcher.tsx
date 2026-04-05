@@ -15,22 +15,29 @@ export function LanguageSwitcher() {
   }, [initializeLocale]);
 
   return (
-    <View className="flex-row gap-2">
-      {AVAILABLE_LOCALES.map((lang) => (
-        <Pressable
-          key={lang.code}
-          className={`px-2 py-1 rounded ${locale === lang.code ? "bg-green-600" : "bg-gray-200"}`}
-          onPress={() => setLocale(lang.code)}
-        >
-          <Text
-            className={`text-xs font-medium ${
-              locale === lang.code ? "text-white" : "text-gray-700"
-            }`}
+    <View className="flex-row gap-0">
+      {AVAILABLE_LOCALES.map((lang) => {
+        const isActive = locale === lang.code;
+        return (
+          <Pressable
+            key={lang.code}
+            className={`
+              px-4 py-2 min-h-touch
+              ${isActive ? "bg-primary-container" : "bg-surface-container-highest"}
+            `}
+            onPress={() => setLocale(lang.code)}
           >
-            {lang.label}
-          </Text>
-        </Pressable>
-      ))}
+            <Text
+              className={`
+                text-sm font-medium
+                ${isActive ? "text-on-primary" : "text-on-surface opacity-50"}
+              `}
+            >
+              {lang.label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }

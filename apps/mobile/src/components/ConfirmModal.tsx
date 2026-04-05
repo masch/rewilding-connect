@@ -26,12 +26,15 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-      <Pressable className="flex-1 bg-black/50 items-center justify-center" onPress={onCancel}>
-        <Pressable className="bg-white rounded-2xl p-6 w-80 shadow-xl" onPress={() => {}}>
-          <Text className="text-xl font-bold text-gray-900 mb-2">{title}</Text>
-          <Text className="text-gray-600 mb-6">{message}</Text>
+      <Pressable className="flex-1 items-center justify-center p-5" onPress={onCancel}>
+        {/* Glassmorphism overlay */}
+        <View className="absolute inset-0 bg-surface/85 backdrop-blur-md" />
 
-          <View className="gap-3">
+        <Pressable className="bg-surface-container-highest p-6 w-full max-w-md" onPress={() => {}}>
+          <Text className="text-xl font-bold text-on-surface mb-2">{title}</Text>
+          <Text className="text-base text-on-surface opacity-70 mb-6">{message}</Text>
+
+          <View className="gap-4">
             <Button
               title={confirmText}
               variant={variant}

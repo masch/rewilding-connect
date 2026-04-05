@@ -1,3 +1,95 @@
+/* Editorial Earth Design System - Global Styles */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Section 2: The "No-Line" Rule - No borders, use background shifts instead */
+
+/* Section 3: Typography - Manrope for display, Inter for body */
+@layer base {
+  html {
+    font-family: "Inter", "sans-serif";
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Manrope", "sans-serif";
+  }
+}
+
+/* Section 5: Sharp, angular buttons (0 border-radius) */
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-on-primary min-h-button rounded-none;
+  }
+
+  .btn-primary:focus {
+    @apply ring-2 ring-secondary;
+  }
+}
+
+/* Section 5: Status Badges */
+@layer components {
+  .badge-buscando {
+    @apply bg-tertiary-container text-on-tertiary-fixed font-medium px-4 py-2;
+  }
+
+  .badge-confirmado {
+    @apply bg-secondary-container text-on-secondary-fixed font-medium px-4 py-2;
+  }
+
+  .badge-expirado {
+    @apply bg-error-container text-on-error-container font-medium px-4 py-2;
+  }
+}
+
+/* Section 2: Surface Hierarchy */
+@layer components {
+  .surface-canvas {
+    @apply bg-surface;
+  }
+
+  .surface-content {
+    @apply bg-surface-container-low;
+  }
+
+  .surface-card {
+    @apply bg-surface-container-highest;
+  }
+
+  .surface-elevated {
+    @apply bg-surface-container-lowest;
+  }
+}
+
+/* Section 4: Ghost Borders (Accessibility Fallback) */
+@layer utilities {
+  .ghost-border {
+    border: 1px solid rgba(219, 193, 187, 0.15);
+  }
+
+  /* Section 4: Glassmorphism */
+  .glass {
+    @apply bg-surface/85 backdrop-blur-md;
+  }
+}
+
+/* Section 6: Do's - Spacing Scale utilities */
+@layer utilities {
+  .spacing-base {
+    @apply gap-4;
+  }
+
+  .spacing-section {
+    @apply gap-6;
+  }
+
+  .spacing-division {
+    @apply gap-8;
+  }
+}

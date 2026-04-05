@@ -4,7 +4,63 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        // Surface Colors
+        surface: "#fcf9f2",
+        "surface-container-low": "#f6f3ec",
+        "surface-container-highest": "#e5e2db",
+        "surface-container-lowest": "#ffffff",
+
+        // Primary Colors - Terracotta for buttons
+        primary: "#8c3d2b",
+        "primary-base": "#2b868c",
+        "primary-container": "#8c3d2b",
+        "primary-fixed": "#ffdad2",
+
+        // Text on colors
+        "on-surface": "#1c1c18",
+        "on-primary": "#ffffff",
+        "on-primary-fixed": "#3d0600",
+
+        // Secondary Colors
+        secondary: "#47664b",
+        "secondary-container": "#c8ecc9",
+        "on-secondary-fixed": "#03210c",
+
+        // Tertiary & Status Colors
+        "tertiary-container": "#764d00",
+        "on-tertiary-fixed": "#291800",
+
+        // Error Colors
+        "error-container": "#ffdad6",
+        "on-error-container": "#93000a",
+
+        // Outline
+        "outline-variant": "#dbc1bb",
+      },
+      fontFamily: {
+        // Section 3: Manrope for headlines, Inter for body
+        display: ["Manrope", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+      },
+      // Section 5: Sharp angular buttons (0 border-radius)
+      borderRadius: {
+        none: "0",
+        DEFAULT: "0",
+      },
+      // Section 6: Minimum touch targets (48x48dp minimum)
+      minHeight: {
+        button: "5.5rem", // 88px / 16 in tailwind scale
+        touch: "3rem", // 48dp minimum
+      },
+      // Spacing scale (Section 6)
+      spacing: {
+        "scale-4": "1rem",
+        "scale-6": "1.5rem",
+        "scale-8": "2rem",
+      },
+    },
   },
   plugins: [],
 };

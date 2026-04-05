@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useFocusEffect, useRouter, Link } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Text, View, ActivityIndicator } from "react-native";
+import { Text, View, ActivityIndicator, ScrollView } from "react-native";
 import { useProjectStore } from "../../stores/project.store";
 import { useI18n } from "../../hooks/useI18n";
 import { Project } from "@repo/shared";
@@ -12,41 +12,119 @@ interface ProjectCardProps {
   project: Project;
 }
 
-function ProjectCard({ project }: ProjectCardProps) {
+function ActiveProjectCard({ project }: ProjectCardProps) {
   const { t } = useI18n();
 
   return (
-    <Link href={`/projects/${project.id}`} className="block mb-3 w-full">
-      <View className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm w-full">
-        <Text className="text-lg font-bold text-gray-900 mb-2 text-center">{project.name}</Text>
-
-        <View className="flex-row gap-2 mb-2 justify-center">
-          <View className="bg-blue-100 px-2 py-1 rounded">
-            <Text className="text-xs text-blue-700">
-              {t("default_language")}: {project.default_language.toUpperCase()}
-            </Text>
-          </View>
-          <View
-            className={`px-2 py-1 rounded ${project.is_active ? "bg-green-100" : "bg-gray-100"}`}
-          >
-            <Text className={`text-xs ${project.is_active ? "text-green-700" : "text-gray-500"}`}>
-              {project.is_active ? "🟢 " + t("active") : "🔴 " + t("inactive")}
-            </Text>
+    <Link href={`/projects/${project.id}`} className="block mb-6 w-full">
+      <View className="bg-surface-container-highest p-6 w-full">
+        {/* Header - Project Name + Status */}
+        <View className="mb-4">
+          <Text className="text-2xl font-bold text-on-surface font-display text-center">
+            {project.name}
+          </Text>
+          <View className="flex-row justify-center mt-2">
+            <View className="bg-secondary-container px-4 py-1">
+              <Text className="text-sm font-medium text-on-secondary-fixed">● {t("active")}</Text>
+            </View>
           </View>
         </View>
 
-        <View className="border-t border-gray-100 pt-2 mt-2">
-          <Text className="text-xs text-gray-500 mb-1">
-            {t("supported_languages")}:{" "}
-            {project.supported_languages.map((l) => l.toUpperCase()).join(", ")}
+        {/* Info Grid */}
+        <View className="gap-3">
+          {/* Default Language */}
+          <View className="bg-surface-container-low p-3 flex-row justify-between">
+            <Text className="text-sm text-on-surface opacity-70">{t("default_language")}</Text>
+            <Text className="text-sm font-medium text-on-surface">
+              {project.default_language.toUpperCase()}
+            </Text>
+          </View>
+
+          {/* Supported Languages */}
+          <View className="bg-surface-container-low p-3 flex-row justify-between">
+            <Text className="text-sm text-on-surface opacity-70">{t("supported_languages")}</Text>
+            <Text className="text-sm font-medium text-on-surface">
+              {project.supported_languages.map((l) => l.toUpperCase()).join(", ")}
+            </Text>
+          </View>
+
+          {/* Configuration Row */}
+          <View className="flex-row gap-3">
+            <View className="bg-surface-container-low flex-1 p-3">
+              <Text className="text-xs text-on-surface opacity-50 mb-1">
+                {t("cascade_timeout")}
+              </Text>
+              <Text className="text-base font-medium text-on-surface">
+                {project.cascade_timeout_minutes} min
+              </Text>
+            </View>
+            <View className="bg-surface-container-low flex-1 p-3">
+              <Text className="text-xs text-on-surface opacity-50 mb-1">{t("max_attempts")}</Text>
+              <Text className="text-base font-medium text-on-surface">
+                {project.max_cascade_attempts}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </Link>
+  );
+}
+
+function InactiveProjectCard({ project }: ProjectCardProps) {
+  const { t } = useI18n();
+
+  return (
+    <Link href={`/projects/${project.id}`} className="block mb-6 w-full">
+      <View className="bg-surface-container-low p-6 w-full">
+        {/* Header - Project Name + Status */}
+        <View className="mb-4">
+          <Text className="text-2xl font-bold text-on-surface opacity-40 font-display text-center">
+            {project.name}
           </Text>
-          <View className="flex-row gap-4">
-            <Text className="text-xs text-gray-500">
-              ⏱️ {t("cascade_timeout")}: {project.cascade_timeout_minutes} min
+          <View className="flex-row justify-center mt-2">
+            <View className="bg-surface px-4 py-1">
+              <Text className="text-sm font-medium text-on-surface opacity-40">
+                ○ {t("inactive")}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Info Grid - Reduced opacity */}
+        <View className="gap-3">
+          {/* Default Language */}
+          <View className="bg-surface p-3 flex-row justify-between">
+            <Text className="text-sm text-on-surface opacity-40">{t("default_language")}</Text>
+            <Text className="text-sm font-medium text-on-surface opacity-40">
+              {project.default_language.toUpperCase()}
             </Text>
-            <Text className="text-xs text-gray-500">
-              🔄 {t("max_attempts")}: {project.max_cascade_attempts}
+          </View>
+
+          {/* Supported Languages */}
+          <View className="bg-surface p-3 flex-row justify-between">
+            <Text className="text-sm text-on-surface opacity-40">{t("supported_languages")}</Text>
+            <Text className="text-sm font-medium text-on-surface opacity-40">
+              {project.supported_languages.map((l) => l.toUpperCase()).join(", ")}
             </Text>
+          </View>
+
+          {/* Configuration Row */}
+          <View className="flex-row gap-3">
+            <View className="bg-surface flex-1 p-3">
+              <Text className="text-xs text-on-surface opacity-30 mb-1">
+                {t("cascade_timeout")}
+              </Text>
+              <Text className="text-base font-medium text-on-surface opacity-40">
+                {project.cascade_timeout_minutes} min
+              </Text>
+            </View>
+            <View className="bg-surface flex-1 p-3">
+              <Text className="text-xs text-on-surface opacity-30 mb-1">{t("max_attempts")}</Text>
+              <Text className="text-base font-medium text-on-surface opacity-40">
+                {project.max_cascade_attempts}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -65,46 +143,89 @@ export default function ProjectsScreen() {
     }, [fetchProjects]),
   );
 
+  // Sort: active first, then by name (ascending)
+  const sortedProjects = [...projects].sort((a, b) => {
+    if (a.is_active !== b.is_active) {
+      return a.is_active ? -1 : 1;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  const activeProjects = sortedProjects.filter((p) => p.is_active);
+  const inactiveProjects = sortedProjects.filter((p) => !p.is_active);
+
   return (
-    <View className="flex-1 bg-gray-50 pt-20 px-5">
+    <View className="flex-1 bg-surface pt-20 px-5">
       <View className="flex-1 max-w-md w-full mx-auto">
-        <View className="mb-5 flex-row justify-between items-center">
+        {/* Header */}
+        <View className="mb-8 flex-row justify-between items-center">
           <View className="flex-1">
-            <Text className="text-3xl font-bold text-gray-900">{t("app_title")}</Text>
-            <Text className="text-sm text-gray-500 italic">{t("mock_mode")}</Text>
+            <Text className="text-4xl font-bold text-on-surface font-display">
+              {t("app_title")}
+            </Text>
+            <Text className="text-base text-on-surface mt-1 italic opacity-60">
+              {t("mock_mode")}
+            </Text>
           </View>
           <LanguageSwitcher />
         </View>
 
-        {isLoading && (
-          <View className="mb-5">
-            <ActivityIndicator size="large" />
-          </View>
-        )}
+        {/* Content - scrollable */}
+        <ScrollView
+          className="pt-8 flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Loading State */}
+          {isLoading && (
+            <View className="py-12 items-center">
+              <ActivityIndicator size="large" color="#2b868c" />
+              <Text className="text-on-surface mt-4">{t("loading")}</Text>
+            </View>
+          )}
 
-        {error && (
-          <View className="bg-red-100 p-4 rounded-lg mb-5">
-            <Text className="text-red-700">
-              {t("error")}: {error}
-            </Text>
-          </View>
-        )}
+          {/* Active Projects */}
+          {!isLoading && !error && activeProjects.length > 0 && (
+            <View className="mb-8">
+              <Text className="text-lg font-bold text-on-surface mb-4">{t("active_projects")}</Text>
+              <View className="items-center">
+                {activeProjects.map((project) => (
+                  <ActiveProjectCard key={project.id} project={project} />
+                ))}
+              </View>
+            </View>
+          )}
 
-        {!isLoading && !error && projects.length > 0 && (
-          <View className="w-full items-center mb-5">
-            {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </View>
-        )}
+          {/* Inactive Projects */}
+          {!isLoading && !error && inactiveProjects.length > 0 && (
+            <View className="mb-8">
+              <Text className="text-lg font-bold text-on-surface opacity-50 mb-4">
+                {t("inactive_projects")}
+              </Text>
+              <View className="items-center">
+                {inactiveProjects.map((project) => (
+                  <InactiveProjectCard key={project.id} project={project} />
+                ))}
+              </View>
+            </View>
+          )}
 
-        {!isLoading && !error && projects.length === 0 && (
-          <Text className="text-gray-500 text-center mb-5">{t("no_projects")}</Text>
-        )}
+          {/* Empty State */}
+          {!isLoading && !error && projects.length === 0 && (
+            <Text className="text-on-surface text-center mb-6 opacity-60">{t("no_projects")}</Text>
+          )}
 
-        <View className="w-full">
-          <Button title={t("add_project")} icon="+" onPress={() => router.push("/projects/new")} />
-        </View>
+          {/* Action Button */}
+          {!isLoading && (
+            <View className="pt-8 pb-8">
+              <Button
+                title={t("add_project")}
+                icon="+"
+                onPress={() => router.push("/projects/new")}
+              />
+            </View>
+          )}
+        </ScrollView>
       </View>
 
       <StatusBar style="auto" />

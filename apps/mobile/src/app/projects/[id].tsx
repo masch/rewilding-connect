@@ -117,12 +117,12 @@ export default function ProjectFormScreen() {
     if (isEditMode && id) {
       const result = await updateProject(parseInt(id), formData);
       if (result) {
-        router.push("/projects");
+        router.push("/");
       }
     } else {
       const result = await createProject(formData);
       if (result) {
-        router.push("/projects");
+        router.push("/");
       }
     }
   };
@@ -135,7 +135,7 @@ export default function ProjectFormScreen() {
     setShowDeleteModal(false);
     const success = await deleteProject(parseInt(id!));
     if (success) {
-      router.push("/projects");
+      router.push("/");
     }
   };
 
@@ -149,17 +149,17 @@ export default function ProjectFormScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-gray-50 p-5 pt-20 items-center justify-center">
-        <ActivityIndicator size="large" />
+      <View className="flex-1 bg-surface p-5 pt-20 items-center justify-center">
+        <ActivityIndicator size="large" color="primary" accessibilityLabel="Loading" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50 p-5 pt-20">
+    <View className="flex-1 bg-surface p-5 pt-20">
       <View className="flex-1 max-w-md w-full mx-auto">
         <View className="mb-5">
-          <Text className="text-2xl font-bold text-gray-900 text-center">
+          <Text className="text-2xl font-bold text-on-surface text-center">
             {isEditMode ? t("edit_project") : t("create_project")}
           </Text>
         </View>
@@ -172,7 +172,7 @@ export default function ProjectFormScreen() {
           error={fieldErrors.name}
         />
 
-        <View className="mb-5 flex-row gap-4">
+        <View className="flex-row gap-4">
           <View className="flex-1">
             <FormInput
               label={t("max_attempts")}
@@ -199,19 +199,23 @@ export default function ProjectFormScreen() {
           </View>
         </View>
 
-        <FormLanguageSelector
-          label={t("supported_languages")}
-          selectedLanguages={formData.supported_languages}
-          onToggle={toggleLanguage}
-          extra={
+        <View className="flex-row gap-4">
+          <View className="flex-1">
+            <FormLanguageSelector
+              label={t("supported_languages")}
+              selectedLanguages={formData.supported_languages}
+              onToggle={toggleLanguage}
+              error={fieldErrors.supported_languages}
+            />
+          </View>
+          <View className="flex-1">
             <FormSwitch
               label={t("active")}
               value={formData.is_active}
               onValueChange={(value) => setFormData({ ...formData, is_active: value })}
             />
-          }
-          error={fieldErrors.supported_languages}
-        />
+          </View>
+        </View>
 
         <View className="mt-6 gap-3">
           <Button
@@ -221,11 +225,7 @@ export default function ProjectFormScreen() {
             onPress={handleSave}
           />
 
-          <Button
-            title={t("cancel")}
-            variant="secondary"
-            onPress={() => router.push("/projects")}
-          />
+          <Button title={t("cancel")} variant="secondary" onPress={() => router.push("/")} />
 
           {isEditMode && <Button title={t("delete")} variant="danger" onPress={handleDelete} />}
         </View>
