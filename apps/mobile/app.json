@@ -13,9 +13,16 @@
       "resizeMode": "contain",
       "backgroundColor": "#fcf9f2"
     },
-    "plugins": ["expo-localization", "expo-router"],
+    "plugins": [
+      "expo-localization",
+      "expo-router"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "org.impenetrable.connect",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -29,6 +36,13 @@
     "web": {
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "430a65eb-19e4-4158-9822-475364cb6664"
+      }
+    },
+    "owner": "masch"
   }
 }

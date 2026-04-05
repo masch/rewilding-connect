@@ -1,4 +1,4 @@
-.PHONY: help setup install dev clean lint format check mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-fix-deps backend seed android-reset android-stop android-kill android-restart
+.PHONY: help setup install dev clean lint format check mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-expo-fix-deps mobile-expo-doctor backend seed android-reset android-stop android-kill android-restart eas-login eas-whoami eas-init eas-build-configure eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator
 
 # ==========================================
 # 📋 HELP
@@ -20,7 +20,8 @@ help:
 	@echo "    make mobile-android-native   - Start mobile Android native"
 	@echo "    make mobile-ios              - Start mobile iOS"
 	@echo "    make mobile-ios-native       - Start mobile iOS native"
-	@echo "    make mobile-fix-deps         - Fix mobile dependencies"
+	@echo "    make mobile-expo-fix-deps    - Fix mobile dependencies"
+	@echo "    make mobile-expo-doctor      - Doctor mobile dependencies"
 	@echo ""
 	@echo "  🖥️ BACKEND"
 	@echo "    make backend                 - Start backend API"
@@ -85,8 +86,11 @@ mobile-ios:
 mobile-ios-native:
 	cd $(MOBILE_DIR) && bun run ios:native
 
-mobile-fix-deps:
-	cd $(MOBILE_DIR) && bun run expo-fix-deps
+mobile-expo-fix-deps:
+	cd $(MOBILE_DIR) && bun run expo:fix:deps
+
+mobile-expo-doctor:
+	cd $(MOBILE_DIR) && bunx --bun expo-doctor
 
 # ==========================================
 # 🖥️ BACKEND
@@ -122,6 +126,34 @@ format:
 	bun run format
 
 check: lint format
+
+# ==========================================
+# 🤖 EAS
+# ==========================================
+
+eas-login:
+	cd $(MOBILE_DIR) && eas login -b
+
+eas-whoami:
+	cd $(MOBILE_DIR) && eas whoami
+
+eas-init:
+	cd $(MOBILE_DIR) && eas init
+
+eas-build-configure:
+	cd $(MOBILE_DIR) && eas build:configure
+
+eas-build-android-dev:
+	cd $(MOBILE_DIR) && eas build --platform android --profile development
+
+eas-build-android-preview:
+	cd $(MOBILE_DIR) && eas build --platform android --profile preview
+
+eas-build-android-production:
+	cd $(MOBILE_DIR) && eas build --platform android --profile production
+
+eas-build-ios-simulator:
+	cd $(MOBILE_DIR) && eas build --platform ios --profile ios-simulator
 
 # ==========================================
 # 🤖 ANDROID EMULATOR
