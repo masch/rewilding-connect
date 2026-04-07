@@ -11,5 +11,8 @@ export const ENV = {
   API_URL: "http://localhost:3000",
 } as const;
 
+// Convenience export for services/stores
+export const { USE_MOCKS, API_URL } = ENV;
+
 // Development mode check
 export const isDev = process.env.NODE_ENV !== "production";

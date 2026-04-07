@@ -15,6 +15,7 @@
     "ios:native": "expo run:ios",
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write src",
+    "typecheck": "tsc --noEmit",
     "expo:fix:deps": "expo install --fix"
   },
   "dependencies": {
