@@ -1,7 +1,7 @@
 import { Link } from "expo-router";
 import { Text, View } from "react-native";
 import { Project } from "@repo/shared";
-import { useI18n } from "../../hooks/useI18n";
+import { useTranslations } from "../../hooks/useI18n";
 
 /**
  * Props for the ProjectCard component
@@ -17,7 +17,7 @@ interface ProjectCardProps {
  * @param isActive - Whether the project is active (affects styling)
  */
 export function ProjectCard({ project, isActive }: ProjectCardProps) {
-  const { t } = useI18n();
+  const { t } = useTranslations();
 
   // Active project uses high contrast styling
   const containerClass = isActive

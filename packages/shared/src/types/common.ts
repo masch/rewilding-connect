@@ -5,8 +5,9 @@ export const TimeOfDaySchema = z.enum(["BREAKFAST", "LUNCH", "SNACK", "DINNER"])
 export type TimeOfDay = z.infer<typeof TimeOfDaySchema>;
 
 // Supported languages for the platform
-export const LanguageSchema = z.enum(["es", "en", "pt"]);
+export const LanguageSchema = z.enum(["es", "en"]);
 export type Language = z.infer<typeof LanguageSchema>;
+export const SUPPORTED_LANGUAGES: Language[] = ["es", "en"];
 
 // Helper for i18n JSONB fields
 export const I18nStringSchema = z.record(LanguageSchema, z.string());
