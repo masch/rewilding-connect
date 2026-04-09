@@ -10,7 +10,7 @@ const translations = { en, es };
 const i18n = new I18n(translations);
 i18n.enableFallback = true;
 
-export function useI18n() {
+export function useTranslations() {
   const locale = useLocaleStore((state) => state.locale);
 
   const t = useMemo(() => {

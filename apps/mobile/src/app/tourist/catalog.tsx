@@ -5,7 +5,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Text, View, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
-import { useI18n } from "../../hooks/useI18n";
+import { useTranslations } from "../../hooks/useI18n";
 import Screen, { ScreenContent } from "../../components/Screen";
 import { ServiceCard } from "../../components/ServiceCard";
 import { SectionHeader } from "../../components/SectionHeader";
@@ -14,7 +14,7 @@ import { useCatalogStore } from "../../stores/catalog.store";
 import type { CatalogServiceItem } from "../../mocks/catalog";
 
 export default function CatalogScreen() {
-  const { t } = useI18n();
+  const { t } = useTranslations();
   const { services, isLoading, error, fetchServices, createReservation } = useCatalogStore();
 
   const [refreshing, setRefreshing] = useState(false);

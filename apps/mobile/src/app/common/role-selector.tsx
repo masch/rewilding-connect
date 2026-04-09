@@ -3,11 +3,11 @@ import { Button } from "../../components/Button";
 import { View, Text } from "react-native";
 import Screen, { ScreenContent } from "../../components/Screen";
 import { ROLES } from "../../constants/roles";
-import { useI18n } from "../../hooks/useI18n";
+import { useTranslations } from "../../hooks/useI18n";
 
 export default function RoleSelectorScreen() {
   const { userRole, setUserRole } = useAuthStore();
-  const { t } = useI18n();
+  const { t } = useTranslations();
 
   return (
     <Screen>

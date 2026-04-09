@@ -1,9 +1,9 @@
 import { Tabs } from "expo-router";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useI18n } from "../../hooks/useI18n";
+import { useTranslations } from "../../hooks/useI18n";
 
 export default function TouristTabsLayout() {
-  const { t } = useI18n();
+  const { t } = useTranslations();
 
   return (
     <Tabs
