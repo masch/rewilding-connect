@@ -3,7 +3,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Text, View, ActivityIndicator, ScrollView } from "react-native";
 import { useProjectStore } from "../../stores/project.store";
-import { useI18n } from "../../hooks/useI18n";
+import { useTranslations } from "../../hooks/useI18n";
 import { useProjectSelectors } from "../../hooks/useProjectSelectors";
 import { ProjectCard } from "../../components/project/ProjectCard";
 import { Button } from "../../components/Button";
@@ -13,7 +13,7 @@ import Screen from "../../components/Screen";
 export default function ProjectsScreen() {
   const router = useRouter();
   const { isLoading, error, fetchProjects } = useProjectStore();
-  const { t } = useI18n();
+  const { t } = useTranslations();
   const { activeProjects, inactiveProjects } = useProjectSelectors();
 
   useFocusEffect(

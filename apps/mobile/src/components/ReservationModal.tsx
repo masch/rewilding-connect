@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Text, View, Modal, Pressable, ScrollView, TextInput, Image } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import type { CatalogServiceItem } from "../mocks/catalog";
-import { useI18n } from "../hooks/useI18n";
+import { useTranslations } from "../hooks/useI18n";
 
 interface ReservationModalProps {
   visible: boolean;
@@ -31,7 +31,7 @@ export function ReservationModal({
   onConfirm,
   isLoading = false,
 }: ReservationModalProps) {
-  const { t } = useI18n();
+  const { t } = useTranslations();
   const [selectedMoment, setSelectedMoment] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");

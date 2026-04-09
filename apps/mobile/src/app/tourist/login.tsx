@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import Screen from "../../components/Screen";
 import { Button } from "../../components/Button";
 import { FormInput } from "../../components/FormInput";
-import { useI18n } from "../../hooks/useI18n";
+import { useTranslations } from "../../hooks/useI18n";
 import { useAuthStore } from "../../stores/auth.store";
 import { CreateUserInput } from "@repo/shared";
 import jaguarHero from "../../../assets/jaguar-hero.png";
@@ -22,7 +22,7 @@ interface FormErrors {
 }
 
 export default function LoginScreen() {
-  const { t } = useI18n();
+  const { t } = useTranslations();
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
   const [formData, setFormData] = useState<LoginFormData>({

@@ -4,11 +4,11 @@ import { View, Text } from "react-native";
 import Screen, { ScreenContent } from "../components/Screen";
 import { router } from "expo-router";
 import { ROLES, ROLE_CONFIG } from "../constants/roles";
-import { useI18n } from "../hooks/useI18n";
+import { useTranslations } from "../hooks/useI18n";
 
 export default function RoleSelectorScreen() {
   const { userRole, setUserRole } = useAuthStore();
-  const { t } = useI18n();
+  const { t } = useTranslations();
 
   const handleRoleSelect = (role: (typeof ROLES)[number]["role"]) => {
     setUserRole(role);
