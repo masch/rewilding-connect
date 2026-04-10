@@ -2,13 +2,13 @@ import { useCallback } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Text, View, ActivityIndicator, ScrollView } from "react-native";
-import { useProjectStore } from "../../stores/project.store";
-import { useTranslations } from "../../hooks/useI18n";
-import { useProjectSelectors } from "../../hooks/useProjectSelectors";
-import { ProjectCard } from "../../components/project/ProjectCard";
-import { Button } from "../../components/Button";
-import { LanguageSwitcher } from "../../components/LanguageSwitcher";
-import Screen from "../../components/Screen";
+import { useProjectStore } from "../../../stores/project.store";
+import { useTranslations } from "../../../hooks/useI18n";
+import { useProjectSelectors } from "../../../hooks/useProjectSelectors";
+import { ProjectCard } from "../../../components/project/ProjectCard";
+import { Button } from "../../../components/Button";
+import { LanguageSwitcher } from "../../../components/LanguageSwitcher";
+import Screen from "../../../components/Screen";
 
 export default function ProjectsScreen() {
   const router = useRouter();
