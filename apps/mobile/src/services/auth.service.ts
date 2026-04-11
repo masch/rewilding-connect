@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { ZodIssue, ZodSchema } from "zod";
 import { User, CreateUserSchema, CreateUserInput } from "@repo/shared";
 import env from "../config/env";
-import { MOCK_USERS, findUserByAlias } from "../mocks/users";
+import { MOCK_USERS, findUserByAlias, findUserByEmail } from "../mocks/users";
 
 /**
  * Validate data using Zod schemas
@@ -24,9 +24,12 @@ interface AuthServiceInterface {
   logout(): Promise<void>;
 }
 
-const mockUsers = [...MOCK_USERS];
-let currentUser: User | null = null;
-let nextId = 3;
+// Module-level state using an object pattern
+const authState = {
+  users: [...MOCK_USERS],
+  currentUser: null as User | null,
+  nextId: 3,
+};
 
 const MockAuthService: AuthServiceInterface = {
   login: async (userData: CreateUserInput) => {
@@ -37,15 +40,15 @@ const MockAuthService: AuthServiceInterface = {
     const alias = validated.alias ?? "";
     const existingUser = findUserByAlias(alias);
     if (existingUser) {
-      currentUser = {
+      authState.currentUser = {
         ...existingUser,
         last_login_at: new Date(),
       };
-      return currentUser;
+      return authState.currentUser;
     }
     // Create new user
     const newUser: User = {
-      id: `user_${nextId++}`,
+      id: `user_${authState.nextId++}`,
       alias: validated.alias,
       email: validated.email,
       first_name: validated.first_name,
@@ -58,19 +61,19 @@ const MockAuthService: AuthServiceInterface = {
       is_active: true,
       created_at: new Date(),
     };
-    mockUsers.push(newUser);
-    currentUser = newUser;
-    return currentUser;
+    authState.users.push(newUser);
+    authState.currentUser = newUser;
+    return authState.currentUser;
   },
 
   getCurrentUser: async () => {
     await new Promise((r) => setTimeout(r, 200));
-    return currentUser;
+    return authState.currentUser;
   },
 
   logout: async () => {
     await new Promise((r) => setTimeout(r, 200));
-    currentUser = null;
+    authState.currentUser = null;
   },
 };
 
@@ -101,22 +104,38 @@ export const AuthService = env.USE_MOCKS ? MockAuthService : RestAuthService;
 
 /**
  * Mock login - searches in mock users or creates new one
+ * - Tourists: found by alias
+ * - Entrepreneurs/Admins: found by email
  */
 export function mockLogin(userData: CreateUserInput): User {
   // Check if user exists in mock data
-  const alias = userData.alias ?? "";
-  const existingUser = findUserByAlias(alias);
-  if (existingUser) {
-    currentUser = {
-      ...existingUser,
-      last_login_at: new Date(),
-    };
-    return currentUser;
+  // Try alias first (for tourists)
+  if (userData.alias) {
+    const existingUser = findUserByAlias(userData.alias);
+    if (existingUser) {
+      authState.currentUser = {
+        ...existingUser,
+        last_login_at: new Date(),
+      };
+      return authState.currentUser;
+    }
   }
 
-  // Create new user (convert null to undefined for nullable fields)
+  // Try email (for entrepreneurs/admins)
+  if (userData.email) {
+    const existingUser = findUserByEmail(userData.email);
+    if (existingUser) {
+      authState.currentUser = {
+        ...existingUser,
+        last_login_at: new Date(),
+      };
+      return authState.currentUser;
+    }
+  }
+
+  // Create new user only if not found (convert null to undefined)
   const newUser: User = {
-    id: `user_${nextId++}`,
+    id: `user_${authState.nextId++}`,
     alias: userData.alias ?? null,
     email: userData.email ?? null,
     first_name: userData.first_name ?? null,
@@ -129,15 +148,15 @@ export function mockLogin(userData: CreateUserInput): User {
     is_active: true,
     created_at: new Date(),
   };
-  mockUsers.push(newUser);
-  currentUser = newUser;
-  return currentUser;
+  authState.users.push(newUser);
+  authState.currentUser = newUser;
+  return authState.currentUser;
 }
 
 export function mockLogout(): void {
-  currentUser = null;
+  authState.currentUser = null;
 }
 
 export function mockGetCurrentUser(): User | null {
-  return currentUser;
+  return authState.currentUser;
 }

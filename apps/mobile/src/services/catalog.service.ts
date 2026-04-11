@@ -11,7 +11,8 @@ import type { ZodIssue, ZodSchema } from "zod";
 import type { Order } from "@repo/shared";
 import { TimeOfDaySchema } from "@repo/shared";
 import { MOCK_CATALOG_SERVICES, type CatalogServiceItem } from "../mocks/catalog";
-import { addMockOrder, MOCK_ORDERS } from "../mocks/orders";
+import { addMockOrder, getMockOrders } from "../mocks/orders";
+import { getMockUserId, isMockUserLoggedIn } from "../mocks/users";
 import { logger } from "./logger.service";
 import env from "../config/env";
 
@@ -59,6 +60,7 @@ export interface CatalogServiceInterface {
  * 🛠️ MOCK Implementation (Used during design/MVP phase)
  */
 const mockServices = [...MOCK_CATALOG_SERVICES];
+// NOTE: This is a shallow copy for read-only access, not state mutation
 // Mock services and state management handled via mocks/orders.ts helper functions
 
 const MockCatalogService: CatalogServiceInterface = {
@@ -78,6 +80,11 @@ const MockCatalogService: CatalogServiceInterface = {
   },
 
   createReservation: async (reservation: CreateReservationInput) => {
+    // Require user to be logged in
+    if (!isMockUserLoggedIn()) {
+      throw new Error("User must be logged in to create a reservation");
+    }
+
     await new Promise((r) => setTimeout(r, 800));
     const validated = validateData(reservation, CreateReservationSchema);
     const service = mockServices.find((s) => s.id === validated.serviceId);
@@ -88,7 +95,7 @@ const MockCatalogService: CatalogServiceInterface = {
 
     const newOrder: Order = {
       id: Date.now(),
-      user_id: "550e8400-e29b-41d4-a716-446655440001", // mock user
+      user_id: getMockUserId(), // use shared mock user state
       catalog_item_id: service.id,
       catalog_item: service,
       quantity: validated.quantity,
@@ -117,7 +124,7 @@ const MockCatalogService: CatalogServiceInterface = {
 
   getOrders: async () => {
     await new Promise((r) => setTimeout(r, 500));
-    return [...MOCK_ORDERS];
+    return getMockOrders();
   },
 };
 

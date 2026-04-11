@@ -9,12 +9,18 @@ import {
   MOCK_CATALOG_REGIONAL_GRILL,
   MOCK_CATALOG_RIVER_EXCURSION,
 } from "./catalog";
+import { getMockUserId, getDefaultMockUserId } from "./users";
+import { mockGetCurrentUser } from "../services/auth.service";
+import { logger } from "../services/logger.service";
 
-// Initial set of mock orders
-export let MOCK_ORDERS: Order[] = [
+// Default user ID for demo orders (read once at module load)
+const DEFAULT_USER_ID = getDefaultMockUserId();
+
+// Initial set of mock orders - shows demo data when no user is logged in
+const DEFAULT_MOCK_ORDERS: Order[] = [
   {
     id: 1,
-    user_id: "550e8400-e29b-41d4-a716-446655440001",
+    user_id: DEFAULT_USER_ID,
     catalog_item_id: MOCK_CATALOG_FORST_STEW.id,
     catalog_item: MOCK_CATALOG_FORST_STEW,
     quantity: 1,
@@ -34,7 +40,7 @@ export let MOCK_ORDERS: Order[] = [
   },
   {
     id: 2,
-    user_id: "550e8400-e29b-41d4-a716-446655440001",
+    user_id: DEFAULT_USER_ID,
     catalog_item_id: MOCK_CATALOG_RIVER_EXCURSION.id,
     catalog_item: MOCK_CATALOG_RIVER_EXCURSION,
     quantity: 1,
@@ -54,7 +60,7 @@ export let MOCK_ORDERS: Order[] = [
   },
   {
     id: 3,
-    user_id: "550e8400-e29b-41d4-a716-446655440001",
+    user_id: DEFAULT_USER_ID,
     catalog_item_id: MOCK_CATALOG_REGIONAL_GRILL.id,
     catalog_item: MOCK_CATALOG_REGIONAL_GRILL,
     quantity: 1,
@@ -74,7 +80,7 @@ export let MOCK_ORDERS: Order[] = [
   },
   {
     id: 4,
-    user_id: "550e8400-e29b-41d4-a716-446655440001",
+    user_id: DEFAULT_USER_ID,
     catalog_item_id: MOCK_CATALOG_REGIONAL_GRILL.id,
     catalog_item: MOCK_CATALOG_REGIONAL_GRILL,
     quantity: 1,
@@ -94,23 +100,51 @@ export let MOCK_ORDERS: Order[] = [
   },
 ];
 
+// Store for dynamic orders (created at runtime) - wrapped in object to avoid let
+const ordersState = {
+  orders: [] as Order[],
+};
+
+/**
+ * Get all mock orders for the current user
+ * - If no user logged in: returns empty array
+ * - If logged in: returns orders matching user's ID (demo + dynamic)
+ */
+export function getMockOrders(): Order[] {
+  const currentUser = mockGetCurrentUser();
+
+  // If no user is logged in, return empty
+  if (!currentUser) {
+    return [];
+  }
+
+  // If user is logged in, return orders that match their ID (both demo and dynamic)
+  const allOrders = [...DEFAULT_MOCK_ORDERS, ...ordersState.orders];
+  return allOrders.filter((order) => order.user_id === currentUser.id);
+}
+
+// Legacy export for backwards compatibility - DO NOT use in new code
+export const MOCK_ORDERS: Order[] = [];
+
 /**
  * Helper to add an order to the mock collection
+ * Automatically uses the current logged-in user's ID
  */
-export function addMockOrder(order: Omit<Order, "id">) {
+export function addMockOrder(order: Omit<Order, "id" | "user_id">) {
   const newOrder: Order = {
     id: Date.now(),
+    user_id: getMockUserId(),
     ...order,
   };
-  MOCK_ORDERS = [newOrder, ...MOCK_ORDERS];
+  ordersState.orders = [newOrder, ...ordersState.orders];
+  logger.info("[MOCK] Added order:", newOrder as unknown as Record<string, unknown>);
 }
 
 /**
  * Helper to update an order status
  */
 export function updateMockOrderStatus(id: number, status: Order["global_status"]) {
-  // No global counter needed, use Date.now() locally
-  const order = MOCK_ORDERS.find((o) => o.id === id);
+  const order = ordersState.orders.find((o) => o.id === id);
   if (order) {
     order.global_status = status;
   }

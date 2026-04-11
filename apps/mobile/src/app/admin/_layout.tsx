@@ -17,7 +17,7 @@ export default function AdminTabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          href: "/",
+          href: "/admin",
           title: t("tabs.roles"),
           tabBarLabel: t("tabs.roles"),
           tabBarIcon: ({ color, size }) => (
@@ -26,18 +26,9 @@ export default function AdminTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="common/role-selector"
-        options={{
-          title: t("tabs.dev"),
-          tabBarLabel: t("tabs.dev"),
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="wrench" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="project"
         options={{
+          href: "/admin/project",
           title: t("tabs.projects"),
           tabBarLabel: t("tabs.projects"),
           tabBarIcon: ({ color, size }) => (
@@ -48,6 +39,7 @@ export default function AdminTabsLayout() {
       <Tabs.Screen
         name="common/profile"
         options={{
+          href: "/admin/common/profile",
           title: t("tabs.profile"),
           tabBarLabel: t("tabs.profile"),
           tabBarIcon: ({ color, size }) => (

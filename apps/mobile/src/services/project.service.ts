@@ -40,18 +40,20 @@ interface ProjectServiceInterface {
 /**
  * 🛠️ MOCK Implementation (Used during design/MVP phase)
  */
-let mockProjects = [...MOCK_PROJECTS];
-let nextId = 3;
+const projectState = {
+  projects: [...MOCK_PROJECTS],
+  nextId: 3,
+};
 
 const MockProjectService: ProjectServiceInterface = {
   getProjects: async () => {
     await new Promise((r) => setTimeout(r, 800));
-    return [...mockProjects];
+    return [...projectState.projects];
   },
 
   getProjectById: async (id: number) => {
     await new Promise((r) => setTimeout(r, 500));
-    return mockProjects.find((p) => p.id === id) || null;
+    return projectState.projects.find((p) => p.id === id) || null;
   },
 
   createProject: async (project: CreateProjectInput) => {
@@ -60,16 +62,16 @@ const MockProjectService: ProjectServiceInterface = {
     const validated = validateData(project, CreateProjectSchema);
     const newProject: Project = {
       ...validated,
-      id: nextId++,
+      id: projectState.nextId++,
     };
-    mockProjects = [...mockProjects, newProject];
+    projectState.projects = [...projectState.projects, newProject];
     logger.info("[MOCK API] Created project:", newProject);
     return newProject;
   },
 
   updateProject: async (id: number, project: UpdateProjectInput) => {
     await new Promise((r) => setTimeout(r, 800));
-    const index = mockProjects.findIndex((p) => p.id === id);
+    const index = projectState.projects.findIndex((p) => p.id === id);
     if (index === -1) {
       throw new Error("Project not found");
     }
@@ -77,21 +79,21 @@ const MockProjectService: ProjectServiceInterface = {
     const validated = validateData(project, UpdateProjectSchema);
     // Merge with existing - filter out undefined values
     const updatedProject = {
-      ...mockProjects[index],
+      ...projectState.projects[index],
       ...Object.fromEntries(Object.entries(validated).filter(([, v]) => v !== undefined)),
     };
-    mockProjects = mockProjects.map((p) => (p.id === id ? updatedProject : p));
+    projectState.projects = projectState.projects.map((p) => (p.id === id ? updatedProject : p));
     logger.info("[MOCK API] Updated project:", updatedProject);
     return updatedProject;
   },
 
   deleteProject: async (id: number) => {
     await new Promise((r) => setTimeout(r, 800));
-    const exists = mockProjects.some((p) => p.id === id);
+    const exists = projectState.projects.some((p) => p.id === id);
     if (!exists) {
       return false;
     }
-    mockProjects = mockProjects.filter((p) => p.id !== id);
+    projectState.projects = projectState.projects.filter((p) => p.id !== id);
     logger.info(`[MOCK API] Deleted project with id: ${id}`);
     return true;
   },

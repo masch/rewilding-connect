@@ -4,19 +4,23 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
-import { Text, View, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
+import { Text, View, ScrollView, RefreshControl, ActivityIndicator, Alert } from "react-native";
+import { useRouter } from "expo-router";
 import { useTranslations } from "../../hooks/useI18n";
 import Screen, { ScreenContent } from "../../components/Screen";
 import { ServiceCard } from "../../components/ServiceCard";
 import { SectionHeader } from "../../components/SectionHeader";
 import { ReservationModal } from "../../components/ReservationModal";
 import { useCatalogStore } from "../../stores/catalog.store";
+import { useAuthStore } from "../../stores/auth.store";
 import type { CatalogServiceItem } from "../../mocks/catalog";
 import type { TimeOfDay } from "@repo/shared";
 
 export default function CatalogScreen() {
+  const router = useRouter();
   const { t } = useTranslations();
   const { services, isLoading, error, fetchServices, createReservation } = useCatalogStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -47,19 +51,41 @@ export default function CatalogScreen() {
   ) => {
     if (!selectedService) return;
 
-    setIsReserving(true);
-    const result = await createReservation({
-      serviceId: selectedService.id,
-      momentOfDay,
-      quantity,
-      date,
-      notes,
-    });
-    setIsReserving(false);
+    // Check if user is logged in
+    if (!isAuthenticated) {
+      Alert.alert(
+        t("errors.login_required_title") || "Login required",
+        t("errors.login_required_message") || "You must be logged in to make a reservation",
+        [
+          { text: t("common.cancel") || "Cancel", style: "cancel" },
+          {
+            text: t("auth.login") || "Login",
+            onPress: () => router.push("/tourist/login"),
+          },
+        ],
+      );
+      return;
+    }
 
-    if (result) {
-      setModalVisible(false);
-      setSelectedService(null);
+    setIsReserving(true);
+    try {
+      const result = await createReservation({
+        serviceId: selectedService.id,
+        momentOfDay,
+        quantity,
+        date,
+        notes,
+      });
+
+      if (result) {
+        setModalVisible(false);
+        setSelectedService(null);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      Alert.alert(t("errors.reservation_failed") || "Error", message);
+    } finally {
+      setIsReserving(false);
     }
   };
 

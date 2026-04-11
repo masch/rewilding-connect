@@ -18,6 +18,7 @@ import { useTranslations } from "../../hooks/useI18n";
 import Screen, { ScreenContent } from "../../components/Screen";
 import { SegmentedControl } from "../../components/ui/SegmentedControl";
 import { useOrdersStore } from "../../stores/orders.store";
+import { useAuthStore } from "../../stores/auth.store";
 import type { Order, OrderStatus } from "@repo/shared";
 
 // Status badge mapping - labels come from i18n
@@ -305,12 +306,13 @@ export default function OrderScreen() {
     setTab,
   } = useOrdersStore();
 
+  const currentUser = useAuthStore((state) => state.currentUser);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch orders on mount
+  // Fetch orders when user changes
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+  }, [currentUser?.id, fetchOrders]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
