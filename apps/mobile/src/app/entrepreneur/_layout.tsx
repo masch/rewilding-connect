@@ -17,7 +17,7 @@ export default function EntrepreneurTabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          href: "/",
+          href: "/entrepreneur",
           title: t("tabs.roles"),
           tabBarLabel: t("tabs.roles"),
           tabBarIcon: ({ color, size }) => (
@@ -26,18 +26,9 @@ export default function EntrepreneurTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="common/role-selector"
-        options={{
-          title: t("tabs.dev"),
-          tabBarLabel: t("tabs.dev"),
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="wrench" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="request"
         options={{
+          href: "/entrepreneur/request",
           title: t("tabs.request"),
           tabBarLabel: t("tabs.request"),
           tabBarIcon: ({ color, size }) => (
@@ -48,6 +39,7 @@ export default function EntrepreneurTabsLayout() {
       <Tabs.Screen
         name="agenda"
         options={{
+          href: "/entrepreneur/agenda",
           title: t("tabs.agenda"),
           tabBarLabel: t("tabs.agenda"),
           tabBarIcon: ({ color, size }) => (
@@ -58,6 +50,7 @@ export default function EntrepreneurTabsLayout() {
       <Tabs.Screen
         name="common/profile"
         options={{
+          href: "/entrepreneur/common/profile",
           title: t("tabs.profile"),
           tabBarLabel: t("tabs.profile"),
           tabBarIcon: ({ color, size }) => (

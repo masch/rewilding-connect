@@ -18,6 +18,7 @@ import { useTranslations } from "../../hooks/useI18n";
 import Screen, { ScreenContent } from "../../components/Screen";
 import { SegmentedControl } from "../../components/ui/SegmentedControl";
 import { useOrdersStore } from "../../stores/orders.store";
+import { useAuthStore } from "../../stores/auth.store";
 import type { Order, OrderStatus } from "@repo/shared";
 
 // Status badge mapping - labels come from i18n
@@ -30,7 +31,7 @@ const getStatusConfig = (
     textClass: "text-on-tertiary-fixed",
   },
   OFFER_PENDING: {
-    label: t("orders.status.offer_pending") || "Oferta Pendiente",
+    label: t("orders.status.offer_pending"),
     bgClass: "bg-primary-container",
     textClass: "text-on-primary-fixed",
   },
@@ -55,7 +56,7 @@ const getStatusConfig = (
     textClass: "text-error",
   },
   EXPIRED: {
-    label: t("orders.status.expired") || "Expirada",
+    label: t("orders.status.expired"),
     bgClass: "bg-error-container",
     textClass: "text-on-error-container",
   },
@@ -305,12 +306,13 @@ export default function OrderScreen() {
     setTab,
   } = useOrdersStore();
 
+  const currentUser = useAuthStore((state) => state.currentUser);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch orders on mount
+  // Fetch orders when user changes
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+  }, [currentUser?.id, fetchOrders]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -339,10 +341,7 @@ export default function OrderScreen() {
         {/* Segmented Control */}
         <View className="mb-6">
           <SegmentedControl
-            segments={[
-              { label: t("orders.active") || "Activas" },
-              { label: t("orders.history") || "Historial" },
-            ]}
+            segments={[{ label: t("orders.active") }, { label: t("orders.history") }]}
             selectedIndex={selectedTab === "active" ? 0 : 1}
             onChange={handleTabChange}
           />
@@ -360,7 +359,7 @@ export default function OrderScreen() {
           <View className="flex-1 items-center justify-center py-20">
             <ActivityIndicator size="large" color="primary" />
             <Text className="text-base font-body text-on-surface opacity-60 mt-4">
-              {t("loading") || "Cargando..."}
+              {t("loading")}
             </Text>
           </View>
         ) : (

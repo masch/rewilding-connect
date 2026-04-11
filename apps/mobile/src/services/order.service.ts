@@ -8,7 +8,7 @@
 import type { Order, OrderStatus } from "@repo/shared";
 import { logger } from "./logger.service";
 import env from "../config/env";
-import { MOCK_ORDERS } from "../mocks/orders";
+import { getMockOrders } from "../mocks/orders";
 
 /**
  * Common interface for order service implementations
@@ -24,15 +24,17 @@ export interface OrderServiceInterface {
 const MockOrderService: OrderServiceInterface = {
   getOrders: async (status?: OrderStatus) => {
     await new Promise((r) => setTimeout(r, 600));
+    const orders = getMockOrders();
     if (status) {
-      return MOCK_ORDERS.filter((o) => o.global_status === status);
+      return orders.filter((o) => o.global_status === status);
     }
-    return [...MOCK_ORDERS];
+    return orders;
   },
 
   cancelOrder: async (id: number) => {
     await new Promise((r) => setTimeout(r, 500));
-    const order = MOCK_ORDERS.find((o) => o.id === id);
+    const orders = getMockOrders();
+    const order = orders.find((o) => o.id === id);
     if (!order) {
       throw new Error("Order not found");
     }

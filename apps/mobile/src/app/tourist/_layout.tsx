@@ -17,7 +17,7 @@ export default function TouristTabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          href: "/",
+          href: "/tourist",
           title: t("tabs.roles"),
           tabBarLabel: t("tabs.roles"),
           tabBarIcon: ({ color, size }) => (
@@ -26,18 +26,9 @@ export default function TouristTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="common/role-selector"
-        options={{
-          title: t("tabs.dev"),
-          tabBarLabel: t("tabs.dev"),
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="wrench" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="login"
         options={{
+          href: "/tourist/login",
           title: t("tabs.login"),
           tabBarLabel: t("tabs.login"),
           tabBarIcon: ({ color, size }) => (
@@ -48,6 +39,7 @@ export default function TouristTabsLayout() {
       <Tabs.Screen
         name="catalog"
         options={{
+          href: "/tourist/catalog",
           title: t("tabs.catalog"),
           tabBarLabel: t("tabs.catalog"),
           tabBarIcon: ({ color, size }) => (
@@ -58,6 +50,7 @@ export default function TouristTabsLayout() {
       <Tabs.Screen
         name="order"
         options={{
+          href: "/tourist/order",
           title: t("tabs.order"),
           tabBarLabel: t("tabs.order"),
           tabBarIcon: ({ color, size }) => (
@@ -68,6 +61,7 @@ export default function TouristTabsLayout() {
       <Tabs.Screen
         name="common/profile"
         options={{
+          href: "/tourist/common/profile",
           title: t("tabs.profile"),
           tabBarLabel: t("tabs.profile"),
           tabBarIcon: ({ color, size }) => (

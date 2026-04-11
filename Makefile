@@ -1,4 +1,4 @@
-.PHONY: help setup install dev clean lint format check typecheck mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-dev mobile-expo-fix-deps mobile-expo-doctor backend seed android-reset android-stop android-kill android-restart eas-login eas-whoami eas-init eas-build-configure eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator
+.PHONY: help setup install dev clean lint gga format check typecheck mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-dev mobile-expo-fix-deps mobile-expo-doctor backend seed android-reset android-stop android-kill android-restart eas-login eas-whoami eas-init eas-build-configure eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator
 
 # ==========================================
 # 📋 HELP
@@ -33,7 +33,8 @@ help:
 	@echo "    make lint                    - Run ESLint"
 	@echo "    make format                  - Format code"
 	@echo "    make typecheck               - Run TypeScript check"
-	@echo "    make check                   - Typecheck + lint + format"
+	@echo "    make gga                     - Run Gentleman Guardian Angel"
+	@echo "    make check                   - Typecheck + lint + format + gga"
 	@echo ""
 	@echo "  🤖 ANDROID EMULATOR"
 	@echo "    make android-reset           - Reset emulator (wipe data)"
@@ -136,7 +137,7 @@ clean:
 	@echo "🧼 All clean. Run 'make setup' again."
 
 lint:
-	cd $(MOBILE_DIR) && bun run lint
+	bun run lint
 
 format:
 	bun run format
@@ -144,7 +145,10 @@ format:
 typecheck:
 	cd $(MOBILE_DIR) && bun run typecheck
 
-check: typecheck lint format
+gga:
+	gga run
+
+check: typecheck lint format gga
 
 # ==========================================
 # 🤖 EAS

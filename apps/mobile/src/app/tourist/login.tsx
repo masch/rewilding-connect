@@ -35,11 +35,9 @@ export default function LoginScreen() {
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-
     if (!formData.alias.trim()) {
       newErrors.alias = t("login.alias_required");
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -48,10 +46,7 @@ export default function LoginScreen() {
     if (!validateForm()) {
       return;
     }
-
-    // Convert undefined to null for nullable fields (per User schema)
     const toNullable = (v: string | undefined) => (v ? v : null);
-
     const userData: CreateUserInput = {
       alias: formData.alias.trim(),
       first_name: toNullable(formData.first_name.trim()) || null,
@@ -60,7 +55,6 @@ export default function LoginScreen() {
       user_type: "TOURIST",
       email: null,
     };
-
     login(userData);
     router.push("/tourist/catalog");
   };
@@ -79,25 +73,21 @@ export default function LoginScreen() {
         className="flex-1"
       >
         <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ flexGrow: 1 }}
+          className="flex-1 flex-grow-1"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <View className="max-w-md mx-auto w-full">
-            {/* Hero Image - smaller for Android */}
             <View className="relative w-full h-40 bg-surface-container-low">
               <Image
                 source={jaguarHero}
-                alt="A majestic Yaguareté (jaguar) in the dense, sun-dappled forests of the Chaco Impenetrable"
-                className="w-full h-full"
-                style={{ flex: 1 }}
+                alt="Yaguareté in the Chaco"
+                className="w-full h-full flex-1"
                 contentFit="cover"
                 transition={200}
               />
             </View>
 
-            {/* Form Container - reduced padding */}
             <View className="flex-1 -mt-10 relative z-20">
               <View className="bg-surface-container-low p-6">
                 <Text className="font-display font-extrabold text-3xl text-on-surface tracking-tight leading-none mb-3 text-center">
@@ -133,7 +123,6 @@ export default function LoginScreen() {
                       value={formData.whatsapp}
                       onChangeText={(value) => updateField("whatsapp", value)}
                     />
-
                     <View className="grid grid-cols-2 gap-3">
                       <FormInput
                         label={t("login.first_name_label")}

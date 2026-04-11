@@ -133,5 +133,13 @@
     },
     "confirmCancel": "Sí, cancelar",
     "keeping": "No, mantener"
+  },
+  "errors": {
+    "login_required_title": "Login requerido",
+    "login_required_message": "Debes iniciar sesión para hacer una reserva",
+    "reservation_failed": "Error al hacer la reserva"
+  },
+  "common": {
+    "cancel": "Cancelar"
   }
 }

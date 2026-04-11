@@ -36,7 +36,8 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
 
   // Fetch all orders and split into active/history
   fetchOrders: async () => {
-    set({ isLoading: true, error: null });
+    // Always clear existing orders first to avoid showing previous user's orders
+    set({ activeOrders: [], historyOrders: [], isLoading: true, error: null });
     try {
       const orders = await orderService.getOrders();
 
@@ -50,6 +51,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
         ["COMPLETED", "CANCELLED", "NO_SHOW", "EXPIRED"].includes(order.global_status),
       );
 
+      // Always replace orders (not append) to handle user changes correctly
       set({ activeOrders: active, historyOrders: history, isLoading: false });
     } catch (err) {
       logger.error("Error fetching orders", err);
