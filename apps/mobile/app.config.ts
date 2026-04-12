@@ -1,5 +1,6 @@
 import { ConfigContext, ExpoConfig } from "expo/config";
 
+// App configuration
 const IS_DEV = process.env.APP_VARIANT === "development";
 const IS_PREVIEW = process.env.APP_VARIANT === "preview";
 
