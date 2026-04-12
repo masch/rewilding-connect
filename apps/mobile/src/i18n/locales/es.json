@@ -141,5 +141,25 @@
   },
   "common": {
     "cancel": "Cancelar"
+  },
+  "role_selector": {
+    "welcome": "Bienvenido",
+    "subtitle": "Seleccioná tu usuario demo para comenzar",
+    "create_identity": "Crear mi identidad",
+    "register_as_tourist": "Registrarme como turista",
+    "roles": {
+      "tourist": {
+        "label": "Turistas",
+        "description": "Explorá servicios turísticos del Chaco"
+      },
+      "entrepreneur": {
+        "label": "Emprendedores",
+        "description": "Gestioná tus servicios y reservas"
+      },
+      "admin": {
+        "label": "Administradores",
+        "description": "Administrá proyectos y emprendedores"
+      }
+    }
   }
 }

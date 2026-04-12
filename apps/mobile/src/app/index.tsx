@@ -10,6 +10,7 @@ import {
   type DemoUser,
 } from "../mocks/users";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { useTranslations } from "../hooks/useI18n";
 
 // Role colors from design system - mapped for icons and backgrounds
 const ROLE_COLORS = {
@@ -63,11 +64,7 @@ const ROLE_CONFIG = {
   },
 } as const;
 
-const ROLE_DESCRIPTIONS = {
-  TOURIST: "Explora servicios turísticos del Chaco",
-  ENTREPRENEUR: "Gestiona tus servicios y reservas",
-  ADMIN: "Administra proyectos y emprendedores",
-} as const;
+// Role metadata moved to i18n
 
 export default function RoleSelectorScreen() {
   const { setUserRole } = useAuthStore();
@@ -121,23 +118,29 @@ export default function RoleSelectorScreen() {
   };
 
   const demoUsersByRole = [
-    { role: "TOURIST" as const, label: "Turistas", users: DEMO_TOURIST_USERS },
-    { role: "ENTREPRENEUR" as const, label: "Emprendedores", users: DEMO_ENTREPRENEUR_USERS },
-    { role: "ADMIN" as const, label: "Administradores", users: DEMO_ADMIN_USERS },
-  ];
+    { role: "TOURIST" as const, users: DEMO_TOURIST_USERS },
+    { role: "ENTREPRENEUR" as const, users: DEMO_ENTREPRENEUR_USERS },
+    { role: "ADMIN" as const, users: DEMO_ADMIN_USERS },
+  ] as const;
+
+  const { t } = useTranslations();
 
   return (
     <Screen>
       <ScreenContent>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <Text className="text-3xl font-display font-bold text-on-surface mb-2">Welcome</Text>
+          <Text className="text-3xl font-display font-bold text-on-surface mb-2">
+            {t("role_selector.welcome")}
+          </Text>
           <Text className="text-base text-on-surface opacity-60 mb-8">
-            Select your demo user to get started
+            {t("role_selector.subtitle")}
           </Text>
 
           {demoUsersByRole.map((group) => {
             const config = ROLE_CONFIG[group.role];
-            const description = ROLE_DESCRIPTIONS[group.role];
+            const roleKey = group.role.toLowerCase();
+            const label = t(`role_selector.roles.${roleKey}.label`);
+            const description = t(`role_selector.roles.${roleKey}.description`);
             return (
               <View key={group.role} className="mb-6">
                 {/* Role Header - Prominent styling */}
@@ -154,9 +157,7 @@ export default function RoleSelectorScreen() {
                     />
                   </View>
                   <View className="flex-1">
-                    <Text className="text-lg font-display font-bold text-on-surface">
-                      {group.label}
-                    </Text>
+                    <Text className="text-lg font-display font-bold text-on-surface">{label}</Text>
                     <Text className="text-xs text-on-surface opacity-60">{description}</Text>
                   </View>
                 </View>
@@ -174,11 +175,11 @@ export default function RoleSelectorScreen() {
                         color="tertiary-container"
                       />
                       <Text className={`text-base font-medium ${config.textClass}`}>
-                        Crear mi identidad
+                        {t("role_selector.create_identity")}
                       </Text>
                     </View>
                     <Text className="text-xs text-on-surface opacity-50 mt-1 ml-7">
-                      Registrarme como turista
+                      {t("role_selector.register_as_tourist")}
                     </Text>
                   </TouchableOpacity>
                 )}
