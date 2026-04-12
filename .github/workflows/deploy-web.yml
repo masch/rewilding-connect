@@ -29,6 +29,6 @@ jobs:
         run: make eas-export-web
 
       - name: Deploy to EAS Hosting
-        run: bunx eas deploy --prod
+        run: cd apps/mobile && bunx eas deploy --prod
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
