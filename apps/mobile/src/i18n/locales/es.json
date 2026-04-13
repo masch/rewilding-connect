@@ -68,6 +68,7 @@
     "reservation": {
       "title": "Reservar",
       "moment_of_day": "Momento del día",
+      "date": "Fecha",
       "quantity": "Cantidad de personas",
       "total": "Total",
       "notes": "Notas adicionales (opcional)",
