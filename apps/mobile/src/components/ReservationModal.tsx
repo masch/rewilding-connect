@@ -10,6 +10,7 @@ import type { TimeOfDay } from "@repo/shared";
 import type { CatalogServiceItem } from "../mocks/catalog";
 import { useTranslations } from "../hooks/useI18n";
 import { CatalogImage } from "./CatalogImage";
+import { DatePicker } from "./DatePicker";
 
 interface ReservationModalProps {
   visible: boolean;
@@ -37,7 +38,7 @@ export function ReservationModal({
   const [selectedMoment, setSelectedMoment] = useState<TimeOfDay | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
-  const [date] = useState(new Date());
+  const [date, setDate] = useState(new Date());
 
   const handleConfirm = () => {
     if (!selectedMoment) return;
@@ -132,6 +133,14 @@ export function ReservationModal({
                   </View>
                 </Pressable>
               ))}
+            </View>
+
+            {/* Date Selection */}
+            <Text className="text-base font-body font-bold text-on-surface mb-3">
+              {t("catalog.reservation.date") || "Fecha"}
+            </Text>
+            <View className="mb-6">
+              <DatePicker value={date} onChange={setDate} />
             </View>
 
             {/* Quantity Selector */}
