@@ -8,6 +8,11 @@ import { MOCK_PROJECTS, PROJECT_IDS } from "./projects";
 
 // Local assets
 import empanadas12 from "../../assets/catalog/empanadas12.jpeg";
+import empanadas6 from "../../assets/catalog/empanadas6.jpeg";
+import repollo from "../../assets/catalog/repollo.jpeg";
+import pastelCalabaza from "../../assets/catalog/pastel_calabaza.jpeg";
+import chivoGuiso from "../../assets/catalog/chivo_guiso.jpeg";
+import chivoEstofado from "../../assets/catalog/chivo_estofado.jpeg";
 
 // Get the first active project for our mock catalog types
 const defaultProject = MOCK_PROJECTS.find((p) => p.is_active) || MOCK_PROJECTS[0];
@@ -55,7 +60,7 @@ export const EMPANADAS_CARNE_MEDIA_DOCENA: CatalogItem = {
   },
   price: 9500,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1604001307333-99a164b33b07?w=400",
+  image_url: empanadas6 as unknown as string,
   global_pause: false,
 };
 
@@ -83,7 +88,7 @@ export const EMPANADAS_CHARQUI_MEDIA_DOCENA: CatalogItem = {
   },
   price: 12500,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1604001307333-99a164b33b07?w=400",
+  image_url: empanadas6 as unknown as string,
   global_pause: false,
 };
 
@@ -94,7 +99,7 @@ export const EMPANADAS_CHARQUI_DOCENA: CatalogItem = {
   description_i18n: { es: "Empanadas de charqui artesanal", en: "Artisan charqui empanadas" },
   price: 24000,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1604001307333-99a164b33b07?w=400",
+  image_url: empanadas12 as unknown as string,
   global_pause: false,
 };
 
@@ -108,7 +113,7 @@ export const EMPANADAS_VERDURA_MEDIA_DOCENA: CatalogItem = {
   },
   price: 9000,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1604001307333-99a164b33b07?w=400",
+  image_url: empanadas12 as unknown as string,
   global_pause: false,
 };
 
@@ -122,7 +127,7 @@ export const EMPANADAS_VERDURA_DOCENA: CatalogItem = {
   },
   price: 17000,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1604001307333-99a164b33b07?w=400",
+  image_url: empanadas12 as unknown as string,
   global_pause: false,
 };
 
@@ -136,7 +141,7 @@ export const EMPANADAS_POLLO_MEDIA_DOCENA: CatalogItem = {
   },
   price: 9000,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1604001307333-99a164b33b07?w=400",
+  image_url: empanadas6 as unknown as string,
   global_pause: false,
 };
 
@@ -147,7 +152,7 @@ export const EMPANADAS_POLLO_DOCENA: CatalogItem = {
   description_i18n: { es: "Empanadas de pollo deshilachado", en: "Shredded chicken empanadas" },
   price: 17000,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1604001307333-99a164b33b07?w=400",
+  image_url: empanadas12 as unknown as string,
   global_pause: false,
 };
 
@@ -175,7 +180,7 @@ export const PASTEL_ZAPALLO_CHIVO: CatalogItem = {
   },
   price: 18000,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400",
+  image_url: pastelCalabaza as unknown as string,
   global_pause: false,
 };
 
@@ -189,7 +194,7 @@ export const ESTOFADO_CHIVO: CatalogItem = {
   },
   price: 20000,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400",
+  image_url: chivoEstofado as unknown as string,
   global_pause: false,
 };
 
@@ -200,7 +205,7 @@ export const GUISO_CHIVO: CatalogItem = {
   description_i18n: { es: "Guiso auténtica de chivo chaqueño", en: "Authentic Chaco goat guiso" },
   price: 20000,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400",
+  image_url: chivoGuiso as unknown as string,
   global_pause: false,
 };
 
@@ -214,7 +219,7 @@ export const REPOLLO_ASADO: CatalogItem = {
   },
   price: 18000,
   max_participants: null,
-  image_url: "https://images.unsplash.com/photo-1574885014162-b954f6f10942?w=400",
+  image_url: repollo as unknown as string,
   global_pause: false,
 };
 
