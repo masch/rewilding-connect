@@ -17,7 +17,7 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service, onPress, accessibilityLabel }: ServiceCardProps) {
-  const { t, locale } = useTranslations();
+  const { t, getLocalizedName } = useTranslations();
   const formatPrice = (price: number) => {
     return `$ ${price.toLocaleString("es-AR")}`;
   };
@@ -32,16 +32,8 @@ export function ServiceCard({ service, onPress, accessibilityLabel }: ServiceCar
     : t("catalog.category.excursion");
 
   // Get localized name/description using active locale with fallback chain
-  const name =
-    service.name_i18n[locale as keyof typeof service.name_i18n] ||
-    service.name_i18n.es ||
-    service.name_i18n.en ||
-    t("catalog.no_name");
-  const description =
-    service.description_i18n?.[locale as keyof typeof service.description_i18n] ||
-    service.description_i18n?.es ||
-    service.description_i18n?.en ||
-    t("catalog.no_description");
+  const name = getLocalizedName(service.name_i18n) || t("catalog.no_name");
+  const description = getLocalizedName(service.description_i18n) || t("catalog.no_description");
 
   return (
     <Pressable

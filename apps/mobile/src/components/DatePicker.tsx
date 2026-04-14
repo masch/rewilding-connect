@@ -7,25 +7,31 @@ import { useState } from "react";
 import { View, Text, Pressable, Platform } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { useTranslations } from "../hooks/useI18n";
 
 const isWeb = Platform.OS === "web";
 
 interface DatePickerProps {
-  value: Date;
+  value: Date | null;
   onChange: (date: Date) => void;
   minimumDate?: Date;
   maximumDate?: Date;
 }
 
 export function DatePicker({ value, onChange, minimumDate, maximumDate }: DatePickerProps) {
+  const { t } = useTranslations();
   const [showPicker, setShowPicker] = useState(false);
 
+  // Default to today if value is null
+  const currentValue = value || new Date();
+
   const handleChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (Platform.OS === "android") {
-      setShowPicker(false);
-    }
     if (selectedDate) {
       onChange(selectedDate);
+      // On Android, close picker when date is selected to prevent re-opening loop
+      if (Platform.OS === "android") {
+        setShowPicker(false);
+      }
     }
   };
 
@@ -45,6 +51,7 @@ export function DatePicker({ value, onChange, minimumDate, maximumDate }: DatePi
   };
 
   const isToday = (): boolean => {
+    if (value === null) return false;
     const today = new Date();
     const valueCheck = new Date(value);
     return (
@@ -55,6 +62,7 @@ export function DatePicker({ value, onChange, minimumDate, maximumDate }: DatePi
   };
 
   const isTomorrow = (): boolean => {
+    if (value === null) return false;
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const valueCheck = new Date(value);
@@ -65,10 +73,16 @@ export function DatePicker({ value, onChange, minimumDate, maximumDate }: DatePi
     );
   };
 
+  // Check if a custom date (not today/tomorrow) was selected
+  const isCustomDate = (): boolean => value !== null && !isToday() && !isTomorrow();
+
+  // Check if no date is selected at all
+  const isDateSelected = (): boolean => value !== null;
+
   const [webPickerOpen, setWebPickerOpen] = useState(false);
 
   const adjustDate = (days: number) => {
-    const newDate = new Date(value);
+    const newDate = new Date(currentValue);
     newDate.setDate(newDate.getDate() + days);
     newDate.setHours(12, 0, 0, 0);
     onChange(newDate);
@@ -81,74 +95,107 @@ export function DatePicker({ value, onChange, minimumDate, maximumDate }: DatePi
   if (isWeb) {
     return (
       <View>
-        <View className="flex-row gap-2 mb-3">
+        {/* Quick select in single line */}
+        <View className="flex-row gap-2">
           <Pressable
-            className={`py-2 px-4 border ${
-              isToday()
+            className={`flex-1 py-3 border ${
+              isDateSelected() && isToday()
                 ? "bg-secondary border-secondary"
                 : "bg-surface-container-low border-outline-variant"
             }`}
             onPress={() => handleWebQuickSelect(0)}
           >
             <Text
-              className={`text-sm font-body ${isToday() ? "text-on-primary" : "text-on-surface"}`}
+              className={`text-center text-base font-body ${isDateSelected() && isToday() ? "text-on-primary font-bold" : "text-on-surface"}`}
             >
-              Hoy
+              {t("orders.today")}
             </Text>
           </Pressable>
           <Pressable
-            className={`py-2 px-4 border ${
-              isTomorrow()
+            className={`flex-1 py-3 border ${
+              isDateSelected() && isTomorrow()
                 ? "bg-secondary border-secondary"
                 : "bg-surface-container-low border-outline-variant"
             }`}
             onPress={() => handleWebQuickSelect(1)}
           >
             <Text
-              className={`text-sm font-body ${isTomorrow() ? "text-on-primary" : "text-on-surface"}`}
+              className={`text-center text-base font-body ${isDateSelected() && isTomorrow() ? "text-on-primary font-bold" : "text-on-surface"}`}
             >
-              Mañana
+              {t("orders.tomorrow")}
             </Text>
           </Pressable>
           <Pressable
-            className="py-2 px-4 border bg-surface-container-low border-outline-variant"
-            onPress={() => setWebPickerOpen(!webPickerOpen)}
+            className={`flex-1 py-3 border ${
+              isCustomDate()
+                ? "bg-secondary border-secondary"
+                : "bg-surface-container-low border-outline-variant"
+            }`}
+            onPress={() => {
+              if (isWeb) {
+                setWebPickerOpen(!webPickerOpen);
+              } else {
+                setShowPicker(!showPicker);
+              }
+            }}
           >
-            <View className="flex-row items-center gap-1">
-              <MaterialCommunityIcons name="calendar" size={16} color="on-surface" />
-              <Text className="text-sm font-body text-on-surface">Elegir</Text>
-            </View>
+            {isCustomDate() ? (
+              <View className="flex-row items-center justify-center gap-1">
+                <Text className="text-base font-body text-on-primary font-bold">
+                  {formatDate(currentValue)}
+                </Text>
+                {isWeb ? (
+                  <Text className="text-xs text-on-primary">✏️</Text>
+                ) : (
+                  <MaterialCommunityIcons name="pencil" size={14} color="on-primary" />
+                )}
+              </View>
+            ) : (
+              <View className="flex-row items-center justify-center gap-2">
+                {isWeb ? (
+                  <Text>📅</Text>
+                ) : (
+                  <MaterialCommunityIcons name="calendar" size={18} color="on-surface" />
+                )}
+                <Text className="text-base font-body text-on-surface">{t("orders.choose")}</Text>
+              </View>
+            )}
           </Pressable>
         </View>
-
-        <Pressable
-          className="bg-surface-container-low border border-outline-variant p-3 flex-row items-center justify-between"
-          onPress={() => setWebPickerOpen(!webPickerOpen)}
-        >
-          <Text className="text-base font-body text-on-surface">{formatDate(value)}</Text>
-          <MaterialCommunityIcons
-            name={webPickerOpen ? "chevron-up" : "chevron-down"}
-            size={20}
-            color="on-surface"
-          />
-        </Pressable>
 
         {webPickerOpen && (
           <View className="mt-2 bg-surface-container-low border border-outline-variant p-4">
             <View className="flex-row justify-between items-center mb-4">
               <Pressable className="p-2" onPress={() => adjustDate(-1)}>
-                <MaterialCommunityIcons name="chevron-left" size={24} color="on-surface" />
+                {isWeb ? (
+                  <Text>◀</Text>
+                ) : (
+                  <MaterialCommunityIcons name="chevron-left" size={24} color="on-surface" />
+                )}
               </Pressable>
               <Text className="text-lg font-body font-bold text-on-surface">
-                {formatDate(value)}
+                {formatDate(currentValue)}
               </Text>
               <Pressable className="p-2" onPress={() => adjustDate(1)}>
-                <MaterialCommunityIcons name="chevron-right" size={24} color="on-surface" />
+                {isWeb ? (
+                  <Text>▶</Text>
+                ) : (
+                  <MaterialCommunityIcons name="chevron-right" size={24} color="on-surface" />
+                )}
               </Pressable>
             </View>
             <View className="flex-row gap-2 justify-center">
-              <Pressable className="py-2 px-4 bg-primary" onPress={() => setWebPickerOpen(false)}>
-                <Text className="text-base font-body font-bold text-on-primary">Confirmar</Text>
+              <Pressable
+                className="py-2 px-4 bg-primary"
+                onPress={() => {
+                  // Set the current value as the selected date
+                  onChange(currentValue);
+                  setWebPickerOpen(false);
+                }}
+              >
+                <Text className="text-base font-body font-bold text-on-primary">
+                  {t("orders.confirm")}
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -159,62 +206,64 @@ export function DatePicker({ value, onChange, minimumDate, maximumDate }: DatePi
 
   return (
     <View>
-      <View className="flex-row gap-2 mb-3">
+      {/* Quick select in single line */}
+      <View className="flex-row gap-2">
         <Pressable
-          className={`py-2 px-4 border ${
-            isToday()
+          className={`flex-1 py-3 border ${
+            isDateSelected() && isToday()
               ? "bg-secondary border-secondary"
               : "bg-surface-container-low border-outline-variant"
           }`}
           onPress={() => handleQuickSelect(0)}
         >
           <Text
-            className={`text-sm font-body ${isToday() ? "text-on-primary" : "text-on-surface"}`}
+            className={`text-center text-base font-body ${isDateSelected() && isToday() ? "text-on-primary font-bold" : "text-on-surface"}`}
           >
-            Hoy
+            {t("orders.today")}
           </Text>
         </Pressable>
         <Pressable
-          className={`py-2 px-4 border ${
-            isTomorrow()
+          className={`flex-1 py-3 border ${
+            isDateSelected() && isTomorrow()
               ? "bg-secondary border-secondary"
               : "bg-surface-container-low border-outline-variant"
           }`}
           onPress={() => handleQuickSelect(1)}
         >
           <Text
-            className={`text-sm font-body ${isTomorrow() ? "text-on-primary" : "text-on-surface"}`}
+            className={`text-center text-base font-body ${isDateSelected() && isTomorrow() ? "text-on-primary font-bold" : "text-on-surface"}`}
           >
-            Mañana
+            {t("orders.tomorrow")}
           </Text>
         </Pressable>
         <Pressable
-          className="py-2 px-4 border bg-surface-container-low border-outline-variant"
+          className={`flex-1 py-3 border ${
+            isCustomDate()
+              ? "bg-secondary border-secondary"
+              : "bg-surface-container-low border-outline-variant"
+          }`}
           onPress={() => setShowPicker(!showPicker)}
         >
-          <View className="flex-row items-center gap-1">
-            <MaterialCommunityIcons name="calendar" size={16} color="on-surface" />
-            <Text className="text-sm font-body text-on-surface">Elegir</Text>
-          </View>
+          {isCustomDate() ? (
+            <View className="flex-row items-center justify-center gap-1">
+              <Text className="text-base font-body text-on-primary font-bold">
+                {formatDate(currentValue)}
+              </Text>
+              <MaterialCommunityIcons name="pencil" size={14} color="on-primary" />
+            </View>
+          ) : (
+            <View className="flex-row items-center justify-center gap-2">
+              <MaterialCommunityIcons name="calendar" size={18} color="on-surface" />
+              <Text className="text-base font-body text-on-surface">{t("orders.choose")}</Text>
+            </View>
+          )}
         </Pressable>
       </View>
-
-      <Pressable
-        className="bg-surface-container-low border border-outline-variant p-3 flex-row items-center justify-between"
-        onPress={() => setShowPicker(!showPicker)}
-      >
-        <Text className="text-base font-body text-on-surface">{formatDate(value)}</Text>
-        <MaterialCommunityIcons
-          name={showPicker ? "chevron-up" : "chevron-down"}
-          size={20}
-          color="on-surface"
-        />
-      </Pressable>
 
       {showPicker && (
         <View className="mt-2 items-center">
           <DateTimePicker
-            value={value}
+            value={currentValue}
             mode="date"
             display={Platform.OS === "ios" ? "spinner" : "default"}
             onChange={handleChange}
@@ -222,11 +271,6 @@ export function DatePicker({ value, onChange, minimumDate, maximumDate }: DatePi
             maximumDate={maximumDate}
             locale="es-AR"
           />
-          {Platform.OS === "ios" && (
-            <Pressable className="mt-2 py-2 px-6 bg-primary" onPress={() => setShowPicker(false)}>
-              <Text className="text-base font-body font-bold text-on-primary">Confirmar</Text>
-            </Pressable>
-          )}
         </View>
       )}
     </View>

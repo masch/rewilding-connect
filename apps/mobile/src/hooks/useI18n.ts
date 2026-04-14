@@ -18,7 +18,15 @@ export function useTranslations() {
     return (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
   }, [locale]);
 
-  return { t, locale };
+  const getLocalizedName = useMemo(() => {
+    // Return name in current locale > Spanish > English
+    return (name_i18n: Record<string, string> | undefined): string => {
+      if (!name_i18n) return "";
+      return name_i18n[locale] || name_i18n.es || name_i18n.en || "";
+    };
+  }, [locale]);
+
+  return { t, locale, getLocalizedName };
 }
 
 export function useLocale() {
