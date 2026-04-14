@@ -219,6 +219,7 @@ export const DEMO_USERS_BY_ROLE: { role: UserRole; label: string; users: DemoUse
  */
 export function getMockUserId(): string {
   try {
+    // TODO: Remove required and share user session
     const { mockGetCurrentUser } = require("../services/auth-state");
     const user = mockGetCurrentUser();
     return user?.id ?? DEFAULT_MOCK_USER_ID;
@@ -232,6 +233,7 @@ export function getMockUserId(): string {
  */
 export function isMockUserLoggedIn(): boolean {
   try {
+    // TODO: Remove required and share user session
     const { mockGetCurrentUser } = require("../services/auth-state");
     return mockGetCurrentUser() !== null;
   } catch {
