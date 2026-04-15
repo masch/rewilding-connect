@@ -7,6 +7,7 @@ module.exports = {
   moduleNameMapper: {
     "^@repo/shared$": path.resolve(__dirname, "../../packages/shared/src/index.ts"),
   },
+  moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node"],
   roots: ["<rootDir>/src"],
   testPathIgnorePatterns: ["/node_modules/"],
   transformIgnorePatterns: [

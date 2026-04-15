@@ -1,5 +1,5 @@
 import nativewindPreset from "nativewind/preset";
-import colors from "../../packages/shared/src/theme/colors.json";
+import { COLORS } from "@repo/shared/theme/colors.data.js";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -9,7 +9,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        ...colors,
+        ...COLORS,
       },
       fontFamily: {
         display: ["Manrope", "sans-serif"],

@@ -1,7 +1,7 @@
-{
-  "primary": "#8c3d2b",
-  "secondary": "#47664b",
-  "surface": "#fcf9f2",
+export const COLORS = {
+  primary: "#8c3d2b",
+  secondary: "#47664b",
+  surface: "#fcf9f2",
   "tab-inactive": "#666666",
   "surface-container-low": "#f6f3ec",
   "surface-container-highest": "#e5e2db",
@@ -19,11 +19,11 @@
   "on-primary": "#ffffff",
   "on-primary-fixed": "#3d0600",
   "error-container": "#ffdad6",
-  "error": "#ba1a1a",
+  error: "#ba1a1a",
   "on-error-container": "#93000a",
   "outline-variant": "#dbc1bb",
   "moment-breakfast": "#F59E0B",
   "moment-lunch": "#10B981",
   "moment-snack": "#F97316",
-  "moment-dinner": "#8B5CF6"
-}
+  "moment-dinner": "#8B5CF6",
+};
