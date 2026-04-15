@@ -5,6 +5,7 @@
 ### Global Context
 
 - **Language Policy**: ALL technical metadata, including code comments, docstrings, and Git metadata (Commit messages, PR descriptions), MUST be written in **English**. The project's "Technical Esperanto" is English, regardless of the conversation language.
+- **Command Policy: Make-First**: ALWAYS use `make <command>` for ANY development execution. Direct use of `bun`, `npm`, or `yarn` is STRICTLY PROHIBITED. If a required command is missing from the `Makefile`, ASK the user to add it first.
 
 ### TypeScript
 
@@ -41,7 +42,6 @@
 - **No Direct Push**: NEVER push directly to `main` or `master`. No exceptions.
 - **Issue First**: Every change MUST be linked to a GitHub issue. If no issue exists, create one BEFORE starting the work (use `issue-creation` skill).
 - **Pre-Commit Validation**: ALWAYS run `make check` and ensure it passes BEFORE committing. No commit should be created with failing checks.
-- **Command Policy: Make-First**: ALWAYS prefer `make <command>` over direct `bun` or `npm` commands. If a required command is missing from the `Makefile`, ASK the user to add it before proceeding.
 - **Branching**: Always create a descriptive feature branch (e.g., `issue-#/short-description`).
 - **Pull Requests**: Every change must be submitted via a PR linked to the issue.
 - **Commits**: Use conventional commits only. No AI attribution in commit messages.
