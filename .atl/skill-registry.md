@@ -1,76 +1,72 @@
-# Skill Registry
+# Skill Registry - rewilding-connect
 
-**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.
+## Project Standards
 
-## Project-Level Skills
+### TypeScript
 
-| Trigger                                                                    | Skill                        | Path                                                |
-| -------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------- |
-| When writing Hono API endpoints, middleware or backend routes              | `hono`                       | `.agent/skills/hono/SKILL.md`                       |
-| When creating/modifying database schemas, queries or database transactions | `drizzle-orm`                | `.agent/skills/drizzle-orm/SKILL.md`                |
-| When designing or generating UIs, screens, or visual layouts               | `frontend-design`            | `.agent/skills/frontend-design/SKILL.md`            |
-| When building deep React Native features or tuning performance             | `vercel-react-native-skills` | `.agent/skills/vercel-react-native-skills/SKILL.md` |
-| When styling mobile components or configuring UI elements                  | `expo-tailwind-setup`        | `.agent/skills/expo-tailwind-setup/SKILL.md`        |
-| When configuring GitHub actions for deployment or EAS builds               | `expo-deployment`            | `.agent/skills/expo-deployment/SKILL.md`            |
-| When adding native dependencies that require rebuilds outside Expo Go      | `expo-dev-client`            | `.agent/skills/expo-dev-client/SKILL.md`            |
-| When auditing or finalizing a UI view                                      | `web-design-guidelines`      | `.agent/skills/web-design-guidelines/SKILL.md`      |
+- **Strict Typing**: No `any` types. Use proper types or `unknown` with narrowing.
+- **Immutability**: Use `const` over `let` wherever possible.
+- **Contract Definition**: Prefer `interface` over `type` for objects and service definitions.
 
-## Compact Rules
+### React & React Native
 
-Pre-digested rules per skill. Delegators copy matching blocks into sub-agent prompts as `## Project Standards (auto-resolved)`.
+- **Functional Components**: Use functional components with hooks only.
+- **Imports**: No legacy `import * as React`. Use named imports (e.g., `import { useState }`).
+- **Accessibility**: All images must have descriptive `alt` text (web) or `accessibilityLabel` (native).
+- **Performance**: Use dynamic components with `FlashList` for long lists and avoid heavy JS-side animations.
 
-### hono
+### Styling (NativeWind v4 + Tailwind v3)
 
-- Return JSON responses strictly matching API spec with consistent Error shapes
-- Rely on `zValidator` to auto-inject typed `c.req.valid('json')`
-- Ensure routes use Hono RPC client compatibility for the mobile app
+- **Utilities First**: Use NativeWind CSS utilities only. No inline `style={...}`.
+- **Design Tokens**: Never hardcode colors/spacing. Use the established design system tokens.
+- **Native Context**: Be aware of NativeWind v4 limitations vs v5/v6.
 
-### drizzle-orm
+### Architecture & Monorepo
 
-- Always use the precise PostgreSQL data types
-- Ensure strict type safety by exporting `typeof` for insertion and selection schemas
-- Use explicit foreign keys
-- Write queries utilizing the Drizzle syntax without raw SQL strings where possible
+- **Single Source of Truth**: Shared types and validators must live in `@repo/shared`.
+- **Vertical Slicing**: Keep backend routes logic in services, not in the route handler.
+- **Error Handling**: Use Zod for all input validations on both sides of the bridge.
 
-### frontend-design
+### Testing
 
-- REJECT generic Bootstrap/Tailwind standard colors (e.g., pure blue, red). Use tailored, harmonious HSL palettes
-- Apply subtle glassmorphism and modern gradient overlays
-- Emphasize rich animations to give life to dynamic data
-- MUST create UIs that feel "Premium" and highly polished
+- **TDD First**: Follow the strict TDD protocol when implementing new features.
+- **Coverage**: Verify critical paths with `@testing-library/react-native`.
 
-### vercel-react-native-skills
+### Git & Workflow
 
-- Use `@shopify/flash-list` INSTEAD of FlatList/ScrollView for mapped items
-- Always prefer `Pressable` over `TouchableOpacity`
-- Avoid deeply nesting Views; keep DOM shallow
-- Use Reanimated for complex GPU-bound animations
+- **No Direct Push**: NEVER push directly to `main` or `master`. No exceptions.
+- **Issue First**: Every change MUST be linked to a GitHub issue. If no issue exists, create one BEFORE starting the work (use `issue-creation` skill).
+- **Pre-Commit Validation**: ALWAYS run `make check` and ensure it passes BEFORE committing. No commit should be created with failing checks.
+- **Branching**: Always create a descriptive feature branch (e.g., `issue-#/short-description`).
+- **Pull Requests**: Every change must be submitted via a PR linked to the issue.
+- **Commits**: Use conventional commits only. No AI attribution in commit messages.
+- **Post-Merge Cleanup**: When the user says "mergeado" (merged), the agent MUST:
+  1. Confirm the PR and its linked issue are closed (`gh pr view` / `gh issue view`).
+  2. Switch to `main` branch.
+  3. Pull the latest remote changes (`git pull origin main`).
+  4. Delete the local feature branch (`git branch -d branch-name`).
 
-### expo-tailwind-setup
+## User Skills
 
-- Always use NativeWind utility classes (`className`) over StyleSheet.create()
-- Do not use generic string classes; rely on standard Tailwind aliases
-- Follow the bold, modern UI guidelines (avoid generic colors)
-
-### expo-deployment
-
-- Pin EXPO SDK versions tightly
-- Use EAS Workflows for E2E CI/CD from branch push to app store
-
-### expo-dev-client
-
-- Always rely on continuous EAS builds instead of local prebuilds to prevent git pollution in `ios/` and `android/`
-
-### web-design-guidelines
-
-- Always include `accessibilityLabel` and `accessibilityHint` on interactive elements
-- Verify touch targets are at least 44x44 minimum
-
-## Project Conventions
-
-| File                   | Path                     | Notes                                |
-| ---------------------- | ------------------------ | ------------------------------------ |
-| AGENTS.md              | ./AGENTS.md              | Code review rules and skill registry |
-| .atl/skill-registry.md | ./.atl/skill-registry.md | This registry                        |
-
-Last updated: 2026-04-12
+| Skill                      | Trigger                                    | Description                                |
+| -------------------------- | ------------------------------------------ | ------------------------------------------ |
+| drizzle-orm                | database, schema, migration, @repo/backend | Schema patterns, relations, transactions   |
+| hono                       | backend, api, route, /v1/                  | Routing, middleware, RPC client            |
+| expo-tailwind-setup        | tailwind, nativewind, global.css, styling  | NativeWind v4 + TW v3 setup                |
+| expo-deployment            | eas build, submit, ci/cd, workflow         | EAS Build, Submit, CI/CD                   |
+| expo-dev-client            | native, build-client, testflight           | Dev builds for custom native code          |
+| frontend-design            | design, ui, screen, components             | Bold aesthetics, no generic AI stuff       |
+| vercel-react-native-skills | flashlist, performance, gpu, animation     | 38 RN optimizations, low-end device tuning |
+| web-design-guidelines      | audit, a11y, accessibility, qa             | UI audit against Vercel Guidelines         |
+| issue-creation             | issue, report, bug, feature                | GitHub issue creation workflow             |
+| branch-pr                  | pr, pull request, review                   | PR creation and review workflow            |
+| judgment-day               | juzgar, review adversarial, dual review    | Parallel adversarial review protocol       |
+| sdd-explore                | orchestrator explore, investigar           | Investigar ideas antes de un cambio        |
+| sdd-propose                | orchestrator propose, propuesta            | Crear una propuesta de cambio              |
+| sdd-spec                   | orchestrator spec, especificaciones        | Escribir especificaciones y escenarios     |
+| sdd-design                 | orchestrator design, diseño técnico        | Crear diseño técnico y arquitectura        |
+| sdd-tasks                  | orchestrator tasks, tareas                 | Desglose de tareas de implementación       |
+| sdd-apply                  | orchestrator implement, aplicar            | Implementar cambios de código              |
+| sdd-verify                 | orchestrator verify, verificar             | Validar implementación vs specs            |
+| sdd-archive                | orchestrator archive, archivar             | Sincronizar y cerrar un cambio             |
+| skill-registry             | update skills, skill registry              | Administrar este registro de habilidades   |

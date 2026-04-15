@@ -452,7 +452,7 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 - **ORM:** **Drizzle ORM**. Type-safe SQL-first ORM with zero runtime overhead. Schema defined in TypeScript with `pgEnum`, `pgTable`, and type inference via `$inferSelect`/`$inferInsert`.
 - **Database:** PostgreSQL (ERD defined below).
 - **State Management:** **Zustand**. Minimal, performant state management for React Native.
-- **Styling:** **NativeWind v5** + Tailwind CSS v4 + `react-native-css`. CSS-first configuration with `@theme` tokens in CSS (not JS config). Components wrapped with `useCssElement` for `className` support.
+- **Styling:** **NativeWind v4** + Tailwind CSS v3 + `react-native-css`. Standard Tailwind configuration via `tailwind.config.js`. Components wrapped with CSS interpolation support.
 - **Monorepo:** **Bun Workspaces**. Single repository with multiple projects sharing types and validators.
 
 #### 4.0.2 Internationalization (i18n) **[MVP]**
@@ -612,7 +612,7 @@ The following agent skills are installed to enforce patterns and best practices 
 | ---------------------------- | -------------------------------------------------------------------------------- | ------------------ |
 | `drizzle-orm`                | Schema patterns, relations, transactions, migration workflow                     | Backend DB layer   |
 | `hono`                       | Routing, middleware (jwt, cors, zValidator), RPC client, `app.request()` testing | Backend API layer  |
-| `expo-tailwind-setup`        | NativeWind v5 + TW v4 + `react-native-css` wrapper setup                         | Mobile styling     |
+| `expo-tailwind-setup`        | NativeWind v4 + TW v3 + `react-native-css` wrapper setup                         | Mobile styling     |
 | `expo-deployment`            | EAS Build, Submit, Workflows for CI/CD                                           | DevOps             |
 | `expo-dev-client`            | Development builds for TestFlight (only when custom native code needed)          | DevOps             |
 | `frontend-design`            | Bold aesthetic direction — NO generic AI aesthetics                              | Mobile UI design   |

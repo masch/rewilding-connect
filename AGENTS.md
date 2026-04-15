@@ -1,34 +1,18 @@
-# Code Review Rules
+# Agent Hub
 
-## TypeScript
+This project uses **Agent Teams Lite (ATL)** and **Spec-Driven Development (SDD)**.
 
-- No `any` types - use proper typing
-- Use `const` over `let` when possible
-- Prefer interfaces over type aliases for objects
+## 🧠 Mission Control
 
-## React
+All technical standards, code conventions, and agent skill mappings are centralized in:
+👉 [.atl/skill-registry.md](.atl/skill-registry.md)
 
-- Use functional components with hooks
-- No `import * as React` - use named imports like `import { useState }`
-- All images must have alt text for accessibility
+## 🛠️ Operational Model
 
-## Styling
-
-- Use NativeWindd CSS utilities only
-- No inline styles or CSS-in-JS
-- No hardcoded colors - use design system tokens
+1. **Specs First**: All changes must be backed by an OpenSpec in `openspec/specs/`.
+2. **Auto-Load Skills**: The registry ensures that the AI assistant follows project-specific patterns (NativeWind v4, Drizzle, Hono).
+3. **Consistency**: Do not add technical rules here. Update the registry instead.
 
 ---
 
-## Agent Skills Registry
-
-| Skill                        | Description                       | Path                                                                                                   |
-| ---------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `drizzle-orm`                | Schema patterns, relations        | [.agent/skills/drizzle-orm/SKILL.md](.agent/skills/drizzle-orm/SKILL.md)                               |
-| `hono`                       | Routing, middleware               | [.agent/skills/hono/SKILL.md](.agent/skills/hono/SKILL.md)                                             |
-| `expo-tailwind-setup`        | NativeWind v5 + TW v4 setup       | [.agent/skills/expo-tailwind-setup/SKILL.md](.agent/skills/expo-tailwind-setup/SKILL.md)               |
-| `expo-deployment`            | EAS Build, Submit, CI/CD          | [.agent/skills/expo-deployment/SKILL.md](.agent/skills/expo-deployment/SKILL.md)                       |
-| `expo-dev-client`            | Dev builds for custom native code | [.agent/skills/expo-dev-client/SKILL.md](.agent/skills/expo-dev-client/SKILL.md)                       |
-| `frontend-design`            | Bold aesthetics                   | [.agent/skills/frontend-design/SKILL.md](.agent/skills/frontend-design/SKILL.md)                       |
-| `vercel-react-native-skills` | RN Optimizations                  | [.agent/skills/vercel-react-native-skills/SKILL.md](.agent/skills/vercel-react-native-skills/SKILL.md) |
-| `web-design-guidelines`      | Mobile QA                         | [.agent/skills/web-design-guidelines/SKILL.md](.agent/skills/web-design-guidelines/SKILL.md)           |
+_Senior Architect's Note: Keep the brain clean. One source of truth is better than two guesses._
