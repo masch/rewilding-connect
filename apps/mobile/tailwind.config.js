@@ -1,5 +1,7 @@
 import nativewindPreset from "nativewind/preset";
-import { COLORS } from "@repo/shared/theme/colors.data.js";
+// REVERT: Using relative path because Tailwind/Nativewind compiler (Node/Jiti)
+// cannot resolve workspace aliases during build-time.
+import { COLORS } from "../../packages/shared/src/theme/colors.data.js";
 
 /** @type {import('tailwindcss').Config} */
 export default {
