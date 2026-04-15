@@ -2,6 +2,10 @@
 
 ## Project Standards
 
+### Global Context
+
+- **Language Policy**: ALL technical metadata, including code comments, docstrings, and Git metadata (Commit messages, PR descriptions), MUST be written in **English**. The project's "Technical Esperanto" is English, regardless of the conversation language.
+
 ### TypeScript
 
 - **Strict Typing**: No `any` types. Use proper types or `unknown` with narrowing.
@@ -39,7 +43,6 @@
 - **Pre-Commit Validation**: ALWAYS run `make check` and ensure it passes BEFORE committing. No commit should be created with failing checks.
 - **Branching**: Always create a descriptive feature branch (e.g., `issue-#/short-description`).
 - **Pull Requests**: Every change must be submitted via a PR linked to the issue.
-- **Language Policy**: All code comments, docstrings, and Git metadata (Commit messages, PR descriptions) MUST be written in **English**, regardless of the conversation language.
 - **Commits**: Use conventional commits only. No AI attribution in commit messages.
 - **Pull Request Standards**:
   - Descriptions MUST include a concise test summary: `✅ PASS: X total tests, make check successful`.
