@@ -40,6 +40,10 @@
 - **Branching**: Always create a descriptive feature branch (e.g., `issue-#/short-description`).
 - **Pull Requests**: Every change must be submitted via a PR linked to the issue.
 - **Commits**: Use conventional commits only. No AI attribution in commit messages.
+- **Pull Request Standards**: 
+  - Descriptions MUST include a concise test summary: `✅ PASS: X total tests, make check successful`.
+  - NEVER paste full terminal logs in the description.
+  - MUST link to an approved issue ("Closes #XX").
 - **Post-Merge Cleanup**: When the user says "mergeado" (merged), the agent MUST:
   1. Confirm the PR and its linked issue are closed (`gh pr view` / `gh issue view`).
   2. Switch to `main` branch.
