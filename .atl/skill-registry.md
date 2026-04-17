@@ -31,7 +31,7 @@
 ### Styling (NativeWind v4 + Tailwind v3)
 
 - **Utilities First**: Use NativeWind CSS utilities only. No inline `style={...}`.
-- **Design Tokens**: NEVER use hardcoded color strings (e.g., "#fff", "red"). ALWAYS use the established design system tokens from `COLORS` in `@repo/shared`.
+- **Design Tokens**: Never hardcode colors/spacing. Use the established design system tokens.
 - **Mobile Footer Density**: For sticky footers in mobile views, prioritize a **compact single-row layout**. Avoid multi-row footers that consume excessive vertical screen real estate, especially on devices with small aspect ratios or web browsers.
 - **Native Context**: Be aware of NativeWind v4 limitations vs v5/v6.
 
