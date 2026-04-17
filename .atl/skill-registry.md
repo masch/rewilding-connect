@@ -24,11 +24,13 @@
   - **No defaultValue**: NEVER use the `defaultValue` option in `t()` calls. Missing keys MUST remain visible (showing the key name) to ensure they are detected and fixed during development.
   - **Pluralization**: Use standard i18n pluralization keys (e.g., `one`, `other`) instead of manual ternary operators or conditional strings in the code.
   - **Variables**: Always pass context variables (count, name, etc.) to the translation function instead of hardcoding formatted strings.
+  - **No Post-Processing transformations**: NEVER apply transformations like `.toUpperCase()` or `.toLowerCase()` directly to the result of `t()`. Use CSS utilities (e.g., `uppercase`) for styling. This ensures that missing keys remain clearly visible as `[missing_key]` and are not disguised by case changes.
 
 ### Styling (NativeWind v4 + Tailwind v3)
 
 - **Utilities First**: Use NativeWind CSS utilities only. No inline `style={...}`.
 - **Design Tokens**: Never hardcode colors/spacing. Use the established design system tokens.
+- **Mobile Footer Density**: For sticky footers in mobile views, prioritize a **compact single-row layout**. Avoid multi-row footers that consume excessive vertical screen real estate, especially on devices with small aspect ratios or web browsers.
 - **Native Context**: Be aware of NativeWind v4 limitations vs v5/v6.
 
 ### Architecture & Monorepo
@@ -41,6 +43,8 @@
 
 - **TDD First**: Follow the strict TDD protocol when implementing new features.
 - **Coverage**: Verify critical paths with `@testing-library/react-native`.
+- **Resilient Matchers**: Use **RegExp with case-insensitivity** for text matching (e.g., `findByText(/3[.,]000/i)`) to handle locale differences, dynamic spacing, and currency formatting.
+- **Zustand Mocking**: When mocking Zustand stores (especially with `useShallow`), use a **selector-aware mock implementation**: `(sel) => (sel ? sel(state) : state)`. This ensures that both direct destructuring and selector-based hooks receive the correct state.
 
 ### Git & Workflow
 
