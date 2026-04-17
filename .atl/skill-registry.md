@@ -61,6 +61,7 @@
 - **No Direct Push**: NEVER push directly to `main` or `master`. No exceptions.
 - **Issue First**: Every change MUST be linked to a GitHub issue. If no issue exists, create one BEFORE starting the work (use `issue-creation` skill).
 - **Pre-Commit Validation**: ALWAYS run `make check` and ensure it passes BEFORE committing. No commit should be created with failing checks.
+- **No Verification Bypass**: NEVER use `--no-verify` or any mechanism to bypass Git hooks (linter, tests, `gga`). If a check fails, the root cause MUST be investigated and fixed. Bypassing quality gates is STRICTLY PROHIBITED.
 - **Branching**: Always create a descriptive feature branch (e.g., `issue-#/short-description`).
 - **Pull Requests**: Every change must be submitted via a PR linked to the issue.
 - **Commits**: Use conventional commits only. No AI attribution in commit messages.
