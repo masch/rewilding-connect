@@ -17,13 +17,19 @@ export const ReservationDbSchema = z.object({
   updated_at: z.date().optional(),
 });
 
+import { type Order } from "./order";
+
 /**
  * ReservationSchema (Domain Aggregate)
  * Business entity that includes nested orders.
  */
-export const ReservationSchema = ReservationDbSchema.extend({
-  orders: z.array(OrderSchema).optional(),
-});
+export const ReservationSchema: z.ZodType<Reservation, z.ZodTypeDef, any> =
+  ReservationDbSchema.extend({
+    orders: z.array(z.lazy(() => OrderSchema)).optional(),
+  });
 
 export type ReservationRow = z.infer<typeof ReservationDbSchema>;
-export interface Reservation extends z.infer<typeof ReservationSchema> {}
+
+export interface Reservation extends ReservationRow {
+  orders?: Order[];
+}

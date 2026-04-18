@@ -98,8 +98,6 @@ const MockCatalogService: CatalogServiceInterface = {
       reservation_id: Math.floor(Math.random() * 100000),
       catalog_type_id: firstService.catalog_category_id,
       confirmed_venture_id: null,
-      service_date: date,
-      time_of_day: moment,
       notes: notes ?? null,
       global_status: "SEARCHING",
       cancel_reason: null,
@@ -148,11 +146,21 @@ const MockCatalogService: CatalogServiceInterface = {
     if (input.notes !== undefined) {
       updates.notes = input.notes;
     }
-    if (input.date) {
-      updates.service_date = input.date;
-    }
-    if (input.moment) {
-      updates.time_of_day = input.moment;
+    if (input.date || input.moment) {
+      // In a real system, we might move the order to a different reservation
+      // or update the existing one. For mocks, we'll handle this by updating the reservation.
+      const { getMockOrderById } = await import("../mocks/orders");
+      const order = getMockOrderById(Number(id));
+      if (order?.reservation_id) {
+        // This is a bit of a shortcut for the mock, updating the reservation in state
+        const { getMockReservations } = await import("../mocks/orders");
+        const reservations = getMockReservations();
+        const res = reservations.find((r) => r.id === order.reservation_id);
+        if (res) {
+          if (input.date) res.service_date = input.date;
+          if (input.moment) res.time_of_day = input.moment;
+        }
+      }
     }
 
     updateMockOrder(Number(id), updates);

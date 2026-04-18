@@ -47,14 +47,22 @@ export const useReservationStore = create<ReservationState>((set, get) => ({
         .filter((order) =>
           ["SEARCHING", "OFFER_PENDING", "CONFIRMED"].includes(order.global_status),
         )
-        .sort((a, b) => new Date(a.service_date).getTime() - new Date(b.service_date).getTime());
+        .sort(
+          (a, b) =>
+            new Date(a.reservation?.service_date || 0).getTime() -
+            new Date(b.reservation?.service_date || 0).getTime(),
+        );
 
       // Filter history orders: COMPLETED, CANCELLED, NO_SHOW, EXPIRED
       const history = orders
         .filter((order) =>
           ["COMPLETED", "CANCELLED", "NO_SHOW", "EXPIRED"].includes(order.global_status),
         )
-        .sort((a, b) => new Date(b.service_date).getTime() - new Date(a.service_date).getTime());
+        .sort(
+          (a, b) =>
+            new Date(b.reservation?.service_date || 0).getTime() -
+            new Date(a.reservation?.service_date || 0).getTime(),
+        );
 
       set({ activeOrders: active, historyOrders: history, isLoading: false });
     } catch (err) {

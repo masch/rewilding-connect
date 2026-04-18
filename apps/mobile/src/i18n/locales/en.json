@@ -178,10 +178,10 @@
     "demand_spike": "Demand spike detected for {{date}}",
     "view_report": "VIEW REPORT",
     "moments": {
-      "breakfast": "BREAKFAST",
-      "lunch": "LUNCH",
-      "snack": "SNACK",
-      "dinner": "DINNER"
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "snack": "Snack",
+      "dinner": "Dinner"
     }
   },
   "errors": {

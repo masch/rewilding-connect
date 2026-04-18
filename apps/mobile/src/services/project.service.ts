@@ -8,7 +8,7 @@ import {
   UpdateProjectInput,
 } from "@repo/shared";
 import env from "../config/env";
-import { MOCK_PROJECTS } from "../mocks/projects";
+import { MOCK_PROJECTS } from "../mocks/projects.data";
 import { logger } from "./logger.service";
 
 /**

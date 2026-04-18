@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { OrderStatusSchema, CancelReasonSchema, ServiceMomentSchema } from "./common";
+import { OrderStatusSchema, CancelReasonSchema } from "./common";
 import { UserSchema } from "./user";
 import { VentureSchema } from "./venture";
 import { OrderItemSchema } from "./order-item";
+import { ReservationSchema } from "./reservation";
 
 /**
  * OrderDbSchema
@@ -15,8 +16,6 @@ export const OrderDbSchema = z.object({
   reservation_id: z.number().int().positive(),
   catalog_type_id: z.number().int().positive(),
   confirmed_venture_id: z.number().int().positive().nullable().optional(),
-  service_date: z.date(),
-  time_of_day: ServiceMomentSchema,
   notes: z.string().nullable().optional(),
   global_status: OrderStatusSchema.default("SEARCHING"),
   cancel_reason: CancelReasonSchema.nullable().optional(),
@@ -27,18 +26,27 @@ export const OrderDbSchema = z.object({
   notify_whatsapp: z.boolean().default(false),
 });
 
+import { type OrderItem } from "./order-item";
+import { type User } from "./user";
+import { type Venture } from "./venture";
+import { type Reservation } from "./reservation";
+
 /**
  * OrderSchema (Domain Aggregate)
  * Business entity that includes relations and nested items.
- *
- * DOMAIN RULE: All 'items' must belong to the same 'catalog_type_id' defined in the parent Order.
- * Validation must be performed at the Service layer during order creation/update.
  */
-export const OrderSchema = OrderDbSchema.extend({
+export const OrderSchema: z.ZodType<Order, z.ZodTypeDef, any> = OrderDbSchema.extend({
   items: z.array(OrderItemSchema).default([]),
   user: UserSchema.optional(),
   confirmed_venture: VentureSchema.optional(),
+  reservation: z.lazy(() => ReservationSchema).optional(),
 });
 
 export type OrderRow = z.infer<typeof OrderDbSchema>;
-export interface Order extends z.infer<typeof OrderSchema> {}
+
+export interface Order extends OrderRow {
+  items: OrderItem[];
+  user?: User;
+  confirmed_venture?: Venture;
+  reservation?: Reservation;
+}

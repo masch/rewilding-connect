@@ -1,5 +1,6 @@
 import { User } from "@repo/shared";
 
+// Tourist users mocks
 export const MOCK_USER_TOURIST_WITH_ORDERS: User = {
   id: "tourist_001",
   alias: "Familia Gómez",
@@ -30,6 +31,7 @@ export const MOCK_USER_TOURIST_WITHOUT_ORDERS: User = {
   created_at: new Date("2024-01-05T00:00:00Z"),
 };
 
+// Entrepreneurs users mocks
 export const MOCK_USER_ENTREPRENEUR_WITH_ORDERS: User = {
   id: "entrepreneur_001",
   alias: null,
@@ -60,6 +62,7 @@ export const MOCK_USER_ENTREPRENEUR_WITHOUT_ORDERS: User = {
   created_at: new Date("2023-08-20T00:00:00Z"),
 };
 
+// Admin users mocks
 export const MOCK_USER_ADMIN: User = {
   id: "admin_001",
   alias: null,

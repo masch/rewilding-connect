@@ -46,7 +46,7 @@ export const OrderStatusSchema = z.enum([
 
 export type OrderStatus = z.infer<typeof OrderStatusSchema>;
 
-export const ReservationStatusSchema = z.enum(["PENDING", "CONFIRMED", "PARTIAL", "CANCELLED"]);
+export const ReservationStatusSchema = z.enum(["PENDING", "CONFIRMED", "CANCELLED"]);
 
 export type ReservationStatus = z.infer<typeof ReservationStatusSchema>;
 

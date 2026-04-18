@@ -6,7 +6,8 @@
 import { create } from "zustand";
 import type { Order } from "@repo/shared";
 import { logger } from "../services/logger.service";
-import { MOCK_AGENDA_ORDERS, MARIA_VENTURE_ID } from "../mocks/agenda";
+import { getMockAgendaOrders } from "../mocks/agenda";
+import { MARIA_VENTURE_ID } from "../mocks/agenda";
 import { mockGetCurrentUser } from "../services/auth-state";
 
 interface AgendaState {
@@ -40,10 +41,10 @@ export const useAgendaStore = create<AgendaState>((set, get) => ({
 
       const filtered =
         currentUser?.id === "entrepreneur_001"
-          ? MOCK_AGENDA_ORDERS.filter(
+          ? getMockAgendaOrders().filter(
               (o) =>
-                o.service_date.toISOString().split("T")[0] === dateStr &&
-                o.confirmed_venture_id === MARIA_VENTURE_ID,
+                (o.reservation?.service_date || new Date()).toISOString().split("T")[0] ===
+                  dateStr && o.confirmed_venture_id === MARIA_VENTURE_ID,
             )
           : [];
 

@@ -1,26 +1,34 @@
-import { Order } from "@repo/shared";
+import { Order, Reservation } from "@repo/shared";
 import { getMockUserId } from "./users";
 import { logger } from "../services/logger.service";
-import { INITIAL_MOCK_ORDERS } from "./orders.data";
+import { INITIAL_MOCK_ORDERS, MOCK_RESERVATIONS } from "./orders.data";
 
 /**
  * Mock services for orders
  * Consumes centralized data from orders.data.ts
  */
 
-// Shared in-memory state for orders
+// Shared in-memory state for orders and reservations
 const GLOBAL_ORDERS_KEY = "__REWILDING_MOCK_ORDERS_STATE__";
 
 // Initialize global orders state if not already present
-const ordersStateContainer = globalThis as unknown as { [GLOBAL_ORDERS_KEY]: { orders: Order[] } };
+const ordersStateContainer = globalThis as unknown as {
+  [GLOBAL_ORDERS_KEY]: { orders: Order[]; reservations: Reservation[] };
+};
 
 if (!ordersStateContainer[GLOBAL_ORDERS_KEY]) {
   ordersStateContainer[GLOBAL_ORDERS_KEY] = {
     orders: [...INITIAL_MOCK_ORDERS],
+    reservations: [...MOCK_RESERVATIONS],
   };
 }
-
 const ordersState = ordersStateContainer[GLOBAL_ORDERS_KEY];
+
+// Get all reservations (open reservations with no items yet)
+export function getMockReservations(): Reservation[] {
+  const userId = getEffectiveUserId();
+  return ordersState.reservations.filter((r: Reservation) => r.user_id === userId);
+}
 
 // Fallback for user ID to ensure visibility in mock mode
 const getEffectiveUserId = () => {
@@ -28,15 +36,27 @@ const getEffectiveUserId = () => {
 };
 
 /**
- * Get orders for current user
+ * Get all mock orders in the state (unfiltered)
+ */
+export function getAllMockOrders(): Order[] {
+  return ordersState.orders.map((order) => {
+    const reservation = ordersState.reservations.find((r) => r.id === order.reservation_id);
+    return { ...order, reservation };
+  });
+}
+
+/**
+ * Get mock orders for the current user (filtered)
  */
 export function getMockOrders(): Order[] {
   const userId = getEffectiveUserId();
-  return ordersState.orders.filter((o: Order) => o.user_id === userId);
-}
+  const orders = ordersState.orders.filter((o: Order) => o.user_id === userId);
 
-// Deprecated: use getMockOrders() instead
-export const MOCK_ORDERS: Order[] = [];
+  return orders.map((order) => {
+    const reservation = ordersState.reservations.find((r) => r.id === order.reservation_id);
+    return { ...order, reservation };
+  });
+}
 
 /**
  * Add an order to the mock collection
@@ -48,7 +68,7 @@ export function addMockOrder(order: Omit<Order, "id" | "user_id">) {
     ...order,
   };
   ordersState.orders = [newOrder, ...ordersState.orders];
-  logger.info("[MOCK API] Created order from reservation:", newOrder);
+  logger.info("[MOCK API] Created order from reservation:", { ...newOrder });
   return newOrder;
 }
 
