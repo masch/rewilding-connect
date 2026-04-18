@@ -67,7 +67,8 @@
 - **Commits**: Use conventional commits only. No AI attribution in commit messages.
 - **Pull Request Standards**:
   - **MANDATORY**: Every PR body MUST include a "Test Summary" following this exact format: `✅ PASS: X total tests, make check successful`.
-  - **Template**: ALWAYS use the provided template in `.github/PULL_REQUEST_TEMPLATE.md`.
+  - **Pre-Creation Protocol**: AGENTS MUST read `.github/PULL_REQUEST_TEMPLATE.md` before executing `gh pr create` to ensure all sections are filled correctly. Relying on memory is NOT allowed.
+  - **Label Verification**: ALWAYS run `gh label list` before adding labels to a PR to ensure compliance with project-specific naming (e.g., `type:feature` vs `type:feat`).
   - Descriptions must not paste full logs; use the summary format instead.
   - MUST link to an approved issue ("Closes #XX").
 - **Post-Merge Cleanup**: When the user says "mergeado" (merged), the agent MUST:
