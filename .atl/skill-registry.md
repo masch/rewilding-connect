@@ -61,7 +61,7 @@
 - **No Direct Push**: NEVER push directly to `main` or `master`. No exceptions.
 - **Issue First**: Every change MUST be linked to a GitHub issue. If no issue exists, create one BEFORE starting the work (use `issue-creation` skill).
 - **Pre-Commit Validation**: ALWAYS run `make check` and ensure it passes BEFORE committing. No commit should be created with failing checks.
-- **No Verification Bypass**: NEVER use `--no-verify` or any mechanism to bypass Git hooks (linter, tests, `gga`). If a check fails, the root cause MUST be investigated and fixed. Bypassing quality gates is STRICTLY PROHIBITED.
+- **Prohibición ABSOLUTA de `--no-verify`**: No importa qué tan 'chiquito' sea el cambio, si el linter está siendo 'pesado', o incluso si la herramienta de auditoría (`gga`) falla por un error de formato o ambigüedad: **NUNCA uses `--no-verify`**. No hay 'bypass justificado'. Si no podés lograr que el check pase en verde oficial, DETENETE y pedí ayuda al humano. El atajo es la muerte de la calidad. Bypassing quality gates is STRICTLY PROHIBITED.
 - **Branching**:
   - **Always Start from Fresh Main**: BEFORE starting any new feature (creating a branch or beginning work), MUST switch to `main`, pull the latest remote changes (`git pull origin main`), and ONLY THEN create the new feature branch. Starting from a stale state is STRICTLY PROHIBITED.
   - Always create a descriptive feature branch (e.g., `issue-#/short-description`).
