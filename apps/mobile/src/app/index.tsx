@@ -2,14 +2,9 @@ import { useAuthStore } from "../stores/auth.store";
 import { View, Text, ScrollView } from "react-native";
 import Screen, { ScreenContent } from "../components/Screen";
 import { router } from "expo-router";
-import { CreateUserInput, COLORS } from "@repo/shared";
-import {
-  DEMO_TOURIST_USERS,
-  DEMO_ENTREPRENEUR_USERS,
-  DEMO_ADMIN_USERS,
-  type DemoUser,
-} from "../mocks/users";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { CreateUserInput, COLORS, type User, type UserRole } from "@repo/shared";
+import { getDemoUsersByRole } from "../mocks/users";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslations } from "../hooks/useI18n";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 
@@ -73,12 +68,22 @@ export default function RoleSelectorScreen() {
   const { setUserRole } = useAuthStore();
   const login = useAuthStore((state) => state.login);
 
-  const handleDemoLogin = (user: DemoUser) => {
-    const isTourist = user.role === "TOURIST";
+  const getUserIdentifier = (user: User, role: UserRole): string => {
+    if (role === "TOURIST") {
+      return user.alias || user.first_name || "Tourist";
+    }
+    return user.email || "";
+  };
+
+  const handleDemoLogin = (user: User) => {
+    const role = user.user_type;
+    const isTourist = role === "TOURIST";
+    const identifier = getUserIdentifier(user, role);
+
     const userData: CreateUserInput = isTourist
       ? {
-          alias: user.identifier,
-          user_type: user.role,
+          alias: identifier,
+          user_type: role,
           email: null,
           first_name: null,
           last_name: null,
@@ -86,21 +91,21 @@ export default function RoleSelectorScreen() {
         }
       : {
           alias: null,
-          email: user.identifier,
-          user_type: user.role,
+          email: identifier,
+          user_type: role,
           first_name: null,
           last_name: null,
           whatsapp: null,
         };
 
     login(userData);
-    setUserRole(user.role);
+    setUserRole(role);
 
-    if (user.role === "TOURIST") {
+    if (role === "TOURIST") {
       router.push("/tourist");
-    } else if (user.role === "ENTREPRENEUR") {
+    } else if (role === "ENTREPRENEUR") {
       router.push("/entrepreneur/agenda");
-    } else if (user.role === "ADMIN") {
+    } else if (role === "ADMIN") {
       router.push("/admin/project");
     }
   };
@@ -121,9 +126,9 @@ export default function RoleSelectorScreen() {
   };
 
   const demoUsersByRole = [
-    { role: "TOURIST" as const, users: DEMO_TOURIST_USERS },
-    { role: "ENTREPRENEUR" as const, users: DEMO_ENTREPRENEUR_USERS },
-    { role: "ADMIN" as const, users: DEMO_ADMIN_USERS },
+    { role: "TOURIST" as const, users: getDemoUsersByRole("TOURIST") },
+    { role: "ENTREPRENEUR" as const, users: getDemoUsersByRole("ENTREPRENEUR") },
+    { role: "ADMIN" as const, users: getDemoUsersByRole("ADMIN") },
   ] as const;
 
   const { t } = useTranslations();
@@ -182,19 +187,22 @@ export default function RoleSelectorScreen() {
 
                 {/* Demo Users Grid */}
                 <View className="flex flex-row flex-wrap gap-2">
-                  {group.users.map((user) => (
-                    <Button
-                      key={user.identifier}
-                      variant="secondary"
-                      onPress={() => handleDemoLogin(user)}
-                      leftIcon="account-outline"
-                      rightIcon="chevron-right"
-                      iconColor={config.color}
-                      title={user.identifier.split("@")[0]}
-                      className={`flex-1 min-w-[45%] border ${config.borderClass} bg-surface-container-low px-3 py-2.5 rounded-lg`}
-                      accessibilityLabel={`Login as ${user.identifier.split("@")[0]}`}
-                    />
-                  ))}
+                  {group.users.map((user) => {
+                    const identifier = getUserIdentifier(user, group.role);
+                    return (
+                      <Button
+                        key={user.id}
+                        variant="secondary"
+                        onPress={() => handleDemoLogin(user)}
+                        leftIcon="account-outline"
+                        rightIcon="chevron-right"
+                        iconColor={config.color}
+                        title={identifier.split("@")[0]}
+                        className={`flex-1 min-w-[45%] border ${config.borderClass} bg-surface-container-low px-3 py-2.5 rounded-lg`}
+                        accessibilityLabel={`Login as ${identifier}`}
+                      />
+                    );
+                  })}
                 </View>
               </View>
             );

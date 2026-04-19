@@ -37,12 +37,13 @@ export default function OrderSetupScreen() {
     if (hasContextChanged && selectedDate && selectedMoment) {
       // Find orders in the PREVIOUS context to move them
       const itemsToMove = activeOrders.filter((o: Order) => {
-        const oDate = new Date(o.service_date);
+        const oDate = new Date(o.reservation?.service_date || 0);
         return (
           oDate.getFullYear() === selectedDate.getFullYear() &&
           oDate.getMonth() === selectedDate.getMonth() &&
           oDate.getDate() === selectedDate.getDate() &&
-          String(o.time_of_day).toUpperCase() === String(selectedMoment).toUpperCase()
+          String(o.reservation?.time_of_day || "").toUpperCase() ===
+            String(selectedMoment).toUpperCase()
         );
       });
 

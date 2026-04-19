@@ -1,11 +1,11 @@
 import React from "react";
 import { render, screen } from "@testing-library/react-native";
 import ReservationCard from "../ReservationCard";
-import { MOCK_AGENDA_ORDERS } from "../../../mocks/agenda";
+import { getMockAgendaOrders } from "../../../mocks/agenda";
 
 describe("ReservationCard", () => {
   it("should render client name, items and service name", () => {
-    const order = MOCK_AGENDA_ORDERS[0];
+    const order = getMockAgendaOrders()[0];
     const totalQuantity = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
     render(<ReservationCard order={order} />);
 
@@ -17,7 +17,7 @@ describe("ReservationCard", () => {
   });
 
   it("should show notes if present", () => {
-    const order = MOCK_AGENDA_ORDERS.find((o) => o.notes)!;
+    const order = getMockAgendaOrders().find((o) => o.notes)!;
     render(<ReservationCard order={order} />);
     expect(screen.getByText(order.notes!)).toBeTruthy();
   });

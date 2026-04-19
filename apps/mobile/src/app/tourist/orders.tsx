@@ -25,8 +25,8 @@ const getStatusConfig = (
 ): Record<OrderStatus, { label: string; bgClass: string; textClass: string }> => ({
   SEARCHING: {
     label: t("orders.status.searching"),
-    bgClass: "bg-[#EAB308]/20",
-    textClass: "text-[#854D0E]",
+    bgClass: "bg-warning/20",
+    textClass: "text-tertiary-container",
   },
   WAITING_FOR_OFFER: {
     label: t("orders.status.waiting_for_offer"),
@@ -139,19 +139,23 @@ function ActiveOrderCard({ order, onCancel, onShowAlert }: ActiveOrderCardProps)
               className="opacity-60"
             />
             <Text className="text-sm font-bold text-on-surface opacity-80">
-              {getRelativeDateLabel(order.service_date)}
+              {getRelativeDateLabel(order.reservation?.service_date || new Date())}
             </Text>
           </View>
           <View className="flex-row items-center gap-1.5">
             <MaterialCommunityIcons
               name={
-                getMomentIcon(order.time_of_day) as keyof typeof MaterialCommunityIcons.glyphMap
+                getMomentIcon(
+                  order.reservation?.time_of_day || "LUNCH",
+                ) as keyof typeof MaterialCommunityIcons.glyphMap
               }
               size={14}
-              color={getMomentColor(order.time_of_day)}
+              color={getMomentColor(order.reservation?.time_of_day || "LUNCH")}
             />
-            <Text className={`text-sm font-bold moment-${order.time_of_day.toLowerCase()}`}>
-              {formatMoment(order.time_of_day, t)}
+            <Text
+              className={`text-sm font-bold moment-${(order.reservation?.time_of_day || "LUNCH").toLowerCase()}`}
+            >
+              {formatMoment(order.reservation?.time_of_day || "LUNCH", t)}
             </Text>
           </View>
         </View>
@@ -279,16 +283,22 @@ function HistoryItem({ order }: HistoryItemProps) {
             className="opacity-60"
           />
           <Text className="text-sm font-bold text-on-surface opacity-80">
-            {getRelativeDateLabel(order.service_date)}
+            {getRelativeDateLabel(order.reservation?.service_date || new Date())}
           </Text>
           <View className="w-[1px] h-3 bg-outline-variant/30 mx-1" />
           <MaterialCommunityIcons
-            name={getMomentIcon(order.time_of_day) as keyof typeof MaterialCommunityIcons.glyphMap}
+            name={
+              getMomentIcon(
+                order.reservation?.time_of_day || "LUNCH",
+              ) as keyof typeof MaterialCommunityIcons.glyphMap
+            }
             size={14}
-            color={getMomentColor(order.time_of_day)}
+            color={getMomentColor(order.reservation?.time_of_day || "LUNCH")}
           />
-          <Text className={`text-sm font-bold moment-${order.time_of_day.toLowerCase()}`}>
-            {formatMoment(order.time_of_day, t)}
+          <Text
+            className={`text-sm font-bold moment-${(order.reservation?.time_of_day || "LUNCH").toLowerCase()}`}
+          >
+            {formatMoment(order.reservation?.time_of_day || "LUNCH", t)}
           </Text>
         </View>
 

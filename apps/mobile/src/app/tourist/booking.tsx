@@ -158,12 +158,13 @@ export default function BookingScreen() {
         );
         if (!hasItem) return false;
 
-        const oDate = new Date(order.service_date);
+        const oDate = new Date(order.reservation?.service_date || 0);
         const cDate = new Date(selectedDate!);
         const isSameDay = oDate.toISOString().split("T")[0] === cDate.toISOString().split("T")[0];
         const isSameMoment =
-          String(order.time_of_day).trim().toUpperCase() ===
-          String(selectedMoment).trim().toUpperCase();
+          String(order.reservation?.time_of_day || "")
+            .trim()
+            .toUpperCase() === String(selectedMoment).trim().toUpperCase();
 
         return isSameDay && isSameMoment;
       });

@@ -15,24 +15,37 @@ const yesterday = daysFromNow(-1);
 
 export const MARIA_VENTURE_ID = 1;
 
+const MOCK_RESERVATION_TODAY_LUNCH_PENDING: Reservation = {
+  id: 1,
+  user_id: MOCK_USER_TOURIST_WITH_ORDERS.id,
+  service_date: today,
+  time_of_day: "LUNCH",
+  status: "PENDING",
+};
+
+const MOCK_RESERVATION_TODAY_DINNER_CONFIRMED: Reservation = {
+  id: 2,
+  user_id: MOCK_USER_TOURIST_WITH_ORDERS.id,
+  service_date: today,
+  time_of_day: "DINNER",
+  status: "CONFIRMED",
+};
+
+const MOCK_RESERVATION_TODAY_BREAKFAST_CANCELLED: Reservation = {
+  id: 3,
+  user_id: MOCK_USER_TOURIST_WITH_ORDERS.id,
+  service_date: today,
+  time_of_day: "BREAKFAST",
+  status: "CANCELLED",
+};
+
 /**
- * Mock Reservations
+ * Reservations (parent entities for orders)
  */
-export const INITIAL_MOCK_RESERVATIONS: Reservation[] = [
-  {
-    id: 1,
-    user_id: MOCK_USER_TOURIST_WITH_ORDERS.id,
-    service_date: today,
-    time_of_day: "LUNCH",
-    status: "PENDING",
-  },
-  {
-    id: 2,
-    user_id: MOCK_USER_TOURIST_WITH_ORDERS.id,
-    service_date: today,
-    time_of_day: "DINNER",
-    status: "CONFIRMED",
-  },
+export const MOCK_RESERVATIONS: Reservation[] = [
+  MOCK_RESERVATION_TODAY_LUNCH_PENDING,
+  MOCK_RESERVATION_TODAY_DINNER_CONFIRMED,
+  MOCK_RESERVATION_TODAY_BREAKFAST_CANCELLED,
 ];
 
 /**
@@ -46,8 +59,6 @@ export const INITIAL_MOCK_ORDERS: Order[] = [
     reservation_id: 1,
     catalog_type_id: SERVICE_CATEGORY_IDS.GASTRONOMY,
     global_status: "SEARCHING",
-    service_date: today,
-    time_of_day: "LUNCH",
     notes: "Please no spicy",
     items: [
       {
@@ -77,8 +88,6 @@ export const INITIAL_MOCK_ORDERS: Order[] = [
     catalog_type_id: SERVICE_CATEGORY_IDS.GASTRONOMY,
     global_status: "CONFIRMED",
     confirmed_venture_id: MARIA_VENTURE_ID,
-    service_date: today,
-    time_of_day: "DINNER",
     items: [
       {
         id: 3,
@@ -100,8 +109,6 @@ export const INITIAL_MOCK_ORDERS: Order[] = [
     catalog_type_id: SERVICE_CATEGORY_IDS.GASTRONOMY,
     global_status: "CANCELLED",
     confirmed_venture_id: MARIA_VENTURE_ID,
-    service_date: today,
-    time_of_day: "BREAKFAST",
     items: [
       {
         id: 3,

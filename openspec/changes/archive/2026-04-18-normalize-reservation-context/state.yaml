@@ -1,0 +1,32 @@
+change_name: normalize-reservation-context
+status: archived
+active_phase: verify
+last_updated: "2026-04-18T20:52:00-03:00"
+phases:
+  explore:
+    status: completed
+    completed_at: "2026-04-18T19:00:00-03:00"
+  propose:
+    status: completed
+    completed_at: "2026-04-18T19:15:00-03:00"
+  spec:
+    status: completed
+    completed_at: "2026-04-18T19:30:00-03:00"
+  design:
+    status: completed
+    completed_at: "2026-04-18T19:45:00-03:00"
+  tasks:
+    status: completed
+    completed_at: "2026-04-18T20:00:00-03:00"
+  apply:
+    status: completed
+    completed_at: "2026-04-18T20:45:00-03:00"
+  verify:
+    status: active
+    started_at: "2026-04-18T20:46:00-03:00"
+  archive:
+    status: pending
+dependencies: []
+metadata:
+  description: Normalization of Order-Reservation relationship moving temporal context to Reservation.
+  tags: ["architecture", "domain-model", "refactor"]

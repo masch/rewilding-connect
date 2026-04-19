@@ -178,10 +178,10 @@
     "demand_spike": "Pico de demanda detectado para el {{date}}",
     "view_report": "VER REPORTE",
     "moments": {
-      "breakfast": "DESAYUNO",
-      "lunch": "ALMUERZO",
-      "snack": "MERIENDA",
-      "dinner": "CENA"
+      "breakfast": "Desayuno",
+      "lunch": "Almuerzo",
+      "snack": "Merienda",
+      "dinner": "Cena"
     }
   },
   "errors": {

@@ -4,7 +4,7 @@
  */
 
 import { CatalogItem, ServiceCategory } from "@repo/shared";
-import { MOCK_PROJECTS, PROJECT_IDS } from "./projects";
+import { MOCK_PROJECTS, PROJECT_IDS } from "./projects.data";
 
 // Local assets
 import empanadas12 from "../../assets/catalog/empanadas12.jpeg";

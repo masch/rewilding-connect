@@ -144,7 +144,7 @@ export default function AgendaScreen() {
             {renderDateSelector()}
 
             {MOMENTS.map((moment) => {
-              const momentOrders = orders.filter((o) => o.time_of_day === moment);
+              const momentOrders = orders.filter((o) => o.reservation?.time_of_day === moment);
               if (momentOrders.length === 0) return null;
 
               const momentColor = getMomentColor(moment);
@@ -167,7 +167,7 @@ export default function AgendaScreen() {
                       className="font-display-black text-[14px] uppercase tracking-[1.5px]"
                       style={{ color: momentColor }}
                     >
-                      {t(`agenda.moments.${moment}`)}
+                      {t(`agenda.moments.${moment.toLowerCase()}`)}
                     </Text>
                     <View
                       className="h-[0.8px] flex-1 ml-4 opacity-20"

@@ -1,5 +1,5 @@
 import { useAgendaStore } from "../agenda.store";
-import { MOCK_AGENDA_ORDERS } from "../../mocks/agenda";
+import { getMockAgendaOrders } from "../../mocks/agenda";
 
 describe("Agenda Store", () => {
   beforeEach(() => {
@@ -11,16 +11,16 @@ describe("Agenda Store", () => {
     const store = useAgendaStore.getState();
     const today = new Date();
 
-    // RED: this will fail because fetchAgenda doesn't exist or doesn't return mock data yet
     await store.fetchAgenda(today);
 
+    // Note: if this fails, check if the mock data dates match today
     expect(useAgendaStore.getState().orders.length).toBeGreaterThan(0);
     expect(useAgendaStore.getState().isLoading).toBe(false);
   });
 
   it("should calculate occupation stats correctly", async () => {
     // Setup state
-    useAgendaStore.setState({ orders: MOCK_AGENDA_ORDERS });
+    useAgendaStore.setState({ orders: getMockAgendaOrders() });
 
     const stats = useAgendaStore.getState().getOccupationStats(20); // Max capacity 20
 
