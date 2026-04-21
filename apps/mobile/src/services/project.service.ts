@@ -6,9 +6,9 @@ import {
   CreateProjectInput,
   UpdateProjectSchema,
   UpdateProjectInput,
+  MOCK_PROJECTS,
 } from "@repo/shared";
 import env from "../config/env";
-import { MOCK_PROJECTS } from "../mocks/projects.data";
 import { logger } from "./logger.service";
 
 /**
@@ -42,7 +42,7 @@ interface ProjectServiceInterface {
  */
 const projectState = {
   projects: [...MOCK_PROJECTS],
-  nextId: 3,
+  nextId: 5,
 };
 
 const MockProjectService: ProjectServiceInterface = {
@@ -104,19 +104,19 @@ const MockProjectService: ProjectServiceInterface = {
  */
 const RestProjectService: ProjectServiceInterface = {
   getProjects: async () => {
-    const response = await fetch(`${env.API_URL}/projects`);
+    const response = await fetch(`${env.API_URL}/v1/projects`);
     if (!response.ok) throw new Error("API error fetching projects");
     return response.json();
   },
 
   getProjectById: async (id: number) => {
-    const response = await fetch(`${env.API_URL}/projects/${id}`);
+    const response = await fetch(`${env.API_URL}/v1/projects/${id}`);
     if (!response.ok) throw new Error("API error fetching project by ID");
     return response.json();
   },
 
   createProject: async (project: CreateProjectInput) => {
-    const response = await fetch(`${env.API_URL}/projects`, {
+    const response = await fetch(`${env.API_URL}/v1/projects`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(project),
@@ -126,7 +126,7 @@ const RestProjectService: ProjectServiceInterface = {
   },
 
   updateProject: async (id: number, project: UpdateProjectInput) => {
-    const response = await fetch(`${env.API_URL}/projects/${id}`, {
+    const response = await fetch(`${env.API_URL}/v1/projects/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(project),
@@ -136,7 +136,7 @@ const RestProjectService: ProjectServiceInterface = {
   },
 
   deleteProject: async (id: number) => {
-    const response = await fetch(`${env.API_URL}/projects/${id}`, {
+    const response = await fetch(`${env.API_URL}/v1/projects/${id}`, {
       method: "DELETE",
     });
     return response.ok;

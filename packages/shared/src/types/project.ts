@@ -10,8 +10,8 @@ export const PROJECT_CONSTRAINTS = {
   NAME_MAX_LENGTH: 100,
 } as const;
 
-export const ProjectSchema = z.object({
-  id: z.number().int().positive(),
+// Define the core project fields without ID
+const projectFields = {
   name: z
     .string()
     .min(PROJECT_CONSTRAINTS.NAME_MIN_LENGTH)
@@ -31,16 +31,49 @@ export const ProjectSchema = z.object({
     .max(PROJECT_CONSTRAINTS.MAX_CASCADE_ATTEMPTS_MAX)
     .default(10),
   is_active: z.boolean().default(true),
-});
+};
+
+// Common validation logic for languages
+const validateProjectLanguages = (data: {
+  default_language: string;
+  supported_languages: string[];
+}) => data.supported_languages.includes(data.default_language);
+
+const languageErrorMessage = {
+  message: "Default language must be one of the supported languages",
+  path: ["default_language"],
+};
 
 // Schema for creating a new project (without id)
-export const CreateProjectSchema = ProjectSchema.omit({ id: true });
+export const CreateProjectSchema = z
+  .object(projectFields)
+  .refine(validateProjectLanguages, languageErrorMessage);
+
+// Base schema for existing projects
+export const ProjectSchema = z
+  .object({
+    id: z.number().int().positive(),
+    ...projectFields,
+  })
+  .refine(validateProjectLanguages, languageErrorMessage);
 
 // Schema for updating a project (all fields optional)
-export const UpdateProjectSchema = CreateProjectSchema.partial();
+export const UpdateProjectSchema = z
+  .object(projectFields)
+  .partial()
+  .refine(
+    (data) => {
+      if (data.supported_languages && data.default_language) {
+        return data.supported_languages.includes(data.default_language);
+      }
+      return true;
+    },
+    {
+      message: "Default language must be one of the supported languages",
+      path: ["default_language"],
+    }
+  );
 
 export interface Project extends z.infer<typeof ProjectSchema> {}
-
 export interface CreateProjectInput extends z.input<typeof CreateProjectSchema> {}
-
 export interface UpdateProjectInput extends z.input<typeof UpdateProjectSchema> {}

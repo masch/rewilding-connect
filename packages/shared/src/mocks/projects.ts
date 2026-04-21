@@ -1,4 +1,4 @@
-import { Project } from "@repo/shared";
+import type { Project } from "../types/project";
 
 // Project IDs - explicit constants for type safety
 export const PROJECT_IDS = {

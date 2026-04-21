@@ -450,7 +450,7 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 - **Runtime:** **Bun**. High-performance JavaScript/TypeScript runtime used as both the package manager (`bun install`) and the execution environment (`bun run`). Chosen for native TypeScript support without transpilation, built-in test runner, and superior performance over Node.js for this workload.
 - **Backend Framework:** **Hono** (on Bun). Ultralight (~14KB, zero deps) web framework built on Web Standards (Request/Response). Runs natively on `Bun.serve()` without compatibility layers, providing Express-like DX (routing, middleware, path params) at near-raw performance. Enables sharing TypeScript interfaces and type definitions between frontend and backend for end-to-end type safety.
 - **ORM:** **Drizzle ORM**. Type-safe SQL-first ORM with zero runtime overhead. Schema defined in TypeScript with `pgEnum`, `pgTable`, and type inference via `$inferSelect`/`$inferInsert`.
-- **Database:** PostgreSQL (ERD defined below).
+- **Database:** PostgreSQL 16 (local development via `podman-compose`).
 - **State Management:** **Zustand**. Minimal, performant state management for React Native.
 - **Styling:** **NativeWind v4** + Tailwind CSS v3 + `react-native-css`. Standard Tailwind configuration via `tailwind.config.js`. Components wrapped with CSS interpolation support.
 - **Monorepo:** **Bun Workspaces**. Single repository with multiple projects sharing types and validators.
@@ -757,6 +757,7 @@ All endpoints follow RESTful conventions. Base URL: `https://api.elimpenetrable.
 | POST   | `/auth/tourist/create`  | Create tourist identity with alias            |
 | POST   | `/auth/tourist/refresh` | Refresh tourist JWT token                     |
 | POST   | `/auth/tourist/revoke`  | Revoke tourist JWT token (logout/lost device) |
+| GET    | `/v1/projects`          | Get all active projects                       |
 | GET    | `/catalog`              | Get all catalog items for a project           |
 | GET    | `/ventures`             | List ventures (businesses) for a project      |
 

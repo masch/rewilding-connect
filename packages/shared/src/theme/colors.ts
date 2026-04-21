@@ -1,4 +1,4 @@
-import { COLORS as COLORS_DATA } from "./colors.data.js";
+import { COLORS as COLORS_DATA } from "./colors.data";
 
 /**
  * Design System color tokens structure

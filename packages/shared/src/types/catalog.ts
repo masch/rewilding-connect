@@ -12,7 +12,7 @@ export const CatalogItemSchema = z.object({
   ingredients_i18n: I18nStringSchema.optional(),
   price: z.number().nonnegative(),
   max_participants: z.number().int().positive().nullable(),
-  image_url: z.string().url().optional(),
+  image_url: z.union([z.string(), z.number()]).optional(),
   global_pause: z.boolean().default(false),
 });
 
