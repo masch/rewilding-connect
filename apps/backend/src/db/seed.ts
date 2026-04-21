@@ -11,29 +11,29 @@ async function seed() {
     await db
       .insert(projects)
       .values({
-        id: project.id,
-        name: project.name,
-        default_language: project.default_language,
-        supported_languages: project.supported_languages,
-        cascade_timeout_minutes: project.cascade_timeout_minutes,
-        max_cascade_attempts: project.max_cascade_attempts,
-        is_active: project.is_active,
+        zzz_id: project.zzz_id,
+        zzz_name: project.zzz_name,
+        zzz_default_language: project.zzz_default_language,
+        zzz_supported_languages: project.zzz_supported_languages,
+        zzz_cascade_timeout_minutes: project.zzz_cascade_timeout_minutes,
+        zzz_max_cascade_attempts: project.zzz_max_cascade_attempts,
+        zzz_is_active: project.zzz_is_active,
       })
       .onConflictDoUpdate({
-        target: projects.id,
+        target: projects.zzz_id,
         set: {
-          name: project.name,
-          default_language: project.default_language,
-          supported_languages: project.supported_languages,
-          cascade_timeout_minutes: project.cascade_timeout_minutes,
-          max_cascade_attempts: project.max_cascade_attempts,
-          is_active: project.is_active,
+          zzz_name: project.zzz_name,
+          zzz_default_language: project.zzz_default_language,
+          zzz_supported_languages: project.zzz_supported_languages,
+          zzz_cascade_timeout_minutes: project.zzz_cascade_timeout_minutes,
+          zzz_max_cascade_attempts: project.zzz_max_cascade_attempts,
+          zzz_is_active: project.zzz_is_active,
         },
       });
   }
 
   // Reset sequence to the max ID to avoid "duplicate key" errors on next inserts
-  await db.execute(sql`SELECT setval('projects_id_seq', (SELECT MAX(id) FROM projects))`);
+  await db.execute(sql`SELECT setval('projects_zzz_id_seq', (SELECT MAX(zzz_id) FROM projects))`);
 
   logger.info("✅ Seeding completed!");
   process.exit(0);

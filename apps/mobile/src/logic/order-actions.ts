@@ -3,7 +3,7 @@ import { Order } from "@repo/shared";
 export type OrderActionVariant = "primary" | "secondary" | "danger" | "outline" | "ghost";
 
 export interface OrderAction {
-  id: string;
+  zzz_id: string;
   label: string;
   variant: OrderActionVariant;
   onPress: () => void;
@@ -24,14 +24,14 @@ export const getOrderActions = (
   t: (key: string) => string,
   callbacks: OrderActionCallbacks,
 ): OrderAction[] => {
-  const { global_status } = order;
+  const { zzz_global_status } = order;
   const actions: OrderAction[] = [];
 
   if (role === "entrepreneur") {
-    if (global_status === "OFFER_PENDING") {
+    if (zzz_global_status === "OFFER_PENDING") {
       if (callbacks.onDecline) {
         actions.push({
-          id: "decline",
+          zzz_id: "decline",
           label: t("common.decline"),
           variant: "danger",
           onPress: callbacks.onDecline,
@@ -39,7 +39,7 @@ export const getOrderActions = (
       }
       if (callbacks.onAccept) {
         actions.push({
-          id: "accept",
+          zzz_id: "accept",
           label: t("common.accept"),
           variant: "primary",
           onPress: callbacks.onAccept,
@@ -47,10 +47,10 @@ export const getOrderActions = (
       }
     }
   } else if (role === "tourist") {
-    const isCancellable = ["SEARCHING", "OFFER_PENDING"].includes(global_status);
+    const isCancellable = ["SEARCHING", "OFFER_PENDING"].includes(zzz_global_status);
     if (isCancellable && callbacks.onCancel) {
       actions.push({
-        id: "cancel",
+        zzz_id: "cancel",
         label: t("orders.cancel"),
         variant: "outline",
         onPress: callbacks.onCancel,

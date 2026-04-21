@@ -8,10 +8,10 @@ import { OrderSchema } from "./order";
  * Mapped to 'reservations' table.
  */
 export const ReservationDbSchema = z.object({
-  id: z.number().int().positive(),
-  user_id: z.string().uuid(),
-  service_date: z.date(),
-  time_of_day: ServiceMomentSchema,
+  zzz_id: z.number().int().positive(),
+  zzz_user_id: z.string().uuid(),
+  zzz_service_date: z.date(),
+  zzz_time_of_day: ServiceMomentSchema,
   /**
    * Reservation Macro-status
    * - CREATED: Initial state. Slot exists in DB.
@@ -19,9 +19,9 @@ export const ReservationDbSchema = z.object({
    * - CONFIRMED: All required orders are confirmed. Slot is secured.
    * - CANCELLED: Slot is no longer active.
    */
-  status: ReservationStatusSchema.default("CREATED"),
-  created_at: z.date().optional(),
-  updated_at: z.date().optional(),
+  zzz_status: ReservationStatusSchema.default("CREATED"),
+  zzz_created_at: z.date().optional(),
+  zzz_updated_at: z.date().optional(),
 });
 
 import { type Order } from "./order";
@@ -33,12 +33,12 @@ import { type User } from "./user";
  */
 export const ReservationSchema: z.ZodType<Reservation, z.ZodTypeDef, unknown> =
   ReservationDbSchema.extend({
-    orders: z.array(z.lazy(() => OrderSchema)).optional(),
+    zzz_orders: z.array(z.lazy(() => OrderSchema)).optional(),
   });
 
 export type ReservationRow = z.infer<typeof ReservationDbSchema>;
 
 export interface Reservation extends ReservationRow {
-  orders?: Order[];
-  user?: User;
+  zzz_orders?: Order[];
+  zzz_user?: User;
 }

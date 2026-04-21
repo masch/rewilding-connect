@@ -18,28 +18,28 @@ import { ComponentProps } from "react";
 const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES;
 
 interface FormData {
-  name: string;
-  default_language: Language;
-  supported_languages: Language[];
-  cascade_timeout_minutes: string;
-  max_cascade_attempts: string;
-  is_active: boolean;
+  zzz_name: string;
+  zzz_default_language: Language;
+  zzz_supported_languages: Language[];
+  zzz_cascade_timeout_minutes: string;
+  zzz_max_cascade_attempts: string;
+  zzz_is_active: boolean;
 }
 
 interface FormErrors {
-  name?: string;
-  supported_languages?: string;
-  cascade_timeout_minutes?: string;
-  max_cascade_attempts?: string;
+  zzz_name?: string;
+  zzz_supported_languages?: string;
+  zzz_cascade_timeout_minutes?: string;
+  zzz_max_cascade_attempts?: string;
 }
 
 const initialFormData: FormData = {
-  name: "",
-  default_language: "es",
-  supported_languages: ["es"],
-  cascade_timeout_minutes: "30",
-  max_cascade_attempts: "10",
-  is_active: true,
+  zzz_name: "",
+  zzz_default_language: "es",
+  zzz_supported_languages: ["es"],
+  zzz_cascade_timeout_minutes: "30",
+  zzz_max_cascade_attempts: "10",
+  zzz_is_active: true,
 };
 
 export default function ProjectFormScreen() {
@@ -84,12 +84,12 @@ export default function ProjectFormScreen() {
   useEffect(() => {
     if (isEditMode && selectedProject) {
       setFormData({
-        name: selectedProject.name,
-        default_language: selectedProject.default_language,
-        supported_languages: selectedProject.supported_languages,
-        cascade_timeout_minutes: selectedProject.cascade_timeout_minutes.toString(),
-        max_cascade_attempts: selectedProject.max_cascade_attempts.toString(),
-        is_active: selectedProject.is_active,
+        zzz_name: selectedProject.zzz_name,
+        zzz_default_language: selectedProject.zzz_default_language,
+        zzz_supported_languages: selectedProject.zzz_supported_languages,
+        zzz_cascade_timeout_minutes: selectedProject.zzz_cascade_timeout_minutes.toString(),
+        zzz_max_cascade_attempts: selectedProject.zzz_max_cascade_attempts.toString(),
+        zzz_is_active: selectedProject.zzz_is_active,
       });
     }
   }, [isEditMode, selectedProject]);
@@ -97,24 +97,24 @@ export default function ProjectFormScreen() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = t("validation.name_required");
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = t("validation.name_min_length");
+    if (!formData.zzz_name.trim()) {
+      newErrors.zzz_name = t("validation.name_required");
+    } else if (formData.zzz_name.trim().length < 2) {
+      newErrors.zzz_name = t("validation.name_min_length");
     }
 
-    if (formData.supported_languages.length === 0) {
-      newErrors.supported_languages = t("validation.supported_languages_required");
+    if (formData.zzz_supported_languages.length === 0) {
+      newErrors.zzz_supported_languages = t("validation.supported_languages_required");
     }
 
-    const timeout = parseInt(formData.cascade_timeout_minutes, 10);
+    const timeout = parseInt(formData.zzz_cascade_timeout_minutes, 10);
     if (isNaN(timeout) || timeout < 1 || timeout > 120) {
-      newErrors.cascade_timeout_minutes = t("validation.timeout_range");
+      newErrors.zzz_cascade_timeout_minutes = t("validation.timeout_range");
     }
 
-    const attempts = parseInt(formData.max_cascade_attempts, 10);
+    const attempts = parseInt(formData.zzz_max_cascade_attempts, 10);
     if (isNaN(attempts) || attempts < 1 || attempts > 10) {
-      newErrors.max_cascade_attempts = t("validation.attempts_range");
+      newErrors.zzz_max_cascade_attempts = t("validation.attempts_range");
     }
 
     setErrors(newErrors);
@@ -127,12 +127,12 @@ export default function ProjectFormScreen() {
     }
 
     const projectData = {
-      name: formData.name.trim(),
-      default_language: formData.default_language,
-      supported_languages: formData.supported_languages,
-      cascade_timeout_minutes: parseInt(formData.cascade_timeout_minutes, 10),
-      max_cascade_attempts: parseInt(formData.max_cascade_attempts, 10),
-      is_active: formData.is_active,
+      zzz_name: formData.zzz_name.trim(),
+      zzz_default_language: formData.zzz_default_language,
+      zzz_supported_languages: formData.zzz_supported_languages,
+      zzz_cascade_timeout_minutes: parseInt(formData.zzz_cascade_timeout_minutes, 10),
+      zzz_max_cascade_attempts: parseInt(formData.zzz_max_cascade_attempts, 10),
+      zzz_is_active: formData.zzz_is_active,
     };
 
     try {
@@ -170,38 +170,38 @@ export default function ProjectFormScreen() {
 
   const handleLanguageToggle = (lang: Language) => {
     setFormData((prev) => {
-      const isSelected = prev.supported_languages.includes(lang);
+      const isSelected = prev.zzz_supported_languages.includes(lang);
 
       // Don't allow removing the last language
-      if (isSelected && prev.supported_languages.length === 1) {
+      if (isSelected && prev.zzz_supported_languages.length === 1) {
         return prev;
       }
 
       const newLanguages = isSelected
-        ? prev.supported_languages.filter((l) => l !== lang)
-        : [...prev.supported_languages, lang];
+        ? prev.zzz_supported_languages.filter((l) => l !== lang)
+        : [...prev.zzz_supported_languages, lang];
 
       // If removing the default language, switch to first remaining
       const newDefault =
-        !newLanguages.includes(prev.default_language) && newLanguages.length > 0
+        !newLanguages.includes(prev.zzz_default_language) && newLanguages.length > 0
           ? newLanguages[0]
-          : prev.default_language;
+          : prev.zzz_default_language;
 
       return {
         ...prev,
-        supported_languages: newLanguages,
-        default_language: newDefault,
+        zzz_supported_languages: newLanguages,
+        zzz_default_language: newDefault,
       };
     });
 
-    if (errors.supported_languages) {
-      setErrors((prev) => ({ ...prev, supported_languages: undefined }));
+    if (errors.zzz_supported_languages) {
+      setErrors((prev) => ({ ...prev, zzz_supported_languages: undefined }));
     }
   };
 
   const handleDefaultLanguageChange = (lang: Language) => {
-    if (formData.supported_languages.includes(lang)) {
-      updateField("default_language", lang);
+    if (formData.zzz_supported_languages.includes(lang)) {
+      updateField("zzz_default_language", lang);
     }
   };
 
@@ -231,9 +231,9 @@ export default function ProjectFormScreen() {
               {/* Name */}
               <FormInput
                 label={t("project_name")}
-                value={formData.name}
-                onChangeText={(value) => updateField("name", value)}
-                error={errors.name}
+                value={formData.zzz_name}
+                onChangeText={(value) => updateField("zzz_name", value)}
+                error={errors.zzz_name}
                 required
                 placeholder={t("project_name_placeholder")}
               />
@@ -241,33 +241,33 @@ export default function ProjectFormScreen() {
               {/* Supported Languages */}
               <FormLanguageSelector
                 label={t("supported_languages")}
-                selectedLanguages={formData.supported_languages}
+                selectedLanguages={formData.zzz_supported_languages}
                 onToggle={handleLanguageToggle}
                 availableLanguages={AVAILABLE_LANGUAGES}
-                error={errors.supported_languages}
+                error={errors.zzz_supported_languages}
               />
 
               {/* Default Language (only show if has supported languages) */}
-              {formData.supported_languages.length > 0 && (
+              {formData.zzz_supported_languages.length > 0 && (
                 <View className="mb-3">
                   <Text className="text-sm font-medium text-on-surface mb-2">
                     {t("default_language")}
                   </Text>
                   <View className="flex-row gap-2">
-                    {formData.supported_languages.map((lang) => (
+                    {formData.zzz_supported_languages.map((lang) => (
                       <Button
                         key={lang}
                         variant="ghost"
                         className={`
                           px-5 py-3 min-h-touch rounded-none
-                          ${formData.default_language === lang ? "bg-primary-container" : "bg-surface-container-highest"}
+                          ${formData.zzz_default_language === lang ? "bg-primary-container" : "bg-surface-container-highest"}
                         `}
                         onPress={() => handleDefaultLanguageChange(lang)}
                       >
                         <Text
                           className={`
                             text-base font-medium uppercase
-                            ${formData.default_language === lang ? "text-on-primary" : "text-on-surface opacity-50"}
+                            ${formData.zzz_default_language === lang ? "text-on-primary" : "text-on-surface opacity-50"}
                           `}
                         >
                           {lang}
@@ -281,9 +281,9 @@ export default function ProjectFormScreen() {
               {/* Cascade Timeout */}
               <FormInput
                 label={t("cascade_timeout")}
-                value={formData.cascade_timeout_minutes}
-                onChangeText={(value) => updateField("cascade_timeout_minutes", value)}
-                error={errors.cascade_timeout_minutes}
+                value={formData.zzz_cascade_timeout_minutes}
+                onChangeText={(value) => updateField("zzz_cascade_timeout_minutes", value)}
+                error={errors.zzz_cascade_timeout_minutes}
                 keyboardType="number-pad"
                 placeholder="30"
                 helperText="1-120 minutes"
@@ -292,9 +292,9 @@ export default function ProjectFormScreen() {
               {/* Max Cascade Attempts */}
               <FormInput
                 label={t("max_attempts")}
-                value={formData.max_cascade_attempts}
-                onChangeText={(value) => updateField("max_cascade_attempts", value)}
-                error={errors.max_cascade_attempts}
+                value={formData.zzz_max_cascade_attempts}
+                onChangeText={(value) => updateField("zzz_max_cascade_attempts", value)}
+                error={errors.zzz_max_cascade_attempts}
                 keyboardType="number-pad"
                 placeholder="10"
                 helperText="1-10 attempts"
@@ -303,8 +303,8 @@ export default function ProjectFormScreen() {
               {/* Is Active */}
               <FormSwitch
                 label={t("active")}
-                value={formData.is_active}
-                onValueChange={(value) => updateField("is_active", value)}
+                value={formData.zzz_is_active}
+                onValueChange={(value) => updateField("zzz_is_active", value)}
               />
 
               {/* Action Buttons */}

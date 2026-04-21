@@ -59,7 +59,7 @@ export default function BookingScreen() {
   } = useCartStore();
 
   const currentMoment = useMemo(
-    () => SERVICE_MOMENTS.find((m) => m.id === selectedMoment),
+    () => SERVICE_MOMENTS.find((m) => m.zzz_id === selectedMoment),
     [selectedMoment],
   );
 
@@ -112,10 +112,10 @@ export default function BookingScreen() {
 
   const handleEditOrder = useCallback(
     (order: Order) => {
-      const firstItem = order.items?.[0];
+      const firstItem = order.zzz_items?.[0];
       if (!firstItem) return;
 
-      const service = services.find((s) => s.id === firstItem.catalog_item_id);
+      const service = services.find((s) => s.zzz_id === firstItem.zzz_catalog_item_id);
       if (!service) return;
 
       setSelectedService(service);
@@ -134,15 +134,15 @@ export default function BookingScreen() {
   const handleServicePress = useCallback(
     (service: CatalogServiceItem) => {
       const existingOrder = activeOrders.find((order) => {
-        const hasItem = order.items?.some(
-          (item) => Number(item.catalog_item_id) === Number(service.id),
+        const hasItem = order.zzz_items?.some(
+          (item) => Number(item.zzz_catalog_item_id) === Number(service.zzz_id),
         );
         if (!hasItem) return false;
 
-        const oDate = new Date(order.reservation?.service_date || 0);
+        const oDate = new Date(order.zzz_reservation?.zzz_service_date || 0);
         if (!selectedDate) return false;
         const isSameDayResult = isSameDay(oDate, selectedDate);
-        const isSameMoment = order.reservation?.time_of_day === selectedMoment;
+        const isSameMoment = order.zzz_reservation?.zzz_time_of_day === selectedMoment;
 
         return isSameDayResult && isSameMoment;
       });
@@ -163,7 +163,7 @@ export default function BookingScreen() {
       // If no orderId, it's a cart item
       if (!orderId) {
         if (selectedService) {
-          removeItem(selectedService.id);
+          removeItem(selectedService.zzz_id);
           setModalVisible(false);
         }
         return;
@@ -183,9 +183,9 @@ export default function BookingScreen() {
   );
 
   const handleBooking = useCallback(
-    async (moment: ServiceMoment, quantity: number, date: Date, notes?: string) => {
+    async (moment: ServiceMoment, zzz_quantity: number, date: Date, zzz_notes?: string) => {
       if (!selectedService) return;
-      const orderId = editingOrder?.id;
+      const orderId = editingOrder?.zzz_id;
 
       if (!isAuthenticated) {
         setAlertConfig({
@@ -214,16 +214,16 @@ export default function BookingScreen() {
       try {
         if (orderId) {
           const updatedOrder = await CatalogService.updateOrder(Number(orderId), {
-            quantity,
-            notes,
+            zzz_quantity,
+            zzz_notes,
           });
           updateOrderInStore(updatedOrder);
         } else {
           logger.info("[BOOKING] Adding item to cart");
           addItem({
-            catalog_item_id: selectedService.id,
-            quantity,
-            price: selectedService.price,
+            zzz_catalog_item_id: selectedService.zzz_id,
+            zzz_quantity,
+            zzz_price: selectedService.zzz_price,
           });
           impactAsync(ImpactFeedbackStyle.Medium);
         }
@@ -258,25 +258,25 @@ export default function BookingScreen() {
       router,
       addItem,
       updateOrderInStore,
-      editingOrder?.id,
+      editingOrder?.zzz_id,
     ],
   );
 
   const contextServiceIds = useMemo(() => {
-    return new Set(cartItems.map((i) => i.catalog_item_id));
+    return new Set(cartItems.map((i) => i.zzz_catalog_item_id));
   }, [cartItems]);
 
   const totalAmount = useMemo(() => {
-    return cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    return cartItems.reduce((acc, item) => acc + item.zzz_price * item.zzz_quantity, 0);
   }, [cartItems]);
 
   const totalQuantity = useMemo(() => {
-    return cartItems.reduce((acc, item) => acc + item.quantity, 0);
+    return cartItems.reduce((acc, item) => acc + item.zzz_quantity, 0);
   }, [cartItems]);
 
   // Group services by category: 1 = Gastronomy, 2 = Excursions
-  const gastronomyServices = services.filter((s) => s.catalog_category_id === 1);
-  const excursionServices = services.filter((s) => s.catalog_category_id === 2);
+  const gastronomyServices = services.filter((s) => s.zzz_catalog_category_id === 1);
+  const excursionServices = services.filter((s) => s.zzz_catalog_category_id === 2);
 
   return (
     <Screen>
@@ -324,11 +324,11 @@ export default function BookingScreen() {
               <View className="mb-4">
                 {gastronomyServices.map((service) => (
                   <ServiceCard
-                    key={service.id}
+                    key={service.zzz_id}
                     service={service}
-                    isEditing={contextServiceIds.has(Number(service.id))}
+                    isEditing={contextServiceIds.has(Number(service.zzz_id))}
                     onPress={handleServicePress}
-                    accessibilityLabel={getLocalizedName(service.name_i18n)}
+                    accessibilityLabel={getLocalizedName(service.zzz_name_i18n)}
                   />
                 ))}
               </View>
@@ -339,11 +339,11 @@ export default function BookingScreen() {
               <View className="mb-4">
                 {excursionServices.map((service) => (
                   <ServiceCard
-                    key={service.id}
+                    key={service.zzz_id}
                     service={service}
-                    isEditing={contextServiceIds.has(Number(service.id))}
+                    isEditing={contextServiceIds.has(Number(service.zzz_id))}
                     onPress={handleServicePress}
-                    accessibilityLabel={getLocalizedName(service.name_i18n)}
+                    accessibilityLabel={getLocalizedName(service.zzz_name_i18n)}
                   />
                 ))}
               </View>
@@ -363,27 +363,32 @@ export default function BookingScreen() {
         {/* Reservation Modal */}
         {modalVisible && selectedService && (
           <ReservationModal
-            key={selectedService?.id ? `service-${selectedService.id}` : "reservation-modal"}
+            key={
+              selectedService?.zzz_id ? `service-${selectedService.zzz_id}` : "reservation-modal"
+            }
             visible={modalVisible}
             service={selectedService}
             onClose={handleCloseModal}
             onConfirm={handleBooking}
-            onDelete={() => handleDeleteOrder(editingOrder?.id)}
+            onDelete={() => handleDeleteOrder(editingOrder?.zzz_id)}
             isLoading={isSubmitting}
-            initialNotes={editingOrder?.notes || undefined}
+            initialNotes={editingOrder?.zzz_notes || undefined}
             initialQuantity={
               selectedService
                 ? editingOrder
-                  ? editingOrder.items?.find(
-                      (i) => Number(i.catalog_item_id) === Number(selectedService.id),
-                    )?.quantity
-                  : cartItems.find((i) => Number(i.catalog_item_id) === Number(selectedService.id))
-                      ?.quantity
+                  ? editingOrder.zzz_items?.find(
+                      (i) => Number(i.zzz_catalog_item_id) === Number(selectedService.zzz_id),
+                    )?.zzz_quantity
+                  : cartItems.find(
+                      (i) => Number(i.zzz_catalog_item_id) === Number(selectedService.zzz_id),
+                    )?.zzz_quantity
                 : undefined
             }
             mode={
               editingOrder ||
-              cartItems.some((i) => Number(i.catalog_item_id) === Number(selectedService?.id))
+              cartItems.some(
+                (i) => Number(i.zzz_catalog_item_id) === Number(selectedService?.zzz_id),
+              )
                 ? "edit"
                 : "add"
             }
@@ -412,11 +417,11 @@ export default function BookingScreen() {
                     showsVerticalScrollIndicator={false}
                   >
                     {cartItems.map((item) => {
-                      const service = services.find((s) => s.id === item.catalog_item_id);
-                      const name = service ? getLocalizedName(service.name_i18n) : "---";
+                      const service = services.find((s) => s.zzz_id === item.zzz_catalog_item_id);
+                      const name = service ? getLocalizedName(service.zzz_name_i18n) : "---";
                       return (
                         <View
-                          key={item.catalog_item_id}
+                          key={item.zzz_catalog_item_id}
                           className="flex-row items-center border-b border-outline-variant/10 last:border-0"
                         >
                           <Button
@@ -437,10 +442,10 @@ export default function BookingScreen() {
                             </View>
                             <View className="flex-row items-center">
                               <Text className="text-[10px] font-display font-bold text-primary uppercase tracking-tighter mr-2 bg-primary/5 px-2 py-0.5 rounded-md">
-                                x{item.quantity}
+                                x{item.zzz_quantity}
                               </Text>
                               <Text className="text-sm font-display font-bold text-on-surface mr-3">
-                                {formatCurrency(item.price * item.quantity)}
+                                {formatCurrency(item.zzz_price * item.zzz_quantity)}
                               </Text>
                               <View className="w-7 h-7 bg-surface-container-high rounded-full items-center justify-center border border-outline-variant/20">
                                 <MaterialCommunityIcons
@@ -470,7 +475,7 @@ export default function BookingScreen() {
                                     text: t("common.confirm"),
                                     variant: "danger",
                                     onPress: () => {
-                                      removeItem(item.catalog_item_id);
+                                      removeItem(item.zzz_catalog_item_id);
                                       impactAsync(ImpactFeedbackStyle.Light);
                                     },
                                   },
@@ -578,8 +583,8 @@ export default function BookingScreen() {
                                     selectedDate,
                                     selectedMoment,
                                     cartItems.map((i) => ({
-                                      catalog_item_id: i.catalog_item_id,
-                                      quantity: i.quantity,
+                                      zzz_catalog_item_id: i.zzz_catalog_item_id,
+                                      zzz_quantity: i.zzz_quantity,
                                     })),
                                   );
                                   if (newOrder) {

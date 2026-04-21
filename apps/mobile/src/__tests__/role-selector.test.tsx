@@ -57,8 +57,8 @@ describe("RoleSelectorScreen UI (Archetypal Test)", () => {
     expect(mockSetUserRole).toHaveBeenCalledWith("TOURIST");
     expect(mockLogin).toHaveBeenCalledWith(
       expect.objectContaining({
-        user_type: "TOURIST",
-        alias: "",
+        zzz_user_type: "TOURIST",
+        zzz_alias: "",
       }),
     );
     expect(router.push).toHaveBeenCalledWith("/tourist/login");
@@ -74,8 +74,8 @@ describe("RoleSelectorScreen UI (Archetypal Test)", () => {
     expect(mockSetUserRole).toHaveBeenCalledWith("TOURIST");
     expect(mockLogin).toHaveBeenCalledWith(
       expect.objectContaining({
-        user_type: "TOURIST",
-        alias: "Familia Gómez",
+        zzz_user_type: "TOURIST",
+        zzz_alias: "Familia Gómez",
       }),
     );
     expect(router.push).toHaveBeenCalledWith("/tourist");

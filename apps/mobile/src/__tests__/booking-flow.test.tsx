@@ -14,12 +14,12 @@ jest.mock("../stores/auth.store");
 
 const mockServices = [
   {
-    id: 1,
-    name_i18n: { es: "Empanadas", en: "Empanadas" },
-    description_i18n: { es: "De carne", en: "Meat" },
-    price: 1500,
-    catalog_category_id: 1, // GASTRONOMY
-    image_url: "test.jpg",
+    zzz_id: 1,
+    zzz_name_i18n: { es: "Empanadas", en: "Empanadas" },
+    zzz_description_i18n: { es: "De carne", en: "Meat" },
+    zzz_price: 1500,
+    zzz_catalog_category_id: 1, // GASTRONOMY
+    zzz_image_url: "test.jpg",
   },
 ];
 
@@ -94,9 +94,9 @@ describe("Booking & Order Functional Flow", () => {
   it("should show order summary footer when items are in cart", async () => {
     const mockCartItems = [
       {
-        catalog_item_id: 1,
-        quantity: 2,
-        price: 1500,
+        zzz_catalog_item_id: 1,
+        zzz_quantity: 2,
+        zzz_price: 1500,
       },
     ];
 
@@ -118,9 +118,9 @@ describe("Booking & Order Functional Flow", () => {
   it("should expand summary and show individual items when total is clicked", async () => {
     const mockCartItems = [
       {
-        catalog_item_id: 1,
-        quantity: 2,
-        price: 1500,
+        zzz_catalog_item_id: 1,
+        zzz_quantity: 2,
+        zzz_price: 1500,
       },
     ];
 
@@ -147,9 +147,9 @@ describe("Booking & Order Functional Flow", () => {
     const removeMock = jest.fn();
     const mockCartItems = [
       {
-        catalog_item_id: 1,
-        quantity: 2,
-        price: 1500,
+        zzz_catalog_item_id: 1,
+        zzz_quantity: 2,
+        zzz_price: 1500,
       },
     ];
 

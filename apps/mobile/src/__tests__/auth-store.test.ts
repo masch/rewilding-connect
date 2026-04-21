@@ -31,20 +31,20 @@ describe("Home Page Auth Store Tests", () => {
     const { login, setUserRole } = useAuthStore.getState();
 
     login({
-      alias: "Familia Gómez",
-      user_type: "TOURIST",
-      email: null,
-      first_name: null,
-      last_name: null,
-      whatsapp: null,
+      zzz_alias: "Familia Gómez",
+      zzz_user_type: "TOURIST",
+      zzz_email: null,
+      zzz_first_name: null,
+      zzz_last_name: null,
+      zzz_whatsapp: null,
     });
     setUserRole("TOURIST");
 
     const state = useAuthStore.getState();
     expect(state.isAuthenticated).toBe(true);
     expect(state.currentUser).not.toBeNull();
-    expect(state.currentUser?.alias).toBe("Familia Gómez");
-    expect(state.currentUser?.user_type).toBe("TOURIST");
+    expect(state.currentUser?.zzz_alias).toBe("Familia Gómez");
+    expect(state.currentUser?.zzz_user_type).toBe("TOURIST");
     expect(state.userRole).toBe("TOURIST");
   });
 
@@ -52,20 +52,20 @@ describe("Home Page Auth Store Tests", () => {
     const { login, setUserRole } = useAuthStore.getState();
 
     login({
-      alias: null,
-      user_type: "ENTREPRENEUR",
-      email: "maria@forst-stew.com",
-      first_name: null,
-      last_name: null,
-      whatsapp: null,
+      zzz_alias: null,
+      zzz_user_type: "ENTREPRENEUR",
+      zzz_email: "maria@forst-stew.com",
+      zzz_first_name: null,
+      zzz_last_name: null,
+      zzz_whatsapp: null,
     });
     setUserRole("ENTREPRENEUR");
 
     const state = useAuthStore.getState();
     expect(state.isAuthenticated).toBe(true);
     expect(state.currentUser).not.toBeNull();
-    expect(state.currentUser?.email).toBe("maria@forst-stew.com");
-    expect(state.currentUser?.user_type).toBe("ENTREPRENEUR");
+    expect(state.currentUser?.zzz_email).toBe("maria@forst-stew.com");
+    expect(state.currentUser?.zzz_user_type).toBe("ENTREPRENEUR");
     expect(state.userRole).toBe("ENTREPRENEUR");
   });
 
@@ -73,20 +73,20 @@ describe("Home Page Auth Store Tests", () => {
     const { login, setUserRole } = useAuthStore.getState();
 
     login({
-      alias: null,
-      user_type: "ADMIN",
-      email: "admin@impenetrable.com",
-      first_name: null,
-      last_name: null,
-      whatsapp: null,
+      zzz_alias: null,
+      zzz_user_type: "ADMIN",
+      zzz_email: "admin@impenetrable.com",
+      zzz_first_name: null,
+      zzz_last_name: null,
+      zzz_whatsapp: null,
     });
     setUserRole("ADMIN");
 
     const state = useAuthStore.getState();
     expect(state.isAuthenticated).toBe(true);
     expect(state.currentUser).not.toBeNull();
-    expect(state.currentUser?.email).toBe("admin@impenetrable.com");
-    expect(state.currentUser?.user_type).toBe("ADMIN");
+    expect(state.currentUser?.zzz_email).toBe("admin@impenetrable.com");
+    expect(state.currentUser?.zzz_user_type).toBe("ADMIN");
     expect(state.userRole).toBe("ADMIN");
   });
 
@@ -95,12 +95,12 @@ describe("Home Page Auth Store Tests", () => {
 
     // Login first
     login({
-      alias: "Test User",
-      user_type: "TOURIST",
-      email: null,
-      first_name: null,
-      last_name: null,
-      whatsapp: null,
+      zzz_alias: "Test User",
+      zzz_user_type: "TOURIST",
+      zzz_email: null,
+      zzz_first_name: null,
+      zzz_last_name: null,
+      zzz_whatsapp: null,
     });
     setUserRole("TOURIST");
 

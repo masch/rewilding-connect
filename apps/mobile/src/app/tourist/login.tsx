@@ -11,14 +11,14 @@ import { CreateUserInput } from "@repo/shared";
 import jaguarHero from "../../../assets/jaguar-hero.png";
 
 interface LoginFormData {
-  alias: string;
-  whatsapp: string;
-  first_name: string;
-  last_name: string;
+  zzz_alias: string;
+  zzz_whatsapp: string;
+  zzz_first_name: string;
+  zzz_last_name: string;
 }
 
 interface FormErrors {
-  alias?: string;
+  zzz_alias?: string;
 }
 
 export default function LoginScreen() {
@@ -26,17 +26,17 @@ export default function LoginScreen() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
   const [formData, setFormData] = useState<LoginFormData>({
-    alias: "",
-    whatsapp: "",
-    first_name: "",
-    last_name: "",
+    zzz_alias: "",
+    zzz_whatsapp: "",
+    zzz_first_name: "",
+    zzz_last_name: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    if (!formData.alias.trim()) {
-      newErrors.alias = t("login.alias_required");
+    if (!formData.zzz_alias.trim()) {
+      newErrors.zzz_alias = t("login.alias_required");
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -48,12 +48,12 @@ export default function LoginScreen() {
     }
     const toNullable = (v: string | undefined) => (v ? v : null);
     const userData: CreateUserInput = {
-      alias: formData.alias.trim(),
-      first_name: toNullable(formData.first_name.trim()) || null,
-      last_name: toNullable(formData.last_name.trim()) || null,
-      whatsapp: toNullable(formData.whatsapp.trim()) || null,
-      user_type: "TOURIST",
-      email: null,
+      zzz_alias: formData.zzz_alias.trim(),
+      zzz_first_name: toNullable(formData.zzz_first_name.trim()) || null,
+      zzz_last_name: toNullable(formData.zzz_last_name.trim()) || null,
+      zzz_whatsapp: toNullable(formData.zzz_whatsapp.trim()) || null,
+      zzz_user_type: "TOURIST",
+      zzz_email: null,
     };
     login(userData);
     router.push("/tourist");
@@ -101,10 +101,10 @@ export default function LoginScreen() {
                   <FormInput
                     label={t("login.alias_label")}
                     placeholder={t("login.alias_placeholder")}
-                    value={formData.alias}
-                    onChangeText={(value) => updateField("alias", value)}
+                    value={formData.zzz_alias}
+                    onChangeText={(value) => updateField("zzz_alias", value)}
                     required
-                    error={errors.alias}
+                    error={errors.zzz_alias}
                   />
 
                   <View className="pt-2 space-y-3">
@@ -120,19 +120,19 @@ export default function LoginScreen() {
                       label={t("login.whatsapp_label")}
                       placeholder={t("login.whatsapp_placeholder")}
                       keyboardType="phone-pad"
-                      value={formData.whatsapp}
-                      onChangeText={(value) => updateField("whatsapp", value)}
+                      value={formData.zzz_whatsapp}
+                      onChangeText={(value) => updateField("zzz_whatsapp", value)}
                     />
                     <View className="grid grid-cols-2 gap-3">
                       <FormInput
                         label={t("login.first_name_label")}
-                        value={formData.first_name}
-                        onChangeText={(value) => updateField("first_name", value)}
+                        value={formData.zzz_first_name}
+                        onChangeText={(value) => updateField("zzz_first_name", value)}
                       />
                       <FormInput
                         label={t("login.last_name_label")}
-                        value={formData.last_name}
-                        onChangeText={(value) => updateField("last_name", value)}
+                        value={formData.zzz_last_name}
+                        onChangeText={(value) => updateField("zzz_last_name", value)}
                       />
                     </View>
                   </View>

@@ -31,9 +31,9 @@ export type { Order };
 export const BookingInputSchema = z.object({
   serviceId: z.number(),
   moment: ServiceMomentSchema,
-  quantity: z.number().min(1).max(20),
+  zzz_quantity: z.number().min(1).max(20),
   date: z.date(),
-  notes: z.string().optional(),
+  zzz_notes: z.string().optional(),
 });
 
 export type BookingInput = z.infer<typeof BookingInputSchema>;
@@ -48,7 +48,7 @@ export interface CatalogServiceInterface {
   placeOrder(
     date: Date,
     moment: ServiceMoment,
-    items: Array<{ catalog_item_id: number; quantity: number }>,
+    items: Array<{ zzz_catalog_item_id: number; zzz_quantity: number }>,
     notes?: string,
   ): Promise<Order>;
   updateOrder(id: number, input: Partial<BookingInput>): Promise<Order>;
@@ -68,18 +68,18 @@ const MockCatalogService: CatalogServiceInterface = {
 
   getServiceById: async (id: number) => {
     await new Promise((r) => setTimeout(r, 500));
-    return mockServices.find((s) => s.id === id) || null;
+    return mockServices.find((s) => s.zzz_id === id) || null;
   },
 
   getServicesByCategory: async (categoryId: number) => {
     await new Promise((r) => setTimeout(r, 600));
-    return mockServices.filter((s) => s.catalog_category_id === categoryId);
+    return mockServices.filter((s) => s.zzz_catalog_category_id === categoryId);
   },
 
   placeOrder: async (
     date: Date,
     moment: ServiceMoment,
-    items: Array<{ catalog_item_id: number; quantity: number }>,
+    items: Array<{ zzz_catalog_item_id: number; zzz_quantity: number }>,
     notes?: string,
   ) => {
     // Require user to be logged in
@@ -94,41 +94,41 @@ const MockCatalogService: CatalogServiceInterface = {
     }
 
     // Use the first item's category as the order's primary category (MVP constraint)
-    const firstService = mockServices.find((s) => s.id === items[0].catalog_item_id);
+    const firstService = mockServices.find((s) => s.zzz_id === items[0].zzz_catalog_item_id);
     if (!firstService) throw new Error("Service not found");
 
     const orderId = Date.now();
     const reservation = addMockReservation({
-      user_id: isMockUserLoggedIn() ? getMockUserId() : "unknown",
-      service_date: date,
-      time_of_day: moment,
-      status: "CREATED",
-      created_at: new Date(),
+      zzz_user_id: isMockUserLoggedIn() ? getMockUserId() : "unknown",
+      zzz_service_date: date,
+      zzz_time_of_day: moment,
+      zzz_status: "CREATED",
+      zzz_created_at: new Date(),
     });
 
     const newOrder: Order = {
-      id: orderId,
-      reservation_id: reservation.id,
-      catalog_type_id: firstService.catalog_category_id,
-      confirmed_venture_id: null,
-      notes: notes ?? null,
-      global_status: "SEARCHING",
-      cancel_reason: null,
-      items: items.map((item) => {
-        const s = mockServices.find((service) => service.id === item.catalog_item_id);
+      zzz_id: orderId,
+      zzz_reservation_id: reservation.zzz_id,
+      zzz_catalog_type_id: firstService.zzz_catalog_category_id,
+      zzz_confirmed_venture_id: null,
+      zzz_notes: notes ?? null,
+      zzz_global_status: "SEARCHING",
+      zzz_cancel_reason: null,
+      zzz_items: items.map((item) => {
+        const s = mockServices.find((service) => service.zzz_id === item.zzz_catalog_item_id);
         return {
-          id: Math.floor(Math.random() * 100000),
-          order_id: orderId,
-          catalog_item_id: item.catalog_item_id,
-          quantity: item.quantity,
-          price: s?.price || 0,
+          zzz_id: Math.floor(Math.random() * 100000),
+          zzz_order_id: orderId,
+          zzz_catalog_item_id: item.zzz_catalog_item_id,
+          zzz_quantity: item.zzz_quantity,
+          zzz_price: s?.zzz_price || 0,
         };
       }),
-      cancelled_at: null,
-      completed_at: null,
-      confirmed_at: null,
-      created_at: new Date(),
-      notify_whatsapp: false,
+      zzz_cancelled_at: null,
+      zzz_completed_at: null,
+      zzz_confirmed_at: null,
+      zzz_created_at: new Date(),
+      zzz_notify_whatsapp: false,
     };
 
     addMockOrder(newOrder);
@@ -143,34 +143,34 @@ const MockCatalogService: CatalogServiceInterface = {
     await new Promise((r) => setTimeout(r, 600));
 
     const existingOrders = getMockOrders();
-    const order = existingOrders.find((o) => Number(o.id) === Number(id));
+    const order = existingOrders.find((o) => Number(o.zzz_id) === Number(id));
     if (!order) throw new Error("Order not found");
 
     const updates: Partial<Order> = {};
-    if (input.quantity) {
+    if (input.zzz_quantity) {
       // Update quantity in items (assuming single item for now in mock)
-      if (order.items && order.items.length > 0) {
-        updates.items = order.items.map((item) => ({
+      if (order.zzz_items && order.zzz_items.length > 0) {
+        updates.zzz_items = order.zzz_items.map((item) => ({
           ...item,
-          quantity: input.quantity!,
+          zzz_quantity: input.zzz_quantity!,
         }));
       }
     }
-    if (input.notes !== undefined) {
-      updates.notes = input.notes;
+    if (input.zzz_notes !== undefined) {
+      updates.zzz_notes = input.zzz_notes;
     }
     if (input.date || input.moment) {
       // In a real system, we might move the order to a different reservation
       // or update the existing one. For mocks, we'll handle this by updating the reservation.
       const { getMockOrderById } = await import("../mocks/orders");
       const foundOrder = getMockOrderById(Number(id));
-      if (foundOrder?.reservation_id) {
+      if (foundOrder?.zzz_reservation_id) {
         // This is a bit of a shortcut for the mock, updating the reservation in state
         const reservationUpdates: Partial<Reservation> = {};
-        if (input.date) reservationUpdates.service_date = input.date;
-        if (input.moment) reservationUpdates.time_of_day = input.moment;
+        if (input.date) reservationUpdates.zzz_service_date = input.date;
+        if (input.moment) reservationUpdates.zzz_time_of_day = input.moment;
 
-        updateMockReservation(foundOrder.reservation_id, reservationUpdates);
+        updateMockReservation(foundOrder.zzz_reservation_id, reservationUpdates);
       }
     }
 
@@ -212,12 +212,12 @@ const RestCatalogService: CatalogServiceInterface = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        reservation_id: 0,
+        zzz_reservation_id: 0,
         catalog_category_id: 1, // Example ID
-        time_of_day: moment,
-        service_date: toISODate(date),
-        notes: notes ?? null,
-        items: items,
+        zzz_time_of_day: moment,
+        zzz_service_date: toISODate(date),
+        zzz_notes: notes ?? null,
+        zzz_items: items,
       }),
     });
     if (!response.ok) throw new Error("API error placing order");
@@ -229,7 +229,7 @@ const RestCatalogService: CatalogServiceInterface = {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        notes: input.notes,
+        zzz_notes: input.zzz_notes,
       }),
     });
     if (!response.ok) throw new Error("API error updating order");

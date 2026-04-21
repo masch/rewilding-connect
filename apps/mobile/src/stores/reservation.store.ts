@@ -45,23 +45,23 @@ export const useReservationStore = create<ReservationState>((set, get) => ({
       // Filter active orders: SEARCHING, OFFER_PENDING, CONFIRMED
       const active = orders
         .filter((order) =>
-          ["SEARCHING", "OFFER_PENDING", "CONFIRMED"].includes(order.global_status),
+          ["SEARCHING", "OFFER_PENDING", "CONFIRMED"].includes(order.zzz_global_status),
         )
         .sort(
           (a, b) =>
-            new Date(a.reservation?.service_date || 0).getTime() -
-            new Date(b.reservation?.service_date || 0).getTime(),
+            new Date(a.zzz_reservation?.zzz_service_date || 0).getTime() -
+            new Date(b.zzz_reservation?.zzz_service_date || 0).getTime(),
         );
 
       // Filter history orders: COMPLETED, CANCELLED, NO_SHOW, EXPIRED
       const history = orders
         .filter((order) =>
-          ["COMPLETED", "CANCELLED", "NO_SHOW", "EXPIRED"].includes(order.global_status),
+          ["COMPLETED", "CANCELLED", "NO_SHOW", "EXPIRED"].includes(order.zzz_global_status),
         )
         .sort(
           (a, b) =>
-            new Date(b.reservation?.service_date || 0).getTime() -
-            new Date(a.reservation?.service_date || 0).getTime(),
+            new Date(b.zzz_reservation?.zzz_service_date || 0).getTime() -
+            new Date(a.zzz_reservation?.zzz_service_date || 0).getTime(),
         );
 
       set({ activeOrders: active, historyOrders: history, isLoading: false });
@@ -85,7 +85,7 @@ export const useReservationStore = create<ReservationState>((set, get) => ({
 
   // Add a single order
   addOrder: (order: Order) => {
-    const isActive = ["SEARCHING", "OFFER_PENDING", "CONFIRMED"].includes(order.global_status);
+    const isActive = ["SEARCHING", "OFFER_PENDING", "CONFIRMED"].includes(order.zzz_global_status);
     if (isActive) {
       set((state) => ({ activeOrders: [order, ...state.activeOrders] }));
     } else {
@@ -97,10 +97,10 @@ export const useReservationStore = create<ReservationState>((set, get) => ({
   updateOrder: (order: Order) => {
     set((state) => ({
       activeOrders: state.activeOrders.map((o) =>
-        Number(o.id) === Number(order.id) ? { ...o, ...order } : o,
+        Number(o.zzz_id) === Number(order.zzz_id) ? { ...o, ...order } : o,
       ),
       historyOrders: state.historyOrders.map((o) =>
-        Number(o.id) === Number(order.id) ? { ...o, ...order } : o,
+        Number(o.zzz_id) === Number(order.zzz_id) ? { ...o, ...order } : o,
       ),
     }));
   },

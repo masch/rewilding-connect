@@ -53,7 +53,7 @@ const MockProjectService: ProjectServiceInterface = {
 
   getProjectById: async (id: number) => {
     await new Promise((r) => setTimeout(r, 500));
-    return projectState.projects.find((p) => p.id === id) || null;
+    return projectState.projects.find((p) => p.zzz_id === id) || null;
   },
 
   createProject: async (project: CreateProjectInput) => {
@@ -62,7 +62,7 @@ const MockProjectService: ProjectServiceInterface = {
     const validated = validateData(project, CreateProjectSchema);
     const newProject: Project = {
       ...validated,
-      id: projectState.nextId++,
+      zzz_id: projectState.nextId++,
     };
     projectState.projects = [...projectState.projects, newProject];
     logger.info("[MOCK API] Created project:", newProject);
@@ -71,7 +71,7 @@ const MockProjectService: ProjectServiceInterface = {
 
   updateProject: async (id: number, project: UpdateProjectInput) => {
     await new Promise((r) => setTimeout(r, 800));
-    const index = projectState.projects.findIndex((p) => p.id === id);
+    const index = projectState.projects.findIndex((p) => p.zzz_id === id);
     if (index === -1) {
       throw new Error("Project not found");
     }
@@ -82,19 +82,21 @@ const MockProjectService: ProjectServiceInterface = {
       ...projectState.projects[index],
       ...Object.fromEntries(Object.entries(validated).filter(([, v]) => v !== undefined)),
     };
-    projectState.projects = projectState.projects.map((p) => (p.id === id ? updatedProject : p));
+    projectState.projects = projectState.projects.map((p) =>
+      p.zzz_id === id ? updatedProject : p,
+    );
     logger.info("[MOCK API] Updated project:", updatedProject);
     return updatedProject;
   },
 
   deleteProject: async (id: number) => {
     await new Promise((r) => setTimeout(r, 800));
-    const exists = projectState.projects.some((p) => p.id === id);
+    const exists = projectState.projects.some((p) => p.zzz_id === id);
     if (!exists) {
       return false;
     }
-    projectState.projects = projectState.projects.filter((p) => p.id !== id);
-    logger.info(`[MOCK API] Deleted project with id: ${id}`);
+    projectState.projects = projectState.projects.filter((p) => p.zzz_id !== id);
+    logger.info(`[MOCK API] Deleted project with ID: ${id}`);
     return true;
   },
 };

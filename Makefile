@@ -1,4 +1,4 @@
-.PHONY: help setup install dev clean lint gga format check check-static typecheck test test-coverage mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-dev mobile-expo-fix-deps mobile-expo-doctor backend seed db-up db-down db-push eas-login eas-whoami eas-init eas-build-configure eas-build-dev eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator eas-export-web eas-deploy-web eas-deploy-web-prod android-app-stop android-app-restart android-reset android-stop android-kill android-restart
+.PHONY: help setup install dev clean lint gga format check check-static typecheck test test-shared test-coverage mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-dev mobile-expo-fix-deps mobile-expo-doctor backend seed db-up db-down db-push db-reset eas-login eas-whoami eas-init eas-build-configure eas-build-dev eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator eas-export-web eas-deploy-web eas-deploy-web-prod android-app-stop android-app-restart android-reset android-stop android-kill android-restart
 
 # ==========================================
 # 📋 HELP
@@ -12,9 +12,10 @@ help:
 	@echo "    make dev                          - Start full monorepo"
 	@echo ""
 	@echo "  🧪 TESTS"
-	@echo "    make test                          - Run all tests (mobile + backend)"
+	@echo "    make test                          - Run all tests (mobile + backend + shared)"
 	@echo "    make test-mobile                   - Run mobile tests"
 	@echo "    make test-backend                  - Run backend tests"
+	@echo "    make test-shared                   - Run shared package tests"
 	@echo "    make test-coverage                 - Run mobile tests with coverage report"
 	@echo ""
 	@echo "  📱 MOBILE"
@@ -177,7 +178,7 @@ dev:
 # CI: SKIP_DB_PROVISIONING is true -> skips local DB setup (uses CI services instead).
 SKIP_DB_PROVISIONING ?= $(CI)
 
-test: test-mobile test-backend
+test: test-mobile test-backend test-shared
 
 # Conditional dependency: only runs db-up/wait if NOT in CI (determined by SKIP_DB_PROVISIONING)
 test-backend: $(if $(SKIP_DB_PROVISIONING),,db-up db-wait)
@@ -185,6 +186,9 @@ test-backend: $(if $(SKIP_DB_PROVISIONING),,db-up db-wait)
 
 test-mobile:
 	cd $(MOBILE_DIR) && bun run test
+
+test-shared:
+	cd packages/shared && bun test
 
 test-coverage:
 	cd $(MOBILE_DIR) && bun run test --coverage

@@ -174,7 +174,9 @@ export default function AgendaScreen() {
             {renderDateSelector()}
 
             {MOMENTS.map((moment) => {
-              const momentOrders = orders.filter((o) => o.reservation?.time_of_day === moment);
+              const momentOrders = orders.filter(
+                (o) => o.zzz_reservation?.zzz_time_of_day === moment,
+              );
               if (momentOrders.length === 0) return null;
 
               const config = getMomentConfig(moment);
@@ -198,7 +200,7 @@ export default function AgendaScreen() {
                   </View>
                   <View className="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 overflow-hidden">
                     {momentOrders.map((order, index) => (
-                      <View key={order.id}>
+                      <View key={order.zzz_id}>
                         <ReservationCard
                           order={order}
                           role="entrepreneur"

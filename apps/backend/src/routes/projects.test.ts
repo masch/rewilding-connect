@@ -11,20 +11,20 @@ describe("Projects API", () => {
     expect(Array.isArray(body)).toBe(true);
 
     if (body.length > 0) {
-      expect(body[0]).toHaveProperty("id");
-      expect(body[0]).toHaveProperty("name");
-      expect(body[0]).toHaveProperty("default_language");
+      expect(body[0]).toHaveProperty("zzz_id");
+      expect(body[0]).toHaveProperty("zzz_name");
+      expect(body[0]).toHaveProperty("zzz_default_language");
     }
   });
 
   it("should create a new project and return 201 Created", async () => {
     const newProjectData = {
-      name: "Test Project AI",
-      default_language: "en",
-      supported_languages: ["en", "es"],
-      cascade_timeout_minutes: 45,
-      max_cascade_attempts: 5,
-      is_active: true,
+      zzz_name: "Test Project AI",
+      zzz_default_language: "en",
+      zzz_supported_languages: ["en", "es"],
+      zzz_cascade_timeout_minutes: 45,
+      zzz_max_cascade_attempts: 5,
+      zzz_is_active: true,
     };
 
     const res = await app.request("/v1/projects", {
@@ -37,14 +37,14 @@ describe("Projects API", () => {
 
     expect(res.status).toBe(201);
     const body = await res.json();
-    expect(body).toHaveProperty("id");
-    expect(body.name).toBe(newProjectData.name);
+    expect(body).toHaveProperty("zzz_id");
+    expect(body.zzz_name).toBe(newProjectData.zzz_name);
   });
 
   it("should return 400 Bad Request when validation fails", async () => {
     const invalidData = {
-      name: "A", // Too short (min 2)
-      default_language: "it", // Not supported in LanguageSchema
+      zzz_name: "A", // Too short (min 2)
+      zzz_default_language: "it", // Not supported in LanguageSchema
     };
 
     const res = await app.request("/v1/projects", {
@@ -62,9 +62,9 @@ describe("Projects API", () => {
 
   it("should return 400 when default_language is not in supported_languages", async () => {
     const inconsistentData = {
-      name: "Inconsistent Project",
-      default_language: "en",
-      supported_languages: ["es"], // Missing 'en'
+      zzz_name: "Inconsistent Project",
+      zzz_default_language: "en",
+      zzz_supported_languages: ["es"], // Missing 'en'
     };
 
     const res = await app.request("/v1/projects", {

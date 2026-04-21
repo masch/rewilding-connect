@@ -1923,6 +1923,12 @@ bun test --coverage
 
 > **MVP:** Only single Project (Impenetrable). Multi-project support is **[POST-MVP]**.
 
+### 5.1. Naming Conventions (zzz_ prefix audit)
+
+All entity attributes across the system SHALL be prefixed with `zzz_` to indicate they are currently unvalidated. This naming convention applies to the Entity Relationship Diagram (ERD), Shared Types, Backend Schemas, and Mock Data.
+
+This is a temporary audit mechanism. Attributes that are validated in future SDD sessions SHALL have the prefix removed.
+
 Below is the relational data model prepared for AI generation using PostgreSQL. Operational states are kept as Enums to protect the cascading engine's strict logic, while expansible categories use parametric tables [6].
 
 ```mermaid
@@ -1931,217 +1937,217 @@ erDiagram
     %% TOP LAYER: MULTI-TENANT (PROJECTS)
     %% ==========================================
     Project {
-        int id PK
-        string name "e.g. 'Impenetrable', 'Patagonia'"
-        string default_language "Default language code, e.g. 'es'"
-        jsonb supported_languages "Array of supported language codes, e.g. ['es', 'en']"
-        int cascade_timeout_minutes "Default: 30. Timeout per attempt before cascading to next venture"
-        int max_cascade_attempts "Default: 10. Maximum times the engine will try before marking order as EXPIRED"
-        boolean is_active
+        int zzz_id PK
+        string zzz_name "e.g. 'Impenetrable', 'Patagonia'"
+        string zzz_default_language "Default language code, e.g. 'es'"
+        jsonb zzz_supported_languages "Array of supported language codes, e.g. ['es', 'en']"
+        int zzz_cascade_timeout_minutes "Default: 30. Timeout per attempt before cascading to next venture"
+        int zzz_max_cascade_attempts "Default: 10. Maximum times the engine will try before marking order as EXPIRED"
+        boolean zzz_is_active
     }
 
     %% ==========================================
     %% SECURITY & ACCESS LAYER
     %% ==========================================
     User_Session {
-        uuid id PK
-        int user_id FK "References User"
-        string access_token_hash "Hash of JWT access token"
-        string refresh_token_hash "Hash of refresh token"
-        timestamp access_token_expires_at
-        timestamp refresh_token_expires_at
-        timestamp created_at
-        timestamp last_used_at
-        boolean is_revoked "Default FALSE"
+        uuid zzz_id PK
+        int zzz_user_id FK "References User"
+        string zzz_access_token_hash "Hash of JWT access token"
+        string zzz_refresh_token_hash "Hash of refresh token"
+        timestamp zzz_access_token_expires_at
+        timestamp zzz_refresh_token_expires_at
+        timestamp zzz_created_at
+        timestamp zzz_last_used_at
+        boolean zzz_is_revoked "Default FALSE"
     }
 
     Tourist_Device {
-        uuid id PK
-        uuid user_id FK "Links to User"
-        string device_fingerprint "Browser fingerprint (User-Agent + Screen + Timezone)"
-        string refresh_token_hash "Opaque refresh token (not JWT)"
-        string push_token "Optional push notification token"
-        timestamp expires_at "When this refresh token expires"
-        timestamp created_at
-        timestamp last_used_at
+        uuid zzz_id PK
+        uuid zzz_user_id FK "Links to User"
+        string zzz_device_fingerprint "Browser fingerprint (User-Agent + Screen + Timezone)"
+        string zzz_refresh_token_hash "Opaque refresh token (not JWT)"
+        string zzz_push_token "Optional push notification token"
+        timestamp zzz_expires_at "When this refresh token expires"
+        timestamp zzz_created_at
+        timestamp zzz_last_used_at
     }
 
     %% ==========================================
     %% PARAMETRIC TABLES (Dictionaries)
     %% ==========================================
     Role_Type {
-        int id PK
-        string description "e.g. HOSTEL, GUIDE"
+        int zzz_id PK
+        string zzz_description "e.g. HOSTEL, GUIDE"
     }
 
     Time_Of_Day {
-        int id PK
-        string description "e.g. BREAKFAST, LUNCH, DINNER"
+        int zzz_id PK
+        string zzz_description "e.g. BREAKFAST, LUNCH, DINNER"
     }
 
     %% ==========================================
     %% MAIN ENTITIES (Business Core)
     %% ==========================================
     User {
-        uuid id PK
-        string alias "Nullable - tourists only"
-        string email "Nullable - admin/entrepreneur only"
-        string password_hash "bcrypt or argon2 - admin/entrepreneur only"
-        string first_name "Nullable"
-        string last_name "Nullable"
-        string whatsapp "Nullable. For order notifications"
-        enum user_type "TOURIST, ADMIN, ENTREPRENEUR"
-        int failed_login_attempts "Default 0. Lock after 5 failed attempts"
-        timestamp locked_until "Nullable. Lockout expiration time"
-        timestamp last_login_at
-        boolean is_active "Default TRUE"
-        timestamp created_at
+        uuid zzz_id PK
+        string zzz_alias "Nullable - tourists only"
+        string zzz_email "Nullable - admin/entrepreneur only"
+        string zzz_password_hash "bcrypt or argon2 - admin/entrepreneur only"
+        string zzz_first_name "Nullable"
+        string zzz_last_name "Nullable"
+        string zzz_whatsapp "Nullable. For order notifications"
+        enum zzz_user_type "TOURIST, ADMIN, ENTREPRENEUR"
+        int zzz_failed_login_attempts "Default 0. Lock after 5 failed attempts"
+        timestamp zzz_locked_until "Nullable. Lockout expiration time"
+        timestamp zzz_last_login_at
+        boolean zzz_is_active "Default TRUE"
+        timestamp zzz_created_at
     }
 
     Catalog_Type {
-        int id PK
-        int project_id FK "Project this catalog type belongs to"
-        jsonb name_i18n "e.g. {'es':'Gastronomía','en':'Gastronomy'}"
-        jsonb description_i18n "Optional description (e.g. {'es':'Comidas típicas','en':'Typical dishes'})"
-        boolean is_active "Whether this type is available"
+        int zzz_id PK
+        int zzz_project_id FK "Project this catalog type belongs to"
+        jsonb zzz_name_i18n "e.g. {'es':'Gastronomía','en':'Gastronomy'}"
+        jsonb zzz_description_i18n "Optional description (e.g. {'es':'Comidas típicas','en':'Typical dishes'})"
+        boolean zzz_is_active "Whether this type is available"
     }
 
     Venture {
-        int id PK
-        int catalog_type_id FK "Determines which catalog items this venture can offer (inherits project from type)"
-        string name "Business name (e.g. Parador Don Esteban)"
-        string description "Optional business description"
-        string address "Physical address"
-        decimal latitude "Geolocation"
-        decimal longitude "Geolocation"
-        string image_url "Optional business photo"
-        int role_type_id FK
-        int cascade_order "Isolated rotation per project. Default: creation order (1, 2, 3...)"
-        int max_capacity "Maximum number of guests per service (e.g. 20 seats)"
-        boolean is_paused "General pause - venture cannot receive orders"
-        boolean is_active "Enabled by admin"
+        int zzz_id PK
+        int zzz_catalog_type_id FK "Determines which catalog items this venture can offer (inherits project from type)"
+        string zzz_name "Business name (e.g. Parador Don Esteban)"
+        string zzz_description "Optional business description"
+        string zzz_address "Physical address"
+        decimal zzz_latitude "Geolocation"
+        decimal zzz_longitude "Geolocation"
+        string zzz_image_url "Optional business photo"
+        int zzz_role_type_id FK
+        int zzz_cascade_order "Isolated rotation per project. Default: creation order (1, 2, 3...)"
+        int zzz_max_capacity "Maximum number of guests per service (e.g. 20 seats)"
+        boolean zzz_is_paused "General pause - venture cannot receive orders"
+        boolean zzz_is_active "Enabled by admin"
     }
 
     Venture_Paused_Item {
-        int venture_id PK,FK "References Venture"
-        int catalog_item_id PK,FK "References Catalog_Item"
-        timestamp paused_at "When the item was paused"
+        int zzz_venture_id PK,FK "References Venture"
+        int zzz_catalog_item_id PK,FK "References Catalog_Item"
+        timestamp zzz_paused_at "When the item was paused"
     }
 
     Venture_Schedule {
-        int id PK
-        int venture_id FK "References Venture"
-        string day_of_week "mon, tue, wed, thu, fri, sat, sun"
-        time open_time "Opening time (e.g., 08:00)"
-        time close_time "Closing time (e.g., 20:00)"
-        boolean is_active "Can be disabled per day"
+        int zzz_id PK
+        int zzz_venture_id FK "References Venture"
+        string zzz_day_of_week "mon, tue, wed, thu, fri, sat, sun"
+        time zzz_open_time "Opening time (e.g., 08:00)"
+        time zzz_close_time "Closing time (e.g., 20:00)"
+        boolean zzz_is_active "Can be disabled per day"
     }
 
     Venture_Manager {
-        int id PK
-        int venture_id FK "Venture being managed"
-        uuid user_id FK "Links to User (admin/entrepreneur)"
-        string whatsapp_contact "Used for Morning Reminder"
-        boolean is_active "Enabled by admin"
-        timestamp created_at
+        int zzz_id PK
+        int zzz_venture_id FK "Venture being managed"
+        uuid zzz_user_id FK "Links to User (admin/entrepreneur)"
+        string zzz_whatsapp_contact "Used for Morning Reminder"
+        boolean zzz_is_active "Enabled by admin"
+        timestamp zzz_created_at
     }
 
     Catalog_Item {
-        int id PK
-        int catalog_type_id FK "Catalog type this item belongs to (inherits project from type)"
-        jsonb name_i18n "e.g. {'es':'Guiso','en':'Stew'}"
-        jsonb description_i18n "Optional description (e.g. {'es':'Delicious stew'})"
-        jsonb allergens_i18n "Allergen info (e.g. {'es':'Contiene gluten'})"
-        jsonb ingredients_i18n "Ingredient list (e.g. {'es':'Carne, papas, cebolla'})"
-        decimal price "Default price from master catalog"
-        int max_participants "Maximum participants for activities (null for gastronomy)"
-        string image_url "Optional: URL to dish/activity photo"
-        boolean global_pause "Admin can pause item for ALL ventures"
+        int zzz_id PK
+        int zzz_catalog_type_id FK "Catalog type this item belongs to (inherits project from type)"
+        jsonb zzz_name_i18n "e.g. {'es':'Guiso','en':'Stew'}"
+        jsonb zzz_description_i18n "Optional description (e.g. {'es':'Delicious stew'})"
+        jsonb zzz_allergens_i18n "Allergen info (e.g. {'es':'Contiene gluten'})"
+        jsonb zzz_ingredients_i18n "Ingredient list (e.g. {'es':'Carne, papas, cebolla'})"
+        decimal zzz_price "Default price from master catalog"
+        int zzz_max_participants "Maximum participants for activities (null for gastronomy)"
+        string zzz_image_url "Optional: URL to dish/activity photo"
+        boolean zzz_global_pause "Admin can pause item for ALL ventures"
     }
 
     %% ==========================================
     %% TRANSACTIONAL & CASCADING FLOW
     %% ==========================================
     Reservation {
-        int id PK
-        uuid user_id FK "Links to User (tourist)"
-        date service_date "Date of the experience"
-        string time_of_day "Enum: BREAKFAST, LUNCH, SNACK, DINNER"
-        enum status "PENDING, CONFIRMED, CANCELLED, COMPLETED"
-        timestamp created_at
-        timestamp updated_at
+        int zzz_id PK
+        uuid zzz_user_id FK "Links to User (tourist)"
+        date zzz_service_date "Date of the experience"
+        string zzz_time_of_day "Enum: BREAKFAST, LUNCH, SNACK, DINNER"
+        enum zzz_status "PENDING, CONFIRMED, CANCELLED, COMPLETED"
+        timestamp zzz_created_at
+        timestamp zzz_updated_at
     }
 
     Order {
-        int id PK
-        int reservation_id FK "Links to parent Reservation"
-        uuid user_id FK "Links to User (tourist)"
-        int catalog_type_id FK "Determines which ventures can fulfill this order"
-        int confirmed_venture_id FK "Nullable. Set when status becomes CONFIRMED"
-        date service_date "Used for filtering/cascade logic"
-        string time_of_day "Used for filtering/cascade logic"
-        string notes "Special requests or dietary restrictions from tourist"
-        enum global_status "SEARCHING, OFFER_PENDING, CONFIRMED, COMPLETED, NO_SHOW, CANCELLED, EXPIRED"
-        enum cancel_reason "null, BY_TOURIST, BY_ENTREPRENEUR, NO_VENTURE_AVAILABLE, SYSTEM_ERROR"
-        timestamp cancelled_at "Nullable. Set when status becomes CANCELLED or EXPIRED"
-        timestamp completed_at "Nullable. Set when status becomes COMPLETED (explicit or auto)"
-        timestamp confirmed_at "Nullable. Set when status becomes CONFIRMED"
-        timestamp created_at
-        boolean notify_whatsapp "Whether to send WhatsApp notifications for this order"
+        int zzz_id PK
+        int zzz_reservation_id FK "Links to parent Reservation"
+        uuid zzz_user_id FK "Links to User (tourist)"
+        int zzz_catalog_type_id FK "Determines which ventures can fulfill this order"
+        int zzz_confirmed_venture_id FK "Nullable. Set when status becomes CONFIRMED"
+        date zzz_service_date "Used for filtering/cascade logic"
+        string zzz_time_of_day "Used for filtering/cascade logic"
+        string zzz_notes "Special requests or dietary restrictions from tourist"
+        enum zzz_global_status "SEARCHING, OFFER_PENDING, CONFIRMED, COMPLETED, NO_SHOW, CANCELLED, EXPIRED"
+        enum zzz_cancel_reason "null, BY_TOURIST, BY_ENTREPRENEUR, NO_VENTURE_AVAILABLE, SYSTEM_ERROR"
+        timestamp zzz_cancelled_at "Nullable. Set when status becomes CANCELLED or EXPIRED"
+        timestamp zzz_completed_at "Nullable. Set when status becomes COMPLETED (explicit or auto)"
+        timestamp zzz_confirmed_at "Nullable. Set when status becomes CONFIRMED"
+        timestamp zzz_created_at
+        boolean zzz_notify_whatsapp "Whether to send WhatsApp notifications for this order"
     }
 
     OrderItem {
-        int id PK
-        int order_id FK "Links to parent Order"
-        int catalog_item_id FK "The catalog item being ordered"
-        int quantity "Number of items requested"
-        decimal price "Price recorded at order time (historical)"
+        int zzz_id PK
+        int zzz_order_id FK "Links to parent Order"
+        int zzz_catalog_item_id FK "The catalog item being ordered"
+        int zzz_quantity "Number of items requested"
+        decimal zzz_price "Price recorded at order time (historical)"
     }
 
     Cascade_Assignment {
-        int id PK
-        int order_id FK
-        int venture_id FK "Cascade iterates through ventures"
-        int attempt_number
-        enum offer_status "WAITING_FOR_RESPONSE, ACCEPTED, REJECTED, TIMEOUT, AUTO_REJECTED"
-        enum skip_reason "null, GENERAL_PAUSE, INDIVIDUAL_PAUSE, CAPACITY_EXCEEDED, CLOSED_THAT_DAY, OUTSIDE_OPENING_HOURS, VENTURE_INACTIVE, NOT_OFFERED"
-        timestamp offer_sent_at
-        timestamp response_deadline
-        timestamp resolved_at
+        int zzz_id PK
+        int zzz_order_id FK
+        int zzz_venture_id FK "Cascade iterates through ventures"
+        int zzz_attempt_number
+        enum zzz_offer_status "WAITING_FOR_RESPONSE, ACCEPTED, REJECTED, TIMEOUT, AUTO_REJECTED"
+        enum zzz_skip_reason "null, GENERAL_PAUSE, INDIVIDUAL_PAUSE, CAPACITY_EXCEEDED, CLOSED_THAT_DAY, OUTSIDE_OPENING_HOURS, VENTURE_INACTIVE, NOT_OFFERED"
+        timestamp zzz_offer_sent_at
+        timestamp zzz_response_deadline
+        timestamp zzz_resolved_at
     }
 
     %% ==========================================
     %% NOTIFICATIONS
     %% ==========================================
     Notification {
-        int id PK
-        uuid user_id FK "Nullable. Links to User (any type: tourist, entrepreneur, admin)"
-        int order_id FK "Nullable. Associated order"
-        enum channel "PUSH, WHATSAPP, EMAIL, IN_APP"
-        enum event_type "ORDER_RECEIVED, ORDER_CONFIRMED, ORDER_COMPLETED, ORDER_NO_SHOW, ORDER_EXPIRED, ORDER_CANCELLED, MORNING_REMINDER"
-        jsonb payload "Message content and metadata"
-        boolean is_sent default FALSE
-        timestamp sent_at "Nullable. Set when notification is sent"
-        string external_id "Nullable. Provider message ID (e.g. WhatsApp message ID)"
-        timestamp created_at
+        int zzz_id PK
+        uuid zzz_user_id FK "Nullable. Links to User (any type: tourist, entrepreneur, admin)"
+        int zzz_order_id FK "Nullable. Associated order"
+        enum zzz_channel "PUSH, WHATSAPP, EMAIL, IN_APP"
+        enum zzz_event_type "ORDER_RECEIVED, ORDER_CONFIRMED, ORDER_COMPLETED, ORDER_NO_SHOW, ORDER_EXPIRED, ORDER_CANCELLED, MORNING_REMINDER"
+        jsonb zzz_payload "Message content and metadata"
+        boolean zzz_is_sent default FALSE
+        timestamp zzz_sent_at "Nullable. Set when notification is sent"
+        string zzz_external_id "Nullable. Provider message ID (e.g. WhatsApp message ID)"
+        timestamp zzz_created_at
     }
 
     Notification_Preference {
-        int id PK
-        uuid user_id FK "Links to User (any type)"
-        int venture_id FK "Nullable. For venture-specific preferences"
-        boolean push_enabled default TRUE
-        boolean whatsapp_enabled default FALSE
-        boolean email_enabled default FALSE
+        int zzz_id PK
+        uuid zzz_user_id FK "Links to User (any type)"
+        int zzz_venture_id FK "Nullable. For venture-specific preferences"
+        boolean zzz_push_enabled default TRUE
+        boolean zzz_whatsapp_enabled default FALSE
+        boolean zzz_email_enabled default FALSE
     }
 
     Idempotency_Key {
-        varchar key PK "Client-provided unique key (UUID)"
-        uuid user_id FK "User who made the request"
-        int response_status "HTTP status code of original response"
-        jsonb response_body "Cached response body"
-        timestamp created_at
-        timestamp expires_at "Key expires after 24 hours"
+        varchar zzz_key PK "Client-provided unique key (UUID)"
+        uuid zzz_user_id FK "User who made the request"
+        int zzz_response_status "HTTP status code of original response"
+        jsonb zzz_response_body "Cached response body"
+        timestamp zzz_created_at
+        timestamp zzz_expires_at "Key expires after 24 hours"
     }
 
     %% ==========================================

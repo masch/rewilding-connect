@@ -77,7 +77,7 @@ export function ReservationModal({
 
   if (!service) return null;
 
-  const totalPrice = service.price * quantity;
+  const totalPrice = service.zzz_price * quantity;
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
@@ -96,11 +96,11 @@ export function ReservationModal({
 
           {/* Header with image */}
           <View className="pb-4 border-b border-outline-variant">
-            {service.image_url && (
+            {service.zzz_image_url && (
               <View className="w-full h-[250px] mb-4">
                 <CatalogImage
-                  imageUrl={service.image_url}
-                  alt={getLocalizedName(service.name_i18n) || t("catalog.service_image_alt")}
+                  imageUrl={service.zzz_image_url}
+                  alt={getLocalizedName(service.zzz_name_i18n) || t("catalog.service_image_alt")}
                   className="w-full h-full"
                 />
               </View>
@@ -109,14 +109,14 @@ export function ReservationModal({
               <View className="flex-1 pr-6">
                 <View className="flex-row justify-between items-center mb-1">
                   <Text className="text-xl font-display font-bold text-on-surface flex-1 mr-2">
-                    {getLocalizedName(service.name_i18n)}
+                    {getLocalizedName(service.zzz_name_i18n)}
                   </Text>
                   <Text className="text-lg font-display font-bold text-primary">
-                    {formatCurrency(service.price)}
+                    {formatCurrency(service.zzz_price)}
                   </Text>
                 </View>
                 <Text className="text-sm font-body text-on-surface-variant leading-relaxed">
-                  {getLocalizedName(service.description_i18n)}
+                  {getLocalizedName(service.zzz_description_i18n)}
                 </Text>
               </View>
               <Button variant="ghost" onPress={handleClose} className="p-2 -mr-2 -mt-1 min-w-0">

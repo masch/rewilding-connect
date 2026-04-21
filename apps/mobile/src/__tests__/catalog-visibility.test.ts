@@ -3,7 +3,7 @@ import { mockSetCurrentUser } from "../services/auth-state";
 import { MOCK_USERS } from "../mocks/users.data";
 
 describe("Catalog Visibility Integration", () => {
-  const touristUser = MOCK_USERS.find((u) => u.user_type === "TOURIST")!;
+  const touristUser = MOCK_USERS.find((u) => u.zzz_user_type === "TOURIST")!;
 
   beforeEach(() => {
     mockSetCurrentUser(touristUser);
@@ -16,18 +16,18 @@ describe("Catalog Visibility Integration", () => {
     // Place a new order
     const date = new Date();
     const moment = "BREAKFAST";
-    const items = [{ catalog_item_id: 1, quantity: 1 }];
+    const items = [{ zzz_catalog_item_id: 1, zzz_quantity: 1 }];
 
     const newOrder = await CatalogService.placeOrder(date, moment, items, "Test order");
 
     expect(newOrder).toBeDefined();
-    expect(newOrder.id).toBeDefined();
+    expect(newOrder.zzz_id).toBeDefined();
 
     // Verify it appears in the orders list
     const updatedOrders = await CatalogService.getOrders();
 
     // THIS IS EXPECTED TO FAIL BEFORE THE FIX
-    const foundOrder = updatedOrders.find((o) => o.id === newOrder.id);
+    const foundOrder = updatedOrders.find((o) => o.zzz_id === newOrder.zzz_id);
     expect(foundOrder).toBeDefined();
     expect(updatedOrders.length).toBe(initialCount + 1);
   });

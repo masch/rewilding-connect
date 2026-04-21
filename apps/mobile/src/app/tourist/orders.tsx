@@ -89,7 +89,7 @@ export default function OrderScreen() {
     if (services.length === 0) {
       fetchServices();
     }
-  }, [currentUser?.id, fetchOrders, fetchServices, services.length]);
+  }, [currentUser?.zzz_id, fetchOrders, fetchServices, services.length]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -99,8 +99,8 @@ export default function OrderScreen() {
 
   // Filter orders based on selected date
   const filteredOrders = allOrders.filter((o) => {
-    if (!o.reservation?.service_date) return false;
-    const orderDate = new Date(o.reservation.service_date);
+    if (!o.zzz_reservation?.zzz_service_date) return false;
+    const orderDate = new Date(o.zzz_reservation.zzz_service_date);
     return isSameDay(orderDate, selectedDate);
   });
 
@@ -108,7 +108,7 @@ export default function OrderScreen() {
   const groupOrdersByDate = (orders: Order[]) => {
     const groups: Record<string, Order[]> = {};
     orders.forEach((order) => {
-      const date = new Date(order.reservation?.service_date || new Date());
+      const date = new Date(order.zzz_reservation?.zzz_service_date || new Date());
       const dateStr = toISODate(date);
       if (!groups[dateStr]) groups[dateStr] = [];
       groups[dateStr].push(order);
@@ -218,7 +218,7 @@ export default function OrderScreen() {
 
   // Resolve venture name from enriched order data
   const getVentureName = (order: Order) => {
-    return order.confirmed_venture?.name;
+    return order.zzz_confirmed_venture?.zzz_name;
   };
 
   return (
@@ -258,7 +258,7 @@ export default function OrderScreen() {
                 <View key={dateStr} className="mb-8">
                   {MOMENTS.map((moment) => {
                     const momentOrders = dayOrders.filter(
-                      (o) => o.reservation?.time_of_day === moment,
+                      (o) => o.zzz_reservation?.zzz_time_of_day === moment,
                     );
                     if (momentOrders.length === 0) return null;
 
@@ -280,7 +280,7 @@ export default function OrderScreen() {
                         </View>
 
                         {momentOrders.map((order, index) => (
-                          <View key={order.id} className="mb-4">
+                          <View key={order.zzz_id} className="mb-4">
                             <ReservationCard
                               order={order}
                               role="tourist"
@@ -300,7 +300,7 @@ export default function OrderScreen() {
                                     },
                                     {
                                       text: t("common.yes"),
-                                      onPress: () => cancelOrder(order.id),
+                                      onPress: () => cancelOrder(order.zzz_id),
                                       style: "destructive",
                                     },
                                   ],

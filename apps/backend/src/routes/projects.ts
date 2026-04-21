@@ -9,7 +9,10 @@ import { logger } from "../services/logger.service";
 const router = new Hono();
 
 router.get("/", async (c) => {
-  const result = await db.select().from(projects).orderBy(desc(projects.is_active), projects.name);
+  const result = await db
+    .select()
+    .from(projects)
+    .orderBy(desc(projects.zzz_is_active), projects.zzz_name);
   return c.json(result);
 });
 

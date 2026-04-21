@@ -34,16 +34,16 @@ export default function OrderSetupScreen() {
     if (hasContextChanged && selectedDate && selectedMoment) {
       // Find orders in the PREVIOUS context to move them
       const itemsToMove = activeOrders.filter((o: Order) => {
-        const oDate = new Date(o.reservation?.service_date || 0);
+        const oDate = new Date(o.zzz_reservation?.zzz_service_date || 0);
         const isSameDayResult = isSameDay(oDate, selectedDate);
-        const isSameMoment = o.reservation?.time_of_day === selectedMoment;
+        const isSameMoment = o.zzz_reservation?.zzz_time_of_day === selectedMoment;
 
         return isSameDayResult && isSameMoment;
       });
 
       if (itemsToMove.length > 0) {
         await moveOrders(
-          itemsToMove.map((o: Order) => Number(o.id)),
+          itemsToMove.map((o: Order) => Number(o.zzz_id)),
           date,
           moment,
         );
@@ -94,13 +94,13 @@ export default function OrderSetupScreen() {
 
             <View className="flex-row flex-wrap justify-between gap-y-4">
               {SERVICE_MOMENTS.map((m) => {
-                const isSelected = moment === m.id;
+                const isSelected = moment === m.zzz_id;
                 const label = t(m.labelKey);
                 return (
                   <Button
-                    key={m.id}
+                    key={m.zzz_id}
                     variant="ghost"
-                    onPress={() => setMoment(m.id)}
+                    onPress={() => setMoment(m.zzz_id)}
                     accessibilityLabel={`${label}${isSelected ? `, ${t("common.selected")}` : ""}`}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: isSelected }}

@@ -26,7 +26,7 @@ const MockOrderService: OrderServiceInterface = {
     await new Promise((r) => setTimeout(r, 600));
     const orders = getMockOrders();
     if (status) {
-      return orders.filter((o) => o.global_status === status);
+      return orders.filter((o) => o.zzz_global_status === status);
     }
     return orders;
   },
@@ -34,14 +34,14 @@ const MockOrderService: OrderServiceInterface = {
   cancelOrder: async (id: number) => {
     await new Promise((r) => setTimeout(r, 500));
     const orders = getMockOrders();
-    const order = orders.find((o) => o.id === id);
+    const order = orders.find((o) => o.zzz_id === id);
     if (!order) {
       throw new Error("Order not found");
     }
-    if (order.global_status === "SEARCHING") {
-      order.global_status = "CANCELLED";
-      order.cancel_reason = "BY_TOURIST";
-      order.cancelled_at = new Date();
+    if (order.zzz_global_status === "SEARCHING") {
+      order.zzz_global_status = "CANCELLED";
+      order.zzz_cancel_reason = "BY_TOURIST";
+      order.zzz_cancelled_at = new Date();
     } else {
       throw new Error("Only SEARCHING orders can be cancelled");
     }
