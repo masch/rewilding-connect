@@ -3,8 +3,7 @@
  * Uses @repo/shared types aligned with OpenSpec Catalog_Item entity
  */
 
-import { CatalogItem, ServiceCategory } from "@repo/shared";
-import { MOCK_PROJECTS, PROJECT_IDS } from "./projects.data";
+import { CatalogItem, ServiceCategory, Project, MOCK_PROJECTS, PROJECT_IDS } from "@repo/shared";
 
 // Local assets
 import empanadas12 from "../../assets/catalog/empanadas12.jpeg";
@@ -15,7 +14,7 @@ import chivoGuiso from "../../assets/catalog/chivo_guiso.jpeg";
 import chivoEstofado from "../../assets/catalog/chivo_estofado.jpeg";
 
 // Get the first active project for our mock catalog types
-const defaultProject = MOCK_PROJECTS.find((p) => p.is_active) || MOCK_PROJECTS[0];
+const defaultProject = MOCK_PROJECTS.find((p: Project) => p.is_active) || MOCK_PROJECTS[0];
 
 // Service category IDs - explicit constants for type safety
 export const SERVICE_CATEGORY_IDS = {
@@ -60,7 +59,7 @@ export const EMPANADAS_CARNE_MEDIA_DOCENA: CatalogItem = {
   },
   price: 9500,
   max_participants: null,
-  image_url: empanadas6 as unknown as string,
+  image_url: empanadas6,
   global_pause: false,
 };
 
@@ -74,7 +73,7 @@ export const EMPANADAS_CARNE_DOCENA: CatalogItem = {
   },
   price: 18000,
   max_participants: null,
-  image_url: empanadas12 as unknown as string,
+  image_url: empanadas12,
   global_pause: false,
 };
 
@@ -88,7 +87,7 @@ export const EMPANADAS_CHARQUI_MEDIA_DOCENA: CatalogItem = {
   },
   price: 12500,
   max_participants: null,
-  image_url: empanadas6 as unknown as string,
+  image_url: empanadas6,
   global_pause: false,
 };
 
@@ -99,7 +98,7 @@ export const EMPANADAS_CHARQUI_DOCENA: CatalogItem = {
   description_i18n: { es: "Empanadas de charqui artesanal", en: "Artisan charqui empanadas" },
   price: 24000,
   max_participants: null,
-  image_url: empanadas12 as unknown as string,
+  image_url: empanadas12,
   global_pause: false,
 };
 
@@ -113,7 +112,7 @@ export const EMPANADAS_VERDURA_MEDIA_DOCENA: CatalogItem = {
   },
   price: 9000,
   max_participants: null,
-  image_url: empanadas12 as unknown as string,
+  image_url: empanadas12,
   global_pause: false,
 };
 
@@ -127,7 +126,7 @@ export const EMPANADAS_VERDURA_DOCENA: CatalogItem = {
   },
   price: 17000,
   max_participants: null,
-  image_url: empanadas12 as unknown as string,
+  image_url: empanadas12,
   global_pause: false,
 };
 
@@ -141,7 +140,7 @@ export const EMPANADAS_POLLO_MEDIA_DOCENA: CatalogItem = {
   },
   price: 9000,
   max_participants: null,
-  image_url: empanadas6 as unknown as string,
+  image_url: empanadas6,
   global_pause: false,
 };
 
@@ -152,7 +151,7 @@ export const EMPANADAS_POLLO_DOCENA: CatalogItem = {
   description_i18n: { es: "Empanadas de pollo deshilachado", en: "Shredded chicken empanadas" },
   price: 17000,
   max_participants: null,
-  image_url: empanadas12 as unknown as string,
+  image_url: empanadas12,
   global_pause: false,
 };
 
@@ -180,7 +179,7 @@ export const PASTEL_ZAPALLO_CHIVO: CatalogItem = {
   },
   price: 18000,
   max_participants: null,
-  image_url: pastelCalabaza as unknown as string,
+  image_url: pastelCalabaza,
   global_pause: false,
 };
 
@@ -194,7 +193,7 @@ export const ESTOFADO_CHIVO: CatalogItem = {
   },
   price: 20000,
   max_participants: null,
-  image_url: chivoEstofado as unknown as string,
+  image_url: chivoEstofado,
   global_pause: false,
 };
 
@@ -205,7 +204,7 @@ export const GUISO_CHIVO: CatalogItem = {
   description_i18n: { es: "Guiso auténtica de chivo chaqueño", en: "Authentic Chaco goat guiso" },
   price: 20000,
   max_participants: null,
-  image_url: chivoGuiso as unknown as string,
+  image_url: chivoGuiso,
   global_pause: false,
 };
 
@@ -219,7 +218,7 @@ export const REPOLLO_ASADO: CatalogItem = {
   },
   price: 18000,
   max_participants: null,
-  image_url: repollo as unknown as string,
+  image_url: repollo,
   global_pause: false,
 };
 

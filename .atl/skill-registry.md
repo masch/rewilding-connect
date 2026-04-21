@@ -71,7 +71,10 @@
 - **Single Source of Truth**: Shared types and validators must live in `@repo/shared`.
 - **Vertical Slicing**: Keep backend routes logic in services, not in the route handler.
 - **Error Handling**: Use Zod for all input validations on both sides of the bridge.
-- **Centralized Logging**: PROHIBITED use of `console.log`, `console.warn`, or `console.error`. Use the centralized `logger` service (`src/services/logger.service.ts`) for all observability needs. This ensures structured logging, consistent metadata (timestamps, levels), and easy future integration with external monitoring tools.
+- **Centralized Logging (Zero-Console Policy)**: Direct use of `console.log`, `console.warn`, or `console.error` is STRICTLY PROHIBITED in BOTH Backend and Mobile applications, NO EXCEPTIONS.
+  - **Backend**: ALWAYS use the centralized `logger` service (`apps/backend/src/services/logger.service.ts`).
+  - **Mobile**: ALWAYS use the centralized `logger` service (`apps/mobile/src/services/logger.service.ts`).
+  - **Rationale**: This ensures structured logging, consistent metadata (levels, context), and professional observability. Direct console calls are considered a critical architectural failure and will be flagged as a violation.
 - **Mock Data SSoT**: NEVER duplicate mock data across multiple files. Centralize shared entity mocks (Orders, Users, Catalog) in `src/mocks/*.data.ts` to ensure consistency across different user roles (Tourist vs. Entrepreneur).
 
 ### Testing

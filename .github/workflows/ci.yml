@@ -17,6 +17,25 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: impenetrable
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: impenetrable_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://impenetrable:password@localhost:5432/impenetrable_db
+      CI: true
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,11 +47,19 @@ jobs:
       - name: Install Dependencies
         run: make setup
 
+      - name: Create dummy .env for Makefile
+        run: echo "DATABASE_URL=$DATABASE_URL" > .env
+
       - name: Lint
         run: make lint
 
       - name: Typecheck
         run: make typecheck
+
+      - name: Prepare Database
+        run: |
+          make db-push
+          make seed
 
       - name: Run Tests
         run: make test

@@ -1,4 +1,4 @@
-.PHONY: help setup install dev clean lint gga format check check-static typecheck test test-coverage mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-dev mobile-expo-fix-deps mobile-expo-doctor backend seed eas-login eas-whoami eas-init eas-build-configure eas-build-dev eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator eas-export-web eas-deploy-web eas-deploy-web-prod android-app-stop android-app-restart android-reset android-stop android-kill android-restart
+.PHONY: help setup install dev clean lint gga format check check-static typecheck test test-coverage mobile mobile-native mobile-clean mobile-web mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-dev mobile-expo-fix-deps mobile-expo-doctor backend seed db-up db-down db-push eas-login eas-whoami eas-init eas-build-configure eas-build-dev eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator eas-export-web eas-deploy-web eas-deploy-web-prod android-app-stop android-app-restart android-reset android-stop android-kill android-restart
 
 # ==========================================
 # 📋 HELP
@@ -33,6 +33,9 @@ help:
 	@echo "  🖥️ BACKEND"
 	@echo "    make backend                      - Start backend API"
 	@echo "    make seed                         - Seed database"
+	@echo "    make db-up                        - Start database container (Podman)"
+	@echo "    make db-down                      - Stop database container"
+	@echo "    make db-push                      - Push Drizzle schema to database"
 	@echo ""
 	@echo "  🔧 UTILS"
 	@echo "    make clean                        - Clean node_modules"
@@ -134,7 +137,32 @@ backend:
 	cd $(BACKEND_DIR) && bun run dev
 
 seed:
-	cd $(BACKEND_DIR) && bun run db:seed
+	cd $(BACKEND_DIR) && bun --env-file=../../.env run db:seed
+
+db-up:
+	podman-compose up -d
+
+db-down:
+	podman-compose down
+
+db-push:
+	cd $(BACKEND_DIR) && bun --env-file=../../.env run db:push
+
+db-shell:
+	podman exec -it impenetrable-db psql -U impenetrable -d impenetrable_db
+
+db-wait:
+	@echo "⏳ Waiting for database to be ready..."
+	@for i in $$(seq 1 30); do \
+		if podman exec impenetrable-db pg_isready -U impenetrable -d impenetrable_db > /dev/null 2>&1; then \
+			echo "✅ Database is ready!"; \
+			exit 0; \
+		fi; \
+		echo "🕒 DB not ready yet, retrying in 2s ($$i/30)..."; \
+		sleep 2; \
+	done; \
+	echo "❌ Error: Database timeout after 60 seconds"; \
+	exit 1
 
 # ==========================================
 # 🚀 FULL MONOREPO
@@ -143,14 +171,17 @@ seed:
 dev:
 	bun run dev
 
-# ==========================================
-# 🧪 TESTS
-# ==========================================
+# Determine if we are in CI to skip podman/provisioning steps.
+# In GitHub Actions, $(CI) is usually set to 'true'.
+# Local: SKIP_DB_PROVISIONING is empty -> runs 'db-up' and 'db-wait' automatically.
+# CI: SKIP_DB_PROVISIONING is true -> skips local DB setup (uses CI services instead).
+SKIP_DB_PROVISIONING ?= $(CI)
 
 test: test-mobile test-backend
 
-test-backend:
-	cd $(BACKEND_DIR) && bun run test
+# Conditional dependency: only runs db-up/wait if NOT in CI (determined by SKIP_DB_PROVISIONING)
+test-backend: $(if $(SKIP_DB_PROVISIONING),,db-up db-wait)
+	cd $(BACKEND_DIR) && bun --env-file=../../.env run test
 
 test-mobile:
 	cd $(MOBILE_DIR) && bun run test
