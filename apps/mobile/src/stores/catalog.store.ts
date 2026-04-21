@@ -25,15 +25,15 @@ interface CatalogState {
   // Actions - Services
   fetchServices: () => Promise<void>;
   fetchServicesByCategory: (categoryId: number) => Promise<void>;
-  selectService: (id: number) => Promise<void>;
+  selectService: (zzz_id: number) => Promise<void>;
   clearSelectedService: () => void;
 
   // Actions - Orders
   placeOrder: (
     date: Date,
     moment: ServiceMoment,
-    items: Array<{ catalog_item_id: number; quantity: number }>,
-    notes?: string,
+    zzz_items: Array<{ zzz_catalog_item_id: number; zzz_quantity: number }>,
+    zzz_notes?: string,
   ) => Promise<Order | null>;
   fetchOrders: () => Promise<void>;
 }

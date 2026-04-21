@@ -36,14 +36,14 @@ export function ProjectCard({ project, isActive }: ProjectCardProps) {
   const statusText = isActive ? t("active") : t("inactive");
 
   return (
-    <Link href={`/admin/project/${project.id}`} className="block mb-6 w-full">
+    <Link href={`/admin/project/${project.zzz_id}`} className="block mb-6 w-full">
       <View className={`${containerClass} w-full`}>
         {/* Header - Project Name + Status */}
         <View className="mb-4">
           <Text
             className={`text-2xl font-bold text-on-surface font-display text-center ${textOpacity}`}
           >
-            {project.name}
+            {project.zzz_name}
           </Text>
           <View className="flex-row justify-center mt-2">
             <View className={statusBadgeClass}>
@@ -62,7 +62,7 @@ export function ProjectCard({ project, isActive }: ProjectCardProps) {
               {t("default_language")}
             </Text>
             <Text className={`text-sm font-medium text-on-surface uppercase ${textOpacity}`}>
-              {project.default_language}
+              {project.zzz_default_language}
             </Text>
           </View>
 
@@ -72,7 +72,7 @@ export function ProjectCard({ project, isActive }: ProjectCardProps) {
               {t("supported_languages")}
             </Text>
             <Text className={`text-sm font-medium text-on-surface uppercase ${textOpacity}`}>
-              {project.supported_languages.join(", ")}
+              {project.zzz_supported_languages.join(", ")}
             </Text>
           </View>
 
@@ -83,7 +83,7 @@ export function ProjectCard({ project, isActive }: ProjectCardProps) {
                 {t("cascade_timeout")}
               </Text>
               <Text className={`text-base font-medium text-on-surface ${textOpacity}`}>
-                {project.cascade_timeout_minutes} min
+                {project.zzz_cascade_timeout_minutes} min
               </Text>
             </View>
             <View className="bg-surface-container-low flex-1 p-3">
@@ -91,7 +91,7 @@ export function ProjectCard({ project, isActive }: ProjectCardProps) {
                 {t("max_attempts")}
               </Text>
               <Text className={`text-base font-medium text-on-surface ${textOpacity}`}>
-                {project.max_cascade_attempts}
+                {project.zzz_max_cascade_attempts}
               </Text>
             </View>
           </View>

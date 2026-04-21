@@ -1,42 +1,41 @@
+import { describe, it, expect } from "bun:test";
 import { ReservationSchema } from "../reservation";
 
 describe("ReservationSchema", () => {
   it("should validate a valid reservation with nested orders", () => {
     const validReservation = {
-      id: 1,
-      user_id: "550e8400-e29b-41d4-a716-446655440000",
-      service_date: new Date(),
-      time_of_day: "DINNER",
-      status: "PENDING",
-      orders: [
+      zzz_id: 1,
+      zzz_user_id: "550e8400-e29b-41d4-a716-446655440000",
+      zzz_service_date: new Date(),
+      zzz_time_of_day: "DINNER",
+      zzz_status: "CREATED",
+      zzz_orders: [
         {
-          id: 10,
-          reservation_id: 1,
-          user_id: "550e8400-e29b-41d4-a716-446655440000",
-          catalog_type_id: 1,
-          global_status: "SEARCHING",
-          service_date: new Date(),
-          time_of_day: "DINNER",
-          guest_count: 2,
-          items: [{ id: 100, order_id: 10, catalog_item_id: 5, quantity: 2, price: 20 }],
-          created_at: new Date(),
+          zzz_id: 10,
+          zzz_reservation_id: 1,
+          zzz_catalog_type_id: 1,
+          zzz_global_status: "SEARCHING",
+          zzz_items: [{ zzz_id: 100, zzz_order_id: 10, zzz_catalog_item_id: 5, zzz_quantity: 2, zzz_price: 20 }],
+          zzz_created_at: new Date(),
+          zzz_notify_whatsapp: false,
         },
       ],
     };
     const result = ReservationSchema.parse(validReservation);
-    expect(result.status).toBe("PENDING");
-    expect(result.orders).toHaveLength(1);
+    expect(result.zzz_status).toBe("CREATED");
+    expect(result.zzz_orders).toHaveLength(1);
   });
 
   it("should validate a reservation without orders", () => {
     const reservationOnly = {
-      id: 1,
-      user_id: "550e8400-e29b-41d4-a716-446655440000",
-      service_date: new Date(),
-      time_of_day: "DINNER",
-      status: "PENDING",
+      zzz_id: 1,
+      zzz_user_id: "550e8400-e29b-41d4-a716-446655440000",
+      zzz_service_date: new Date(),
+      zzz_time_of_day: "DINNER",
+      zzz_status: "CREATED",
     };
     const result = ReservationSchema.parse(reservationOnly);
-    expect(result.orders).toBeUndefined();
+    expect(result.zzz_status).toBe("CREATED");
+    expect(result.zzz_orders).toBeUndefined();
   });
 });

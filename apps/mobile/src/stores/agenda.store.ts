@@ -41,12 +41,12 @@ export const useAgendaStore = create<AgendaState>((set, get) => ({
       const dateStr = toISODate(date);
 
       // Dynamically resolve venture IDs for the current user
-      const ventureIds = currentUser ? getVentureIdsByUserId(currentUser.id) : [];
+      const ventureIds = currentUser ? getVentureIdsByUserId(currentUser.zzz_id) : [];
 
       const filtered =
         ventureIds.length > 0
           ? getMockAgendaOrders(ventureIds).filter(
-              (o) => toISODate(o.reservation?.service_date || new Date()) === dateStr,
+              (o) => toISODate(o.zzz_reservation?.zzz_service_date || new Date()) === dateStr,
             )
           : [];
 
@@ -61,7 +61,7 @@ export const useAgendaStore = create<AgendaState>((set, get) => ({
   // Calculate occupation stats for current orders in state
   getOccupationStats: (maxCapacity: number) => {
     const totalOccupied = get().orders.reduce((sum, order) => {
-      const itemsSum = order.items?.reduce((iSum, item) => iSum + item.quantity, 0) || 0;
+      const itemsSum = order.zzz_items?.reduce((iSum, item) => iSum + item.zzz_quantity, 0) || 0;
       return sum + itemsSum;
     }, 0);
     return {

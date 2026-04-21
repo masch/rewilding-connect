@@ -2,9 +2,9 @@ import { create } from "zustand";
 import type { ServiceMoment } from "@repo/shared";
 
 interface CartItem {
-  catalog_item_id: number;
-  quantity: number;
-  price: number;
+  zzz_catalog_item_id: number;
+  zzz_quantity: number;
+  zzz_price: number;
 }
 
 interface CartState {
@@ -20,7 +20,7 @@ interface CartState {
   // Cart Actions
   addItem: (item: CartItem) => void;
   removeItem: (catalogItemId: number) => void;
-  updateQuantity: (catalogItemId: number, quantity: number) => void;
+  updateQuantity: (catalogItemId: number, zzz_quantity: number) => void;
   clearCart: () => void;
 }
 
@@ -40,13 +40,15 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   addItem: (newItem) => {
     const { cartItems } = get();
-    const existingIndex = cartItems.findIndex((i) => i.catalog_item_id === newItem.catalog_item_id);
+    const existingIndex = cartItems.findIndex(
+      (i) => i.zzz_catalog_item_id === newItem.zzz_catalog_item_id,
+    );
 
     if (existingIndex > -1) {
       const updated = [...cartItems];
       updated[existingIndex] = {
         ...updated[existingIndex],
-        quantity: newItem.quantity,
+        zzz_quantity: newItem.zzz_quantity,
       };
       set({ cartItems: updated });
     } else {
@@ -56,14 +58,14 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   removeItem: (catalogItemId) => {
     set((state) => ({
-      cartItems: state.cartItems.filter((i) => i.catalog_item_id !== catalogItemId),
+      cartItems: state.cartItems.filter((i) => i.zzz_catalog_item_id !== catalogItemId),
     }));
   },
 
-  updateQuantity: (catalogItemId, quantity) => {
+  updateQuantity: (catalogItemId, zzz_quantity) => {
     set((state) => ({
       cartItems: state.cartItems.map((i) =>
-        i.catalog_item_id === catalogItemId ? { ...i, quantity } : i,
+        i.zzz_catalog_item_id === catalogItemId ? { ...i, zzz_quantity } : i,
       ),
     }));
   },

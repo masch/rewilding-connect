@@ -6,11 +6,11 @@ import { z } from "zod";
  * are currently unavailable for a specific venture.
  */
 export const VenturePausedItemSchema = z.object({
-  id: z.number().int().positive(),
-  venture_id: z.number().int().positive(),
-  catalog_item_id: z.number().int().positive(),
-  paused_at: z.date().default(() => new Date()),
-  reason: z.string().nullable().optional(),
+  zzz_id: z.number().int().positive(),
+  zzz_venture_id: z.number().int().positive(),
+  zzz_catalog_item_id: z.number().int().positive(),
+  zzz_paused_at: z.date().default(() => new Date()),
+  zzz_reason: z.string().nullable().optional(),
 });
 
 export type VenturePausedItem = z.infer<typeof VenturePausedItemSchema>;

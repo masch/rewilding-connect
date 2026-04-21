@@ -73,32 +73,32 @@ export default function RoleSelectorScreen() {
 
   const getUserIdentifier = (user: User, role: UserRole): string => {
     if (role === "TOURIST") {
-      return user.alias || user.first_name || "Tourist";
+      return user.zzz_alias || user.zzz_first_name || "Tourist";
     }
-    return user.email || "";
+    return user.zzz_email || "";
   };
 
   const handleDemoLogin = (user: User) => {
-    const role = user.user_type;
+    const role = user.zzz_user_type;
     const isTourist = role === "TOURIST";
     const identifier = getUserIdentifier(user, role);
 
     const userData: CreateUserInput = isTourist
       ? {
-          alias: identifier,
-          user_type: role,
-          email: null,
-          first_name: null,
-          last_name: null,
-          whatsapp: null,
+          zzz_alias: identifier,
+          zzz_user_type: role,
+          zzz_email: null,
+          zzz_first_name: null,
+          zzz_last_name: null,
+          zzz_whatsapp: null,
         }
       : {
-          alias: null,
-          email: identifier,
-          user_type: role,
-          first_name: null,
-          last_name: null,
-          whatsapp: null,
+          zzz_alias: null,
+          zzz_email: identifier,
+          zzz_user_type: role,
+          zzz_first_name: null,
+          zzz_last_name: null,
+          zzz_whatsapp: null,
         };
 
     login(userData);
@@ -116,12 +116,12 @@ export default function RoleSelectorScreen() {
   const handleTouristSignUp = () => {
     // Create a new tourist user with minimal data - will be filled in the form
     const newUserData: CreateUserInput = {
-      alias: "",
-      user_type: "TOURIST",
-      email: null,
-      first_name: null,
-      last_name: null,
-      whatsapp: null,
+      zzz_alias: "",
+      zzz_user_type: "TOURIST",
+      zzz_email: null,
+      zzz_first_name: null,
+      zzz_last_name: null,
+      zzz_whatsapp: null,
     };
     login(newUserData);
     setUserRole("TOURIST");
@@ -195,11 +195,11 @@ export default function RoleSelectorScreen() {
                     // Resolve venture name for entrepreneurs
                     let subtitle = undefined;
                     if (group.role === "ENTREPRENEUR") {
-                      const ventureIds = getVentureIdsByUserId(user.id);
+                      const ventureIds = getVentureIdsByUserId(user.zzz_id);
                       if (ventureIds.length > 0) {
-                        const venture = MOCK_VENTURES.find((v) => v.id === ventureIds[0]);
+                        const venture = MOCK_VENTURES.find((v) => v.zzz_id === ventureIds[0]);
                         if (venture) {
-                          subtitle = venture.name;
+                          subtitle = venture.zzz_name;
                         }
                       }
                     }
@@ -208,7 +208,7 @@ export default function RoleSelectorScreen() {
 
                     return (
                       <Button
-                        key={user.id}
+                        key={user.zzz_id}
                         variant="secondary"
                         onPress={() => handleDemoLogin(user)}
                         leftIcon="account-outline"

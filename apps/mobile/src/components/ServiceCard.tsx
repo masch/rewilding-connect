@@ -25,7 +25,7 @@ export function ServiceCard({ service, isEditing, onPress, accessibilityLabel }:
 
   // Get category from catalog_category_id: 1 = gastronomy, 2 = excursion
   const isGastronomy =
-    Number(service.catalog_category_id) === Number(SERVICE_CATEGORY_IDS.GASTRONOMY);
+    Number(service.zzz_catalog_category_id) === Number(SERVICE_CATEGORY_IDS.GASTRONOMY);
   const categoryIcon = (
     isGastronomy ? "silverware-fork-knife" : "nature-people"
   ) as keyof typeof MaterialCommunityIcons.glyphMap;
@@ -34,8 +34,8 @@ export function ServiceCard({ service, isEditing, onPress, accessibilityLabel }:
     : t("catalog.category.excursion");
 
   // Get localized name/description using active locale with fallback chain
-  const name = getLocalizedName(service.name_i18n) || t("catalog.no_name");
-  const description = getLocalizedName(service.description_i18n) || t("catalog.no_description");
+  const name = getLocalizedName(service.zzz_name_i18n) || t("catalog.no_name");
+  const description = getLocalizedName(service.zzz_description_i18n) || t("catalog.no_description");
 
   return (
     <Button
@@ -47,8 +47,8 @@ export function ServiceCard({ service, isEditing, onPress, accessibilityLabel }:
       <View className="w-full">
         {/* Image Container with explicit height and background */}
         <View className="h-48 w-full bg-surface-container-highest items-center justify-center overflow-hidden">
-          {service.image_url ? (
-            <CatalogImage imageUrl={service.image_url} alt={name} />
+          {service.zzz_image_url ? (
+            <CatalogImage imageUrl={service.zzz_image_url} alt={name} />
           ) : (
             <View className="w-full h-full items-center justify-center">
               <MaterialCommunityIcons
@@ -78,7 +78,7 @@ export function ServiceCard({ service, isEditing, onPress, accessibilityLabel }:
               {name}
             </Text>
             <Text className="text-xl font-display font-bold text-primary">
-              {formatCurrency(service.price)}
+              {formatCurrency(service.zzz_price)}
             </Text>
           </View>
 
@@ -91,11 +91,11 @@ export function ServiceCard({ service, isEditing, onPress, accessibilityLabel }:
 
           {/* Action Row - Includes details and CTA */}
           <View className="flex-row items-center justify-between">
-            {service.max_participants ? (
+            {service.zzz_max_participants ? (
               <View className="flex-row items-center gap-1.5 bg-surface-container-high px-3 py-1.5 rounded-full">
                 <MaterialCommunityIcons name="account-group" size={14} color={COLORS.secondary} />
                 <Text className="text-xs font-display font-bold text-secondary uppercase tracking-tight">
-                  {service.max_participants} {t("catalog.participants")}
+                  {service.zzz_max_participants} {t("catalog.participants")}
                 </Text>
               </View>
             ) : (

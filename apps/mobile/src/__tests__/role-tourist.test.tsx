@@ -34,8 +34,8 @@ describe("Tourist Role Flow", () => {
       expect(mockSetUserRole).toHaveBeenCalledWith("TOURIST");
       expect(mockLogin).toHaveBeenCalledWith(
         expect.objectContaining({
-          user_type: "TOURIST",
-          alias: "Familia Gómez",
+          zzz_user_type: "TOURIST",
+          zzz_alias: "Familia Gómez",
         }),
       );
       expect(router.push).toHaveBeenCalledWith("/tourist");
@@ -47,7 +47,7 @@ describe("Tourist Role Flow", () => {
       mockAuthState({
         userRole: "TOURIST",
         isAuthenticated: true,
-        currentUser: { id: "tourist_001", user_type: "TOURIST" },
+        currentUser: { zzz_id: "tourist_001", zzz_user_type: "TOURIST" },
       });
     });
 

@@ -12,10 +12,10 @@ import { Project } from "@repo/shared";
  */
 export const sortProjectsByActiveFirst: (projects: Project[]) => Project[] = (projects) => {
   return [...projects].sort((a, b) => {
-    if (a.is_active !== b.is_active) {
-      return a.is_active ? -1 : 1;
+    if (a.zzz_is_active !== b.zzz_is_active) {
+      return a.zzz_is_active ? -1 : 1;
     }
-    return a.name.localeCompare(b.name);
+    return a.zzz_name.localeCompare(b.zzz_name);
   });
 };
 
@@ -23,21 +23,21 @@ export const sortProjectsByActiveFirst: (projects: Project[]) => Project[] = (pr
  * Sort projects by name (ascending)
  */
 export const sortProjectsByName: (projects: Project[]) => Project[] = (projects) => {
-  return [...projects].sort((a, b) => a.name.localeCompare(b.name));
+  return [...projects].sort((a, b) => a.zzz_name.localeCompare(b.zzz_name));
 };
 
 /**
  * Filter active projects from a collection
  */
 export const filterActiveProjects: (projects: Project[]) => Project[] = (projects) => {
-  return projects.filter((p) => p.is_active);
+  return projects.filter((p) => p.zzz_is_active);
 };
 
 /**
  * Filter inactive projects from a collection
  */
 export const filterInactiveProjects: (projects: Project[]) => Project[] = (projects) => {
-  return projects.filter((p) => !p.is_active);
+  return projects.filter((p) => !p.zzz_is_active);
 };
 
 /**

@@ -31,24 +31,34 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: (userData) => {
     if (env.USE_MOCKS) {
       const user = mockLogin(userData);
-      set({ currentUser: user, isAuthenticated: true, isLoading: false, userRole: user.user_type });
+      set({
+        currentUser: user,
+        isAuthenticated: true,
+        isLoading: false,
+        userRole: user.zzz_user_type,
+      });
     } else {
       // TODO: Call real auth API
       const user: User = {
-        id: `user_${Date.now()}`,
-        alias: userData.alias,
-        email: userData.email,
-        first_name: userData.first_name,
-        last_name: userData.last_name,
-        whatsapp: userData.whatsapp,
-        user_type: userData.user_type ?? "TOURIST",
-        failed_login_attempts: 0,
-        locked_until: null,
-        last_login_at: new Date(),
-        is_active: true,
-        created_at: new Date(),
+        zzz_id: `user_${Date.now()}`,
+        zzz_alias: userData.zzz_alias,
+        zzz_email: userData.zzz_email,
+        zzz_first_name: userData.zzz_first_name,
+        zzz_last_name: userData.zzz_last_name,
+        zzz_whatsapp: userData.zzz_whatsapp,
+        zzz_user_type: userData.zzz_user_type ?? "TOURIST",
+        zzz_failed_login_attempts: 0,
+        zzz_locked_until: null,
+        zzz_last_login_at: new Date(),
+        zzz_is_active: true,
+        zzz_created_at: new Date(),
       };
-      set({ currentUser: user, isAuthenticated: true, isLoading: false, userRole: user.user_type });
+      set({
+        currentUser: user,
+        isAuthenticated: true,
+        isLoading: false,
+        userRole: user.zzz_user_type,
+      });
     }
   },
 

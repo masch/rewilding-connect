@@ -6,7 +6,7 @@ import { COLORS } from "@repo/shared";
  * Used by Booking and Orders screens
  */
 export const SERVICE_MOMENTS: {
-  id: ServiceMoment;
+  zzz_id: ServiceMoment;
   icon: string;
   labelKey: string;
   color: string;
@@ -15,7 +15,7 @@ export const SERVICE_MOMENTS: {
   textClass: string;
 }[] = [
   {
-    id: "BREAKFAST",
+    zzz_id: "BREAKFAST",
     icon: "white-balance-sunny",
     labelKey: "catalog.reservation.moments.BREAKFAST",
     color: "moment-breakfast",
@@ -24,7 +24,7 @@ export const SERVICE_MOMENTS: {
     textClass: "text-moment-breakfast",
   },
   {
-    id: "LUNCH",
+    zzz_id: "LUNCH",
     icon: "pot-steam",
     labelKey: "catalog.reservation.moments.LUNCH",
     color: "moment-lunch",
@@ -33,7 +33,7 @@ export const SERVICE_MOMENTS: {
     textClass: "text-moment-lunch",
   },
   {
-    id: "SNACK",
+    zzz_id: "SNACK",
     icon: "cookie",
     labelKey: "catalog.reservation.moments.SNACK",
     color: "moment-snack",
@@ -42,7 +42,7 @@ export const SERVICE_MOMENTS: {
     textClass: "text-moment-snack",
   },
   {
-    id: "DINNER",
+    zzz_id: "DINNER",
     icon: "moon-waning-crescent",
     labelKey: "catalog.reservation.moments.DINNER",
     color: "moment-dinner",
@@ -62,10 +62,10 @@ export const MOMENTS = ServiceMomentSchema.options;
  * Get full config for a service moment
  */
 export function getMomentConfig(moment: string) {
-  const found = SERVICE_MOMENTS.find((m) => m.id === moment);
+  const found = SERVICE_MOMENTS.find((m) => m.zzz_id === moment);
   return (
     found || {
-      id: "UNKNOWN",
+      zzz_id: "UNKNOWN",
       icon: "clock-outline",
       labelKey: "",
       color: "on-surface-variant",

@@ -34,8 +34,8 @@ describe("Entrepreneur Role Flow", () => {
       expect(mockSetUserRole).toHaveBeenCalledWith("ENTREPRENEUR");
       expect(mockLogin).toHaveBeenCalledWith(
         expect.objectContaining({
-          user_type: "ENTREPRENEUR",
-          email: "maria@forst-stew.com",
+          zzz_user_type: "ENTREPRENEUR",
+          zzz_email: "maria@forst-stew.com",
         }),
       );
       expect(router.push).toHaveBeenCalledWith("/entrepreneur/agenda");
@@ -47,7 +47,7 @@ describe("Entrepreneur Role Flow", () => {
       mockAuthState({
         userRole: "ENTREPRENEUR",
         isAuthenticated: true,
-        currentUser: { id: "entrepreneur_001", user_type: "ENTREPRENEUR" },
+        currentUser: { zzz_id: "entrepreneur_001", zzz_user_type: "ENTREPRENEUR" },
       });
     });
 

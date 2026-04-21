@@ -13,7 +13,7 @@ interface ProjectState {
   // Actions
   fetchProjects: () => Promise<void>;
   selectProject: (id: number) => Promise<void>;
-  createProject: (project: Omit<Project, "id">) => Promise<Project | null>;
+  createProject: (project: Omit<Project, "zzz_id">) => Promise<Project | null>;
   updateProject: (id: number, project: Partial<Project>) => Promise<Project | null>;
   deleteProject: (id: number) => Promise<boolean>;
 }
@@ -52,7 +52,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
 
-  createProject: async (project: Omit<Project, "id">) => {
+  createProject: async (project: Omit<Project, "zzz_id">) => {
     set({ isSaving: true, error: null });
     try {
       const newProject = await ProjectService.createProject(project);
@@ -71,7 +71,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       const updatedProject = await ProjectService.updateProject(id, project);
       const currentProjects = get().projects;
-      const updatedList = currentProjects.map((p) => (p.id === id ? updatedProject : p));
+      const updatedList = currentProjects.map((p) => (p.zzz_id === id ? updatedProject : p));
       set({ projects: updatedList, selectedProject: updatedProject, isSaving: false });
       return updatedProject;
     } catch (err) {
@@ -88,7 +88,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       if (success) {
         const currentProjects = get().projects;
         set({
-          projects: currentProjects.filter((p) => p.id !== id),
+          projects: currentProjects.filter((p) => p.zzz_id !== id),
           selectedProject: null,
           isSaving: false,
         });

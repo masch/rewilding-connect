@@ -12,36 +12,36 @@ export const PROJECT_CONSTRAINTS = {
 
 // Define the core project fields without ID
 const projectFields = {
-  name: z
+  zzz_name: z
     .string()
     .min(PROJECT_CONSTRAINTS.NAME_MIN_LENGTH)
     .max(PROJECT_CONSTRAINTS.NAME_MAX_LENGTH),
-  default_language: LanguageSchema.default("es"),
-  supported_languages: z.array(LanguageSchema).min(1).default(["es"]),
-  cascade_timeout_minutes: z
+  zzz_default_language: LanguageSchema.default("es"),
+  zzz_supported_languages: z.array(LanguageSchema).min(1).default(["es"]),
+  zzz_cascade_timeout_minutes: z
     .number()
     .int()
     .min(PROJECT_CONSTRAINTS.CASCADE_TIMEOUT_MINUTES_MIN)
     .max(PROJECT_CONSTRAINTS.CASCADE_TIMEOUT_MINUTES_MAX)
     .default(30),
-  max_cascade_attempts: z
+  zzz_max_cascade_attempts: z
     .number()
     .int()
     .min(PROJECT_CONSTRAINTS.MAX_CASCADE_ATTEMPTS_MIN)
     .max(PROJECT_CONSTRAINTS.MAX_CASCADE_ATTEMPTS_MAX)
     .default(10),
-  is_active: z.boolean().default(true),
+  zzz_is_active: z.boolean().default(true),
 };
 
 // Common validation logic for languages
 const validateProjectLanguages = (data: {
-  default_language: string;
-  supported_languages: string[];
-}) => data.supported_languages.includes(data.default_language);
+  zzz_default_language: string;
+  zzz_supported_languages: string[];
+}) => data.zzz_supported_languages.includes(data.zzz_default_language);
 
 const languageErrorMessage = {
   message: "Default language must be one of the supported languages",
-  path: ["default_language"],
+  path: ["zzz_default_language"],
 };
 
 // Schema for creating a new project (without id)
@@ -52,7 +52,7 @@ export const CreateProjectSchema = z
 // Base schema for existing projects
 export const ProjectSchema = z
   .object({
-    id: z.number().int().positive(),
+    zzz_id: z.number().int().positive(),
     ...projectFields,
   })
   .refine(validateProjectLanguages, languageErrorMessage);
@@ -63,14 +63,14 @@ export const UpdateProjectSchema = z
   .partial()
   .refine(
     (data) => {
-      if (data.supported_languages && data.default_language) {
-        return data.supported_languages.includes(data.default_language);
+      if (data.zzz_supported_languages && data.zzz_default_language) {
+        return data.zzz_supported_languages.includes(data.zzz_default_language);
       }
       return true;
     },
     {
       message: "Default language must be one of the supported languages",
-      path: ["default_language"],
+      path: ["zzz_default_language"],
     }
   );
 

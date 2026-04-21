@@ -26,12 +26,12 @@ jest.mock("../hooks/useI18n", () => ({
 
 const mockServices = [
   {
-    id: 1,
-    name_i18n: { es: "Beef Empanadas 1/2 dozen", en: "Beef Empanadas 1/2 dozen" },
-    description_i18n: { es: "De carne", en: "Meat" },
-    price: 9500,
-    catalog_category_id: 1, // GASTRONOMY
-    image_url: "test.jpg",
+    zzz_id: 1,
+    zzz_name_i18n: { es: "Beef Empanadas 1/2 dozen", en: "Beef Empanadas 1/2 dozen" },
+    zzz_description_i18n: { es: "De carne", en: "Meat" },
+    zzz_price: 9500,
+    zzz_catalog_category_id: 1, // GASTRONOMY
+    zzz_image_url: "test.jpg",
   },
 ];
 
@@ -94,9 +94,9 @@ describe("Booking & Cart Integration", () => {
   it("should persist item quantity when re-opening the reservation modal from the catalog", async () => {
     const mockCartItems = [
       {
-        catalog_item_id: 1,
-        quantity: 3,
-        price: 9500,
+        zzz_catalog_item_id: 1,
+        zzz_quantity: 3,
+        zzz_price: 9500,
       },
     ];
 
@@ -128,7 +128,7 @@ describe("Booking & Cart Integration", () => {
     const totalDishesText = await screen.findByText(/Total \(3 platos\)/i);
     expect(totalDishesText).toBeTruthy();
 
-    // Total price: $ 28.500
+    // Total zzz_price: $ 28.500
     const totalPriceText = await screen.findByText(/\$?\s*28[.,]500/i);
     expect(totalPriceText).toBeTruthy();
   });

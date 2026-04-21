@@ -51,7 +51,7 @@ export default function ProjectsScreen() {
             <Text className="text-lg font-bold text-on-surface mb-4">{t("active_projects")}</Text>
             <View className="items-center">
               {activeProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} isActive={true} />
+                <ProjectCard key={project.zzz_id} project={project} isActive={true} />
               ))}
             </View>
           </View>
@@ -65,7 +65,7 @@ export default function ProjectsScreen() {
             </Text>
             <View className="items-center">
               {inactiveProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} isActive={false} />
+                <ProjectCard key={project.zzz_id} project={project} isActive={false} />
               ))}
             </View>
           </View>

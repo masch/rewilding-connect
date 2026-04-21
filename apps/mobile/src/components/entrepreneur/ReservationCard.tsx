@@ -122,15 +122,15 @@ export default function ReservationCard({
   onCancel,
 }: ReservationCardProps) {
   const { t, locale } = useTranslations();
-  const status = getStatusConfig(t, order.global_status);
+  const status = getStatusConfig(t, order.zzz_global_status);
   const containerClass = `bg-surface-container-lowest overflow-hidden ${hideBorder ? "" : "border border-outline-variant/50 rounded-3xl mb-4"} ${hideShadow ? "" : "shadow-md"}`;
 
   const headerTitle =
     title ||
     (role === "entrepreneur"
-      ? order.reservation?.user?.alias ||
-        (order.reservation?.user?.first_name
-          ? `${order.reservation.user.first_name} ${order.reservation.user.last_name || ""}`
+      ? order.zzz_reservation?.zzz_user?.zzz_alias ||
+        (order.zzz_reservation?.zzz_user?.zzz_first_name
+          ? `${order.zzz_reservation.zzz_user.zzz_first_name} ${order.zzz_reservation.zzz_user.zzz_last_name || ""}`
           : t("orders.registeredTourist"))
       : t("orders.registeredVenture")); // Fallback for venture name if not provided
 
@@ -181,28 +181,28 @@ export default function ReservationCard({
 
         {/* Content: List of Items */}
         <View className="mb-4">
-          {order.items && order.items.length > 0 ? (
-            order.items.map((item, idx) => (
-              <View key={item.id} className={`flex-row items-center ${idx > 0 ? "mt-4" : ""}`}>
+          {order.zzz_items && order.zzz_items.length > 0 ? (
+            order.zzz_items.map((item, idx) => (
+              <View key={item.zzz_id} className={`flex-row items-center ${idx > 0 ? "mt-4" : ""}`}>
                 <View className="flex-1 mr-2">
                   <Text
                     className="text-on-surface font-display-bold text-[15px] leading-tight"
                     numberOfLines={2}
                   >
-                    {item.catalog_item?.name_i18n?.[locale as "es" | "en"] ||
-                      `${t("orders.itemNumber")}${item.catalog_item_id}`}
+                    {item.zzz_catalog_item?.zzz_name_i18n?.[locale as "es" | "en"] ||
+                      `${t("orders.itemNumber")}${item.zzz_catalog_item_id}`}
                   </Text>
                 </View>
 
                 <View className="flex-row items-center">
                   <View className="items-end mr-3">
                     <Text className="text-on-surface-variant font-body-medium text-xs">
-                      {item.quantity}
-                      {item.quantity > 1 && ` x ${formatCurrency(item.price)}`}
+                      {item.zzz_quantity}
+                      {item.zzz_quantity > 1 && ` x ${formatCurrency(item.zzz_price)}`}
                     </Text>
                   </View>
                   <Text className="text-on-surface font-display-black text-[16px] min-w-[80px] text-right">
-                    {formatCurrency(item.price * item.quantity)}
+                    {formatCurrency(item.zzz_price * item.zzz_quantity)}
                   </Text>
                 </View>
               </View>
@@ -215,7 +215,7 @@ export default function ReservationCard({
         </View>
 
         {/* Notes Section */}
-        {order.notes && (
+        {order.zzz_notes && (
           <View className="bg-surface-container-low/50 p-3 rounded-2xl mb-4 border border-outline-variant/20">
             <View className="flex-row items-center mb-1">
               <MaterialCommunityIcons
@@ -228,7 +228,7 @@ export default function ReservationCard({
               </Text>
             </View>
             <Text className="text-on-surface font-body-medium text-xs leading-relaxed">
-              {order.notes}
+              {order.zzz_notes}
             </Text>
           </View>
         )}
@@ -243,7 +243,7 @@ export default function ReservationCard({
                 color={COLORS["on-surface-variant"]}
               />
               <Text className="text-on-surface-variant font-display-black text-[11px] ml-2 uppercase tracking-tighter">
-                {order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0}{" "}
+                {order.zzz_items?.reduce((sum, item) => sum + item.zzz_quantity, 0) || 0}{" "}
                 {t("common.dishes_other")}
               </Text>
             </View>
@@ -252,7 +252,10 @@ export default function ReservationCard({
               <Text className={`font-display-black text-[17px] leading-tight ${status.textClass}`}>
                 $
                 {formatCurrency(
-                  order.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0,
+                  order.zzz_items?.reduce(
+                    (sum, item) => sum + item.zzz_price * item.zzz_quantity,
+                    0,
+                  ) || 0,
                 )}
               </Text>
             </View>
@@ -263,7 +266,7 @@ export default function ReservationCard({
             <View className="flex-row gap-2">
               {actions.map((action) => (
                 <Button
-                  key={action.id}
+                  key={action.zzz_id}
                   variant={action.variant}
                   className={`flex-1 ${action.variant === "outline" ? "border-error/30" : ""}`}
                   textClassName={action.variant === "outline" ? "text-error" : "text-xs"}

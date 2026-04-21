@@ -31,30 +31,30 @@ const MockAuthService: AuthServiceInterface = {
     // Validate input using Zod
     const validated = validateData(userData, CreateUserSchema);
     // Check if user exists in mock data
-    const alias = validated.alias ?? "";
+    const alias = validated.zzz_alias ?? "";
     const existingUser = findUserByAlias(alias);
     const state = getAuthState();
     if (existingUser) {
       state.currentUser = {
         ...existingUser,
-        last_login_at: new Date(),
+        zzz_last_login_at: new Date(),
       };
       return state.currentUser;
     }
     // Create new user
     const newUser: User = {
-      id: `user_${state.nextId++}`,
-      alias: validated.alias,
-      email: validated.email,
-      first_name: validated.first_name,
-      last_name: validated.last_name,
-      whatsapp: validated.whatsapp,
-      user_type: validated.user_type ?? "TOURIST",
-      failed_login_attempts: 0,
-      locked_until: null,
-      last_login_at: new Date(),
-      is_active: true,
-      created_at: new Date(),
+      zzz_id: `user_${state.nextId++}`,
+      zzz_alias: validated.zzz_alias,
+      zzz_email: validated.zzz_email,
+      zzz_first_name: validated.zzz_first_name,
+      zzz_last_name: validated.zzz_last_name,
+      zzz_whatsapp: validated.zzz_whatsapp,
+      zzz_user_type: validated.zzz_user_type ?? "TOURIST",
+      zzz_failed_login_attempts: 0,
+      zzz_locked_until: null,
+      zzz_last_login_at: new Date(),
+      zzz_is_active: true,
+      zzz_created_at: new Date(),
     };
     state.users.push(newUser);
     state.currentUser = newUser;
@@ -107,24 +107,24 @@ export function mockLogin(userData: CreateUserInput): User {
 
   // Check if user exists in mock data
   // Try alias first (for tourists)
-  if (userData.alias) {
-    const existingUser = findUserByAlias(userData.alias);
+  if (userData.zzz_alias) {
+    const existingUser = findUserByAlias(userData.zzz_alias);
     if (existingUser) {
       state.currentUser = {
         ...existingUser,
-        last_login_at: new Date(),
+        zzz_last_login_at: new Date(),
       };
       return state.currentUser;
     }
   }
 
   // Try email (for entrepreneurs/admins)
-  if (userData.email) {
-    const existingUser = findUserByEmail(userData.email);
+  if (userData.zzz_email) {
+    const existingUser = findUserByEmail(userData.zzz_email);
     if (existingUser) {
       state.currentUser = {
         ...existingUser,
-        last_login_at: new Date(),
+        zzz_last_login_at: new Date(),
       };
       return state.currentUser;
     }
@@ -132,18 +132,18 @@ export function mockLogin(userData: CreateUserInput): User {
 
   // Create new user only if not found (convert null to undefined)
   const newUser: User = {
-    id: `user_${state.nextId++}`,
-    alias: userData.alias ?? null,
-    email: userData.email ?? null,
-    first_name: userData.first_name ?? null,
-    last_name: userData.last_name ?? null,
-    whatsapp: userData.whatsapp ?? null,
-    user_type: userData.user_type ?? "TOURIST",
-    failed_login_attempts: 0,
-    locked_until: null,
-    last_login_at: new Date(),
-    is_active: true,
-    created_at: new Date(),
+    zzz_id: `user_${state.nextId++}`,
+    zzz_alias: userData.zzz_alias ?? null,
+    zzz_email: userData.zzz_email ?? null,
+    zzz_first_name: userData.zzz_first_name ?? null,
+    zzz_last_name: userData.zzz_last_name ?? null,
+    zzz_whatsapp: userData.zzz_whatsapp ?? null,
+    zzz_user_type: userData.zzz_user_type ?? "TOURIST",
+    zzz_failed_login_attempts: 0,
+    zzz_locked_until: null,
+    zzz_last_login_at: new Date(),
+    zzz_is_active: true,
+    zzz_created_at: new Date(),
   };
   state.users.push(newUser);
   state.currentUser = newUser;

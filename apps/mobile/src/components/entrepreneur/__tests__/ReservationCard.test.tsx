@@ -7,7 +7,7 @@ describe("ReservationCard", () => {
   it("should render client name, items and service name", () => {
     const orders = getMockAgendaOrders();
     const order = orders[0];
-    const totalQuantity = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+    const totalQuantity = order.zzz_items?.reduce((sum, item) => sum + item.zzz_quantity, 0) || 0;
     render(
       <ReservationCard
         order={order}
@@ -17,9 +17,9 @@ describe("ReservationCard", () => {
       />,
     );
 
-    if (order.items && order.items.length > 0) {
+    if (order.zzz_items && order.zzz_items.length > 0) {
       // Check for item name instead of ID
-      const itemName = order.items[0].catalog_item?.name_i18n.en || "";
+      const itemName = order.zzz_items[0].zzz_catalog_item?.zzz_name_i18n.en || "";
       expect(screen.getByText(new RegExp(itemName, "i"))).toBeTruthy();
     }
     // Use a regex that includes the quantity and the "dishes" context to be unique
@@ -30,7 +30,7 @@ describe("ReservationCard", () => {
     const mockOrder = getMockAgendaOrders()[0];
     const orderWithNotes = {
       ...mockOrder,
-      notes: "Extra napkins please",
+      zzz_notes: "Extra napkins please",
     };
     render(
       <ReservationCard

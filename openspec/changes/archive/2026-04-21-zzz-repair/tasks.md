@@ -1,0 +1,25 @@
+# Tasks: zzz_ prefixing repair
+
+- [x] Repair UI Components
+  - [x] ReservationModal.tsx: Fix broken property accessors and i18n keys.
+  - [x] ReservationCard.tsx: Fix zzz_catalog_item and status i18n keys.
+  - [x] ServiceCard.tsx: Fix category ID access.
+- [x] Repair Screens
+  - [x] index.tsx: Fix role selector logic and i18n.
+  - [x] booking.tsx: Fix category filtering and total calculations.
+  - [x] tourist/login.tsx: Fix updateField calls.
+  - [x] admin/project/[id].tsx: Fix FormData mapping.
+- [x] Repair Stores and Services
+  - [x] auth.store.ts: Fix variable shadowing.
+  - [x] cart.store.ts: Fix updateQuantity parameter name.
+  - [x] catalog.service.ts: Fix property accessors in mock logic.
+  - [x] auth.service.ts: Fix fetch Response status access.
+  - [x] auth-state.ts: Fix parameter name in mockSetCurrentUser.
+  - [x] logger.service.ts: Fix error.name access.
+- [x] Repair Backend
+  - [x] seed.ts: Apply zzz_ to all columns.
+  - [x] projects.ts: Fix database column references.
+- [x] Verification
+  - [x] Run `make typecheck` (must pass 100%).
+  - [x] Run `bun test` (auth store tests must pass).
+  - [x] Manual verification of reservation modal appearance.

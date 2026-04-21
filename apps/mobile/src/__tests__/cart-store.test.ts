@@ -24,7 +24,7 @@ describe("Cart Store", () => {
   });
 
   it("should handle cart items correctly", () => {
-    const item = { catalog_item_id: 1, quantity: 2, price: 500 };
+    const item = { zzz_catalog_item_id: 1, zzz_quantity: 2, zzz_price: 500 };
     useCartStore.getState().addItem(item);
 
     let state = useCartStore.getState();
@@ -32,10 +32,10 @@ describe("Cart Store", () => {
     expect(state.cartItems[0]).toEqual(item);
 
     // Update quantity (re-add same item ID)
-    useCartStore.getState().addItem({ ...item, quantity: 5 });
+    useCartStore.getState().addItem({ ...item, zzz_quantity: 5 });
     state = useCartStore.getState();
     expect(state.cartItems).toHaveLength(1);
-    expect(state.cartItems[0].quantity).toBe(5);
+    expect(state.cartItems[0].zzz_quantity).toBe(5);
 
     // Remove item
     useCartStore.getState().removeItem(1);
@@ -44,7 +44,7 @@ describe("Cart Store", () => {
   });
 
   it("should reset correctly including cart", () => {
-    useCartStore.getState().addItem({ catalog_item_id: 1, quantity: 1, price: 100 });
+    useCartStore.getState().addItem({ zzz_catalog_item_id: 1, zzz_quantity: 1, zzz_price: 100 });
     useCartStore.getState().resetContext();
 
     const state = useCartStore.getState();

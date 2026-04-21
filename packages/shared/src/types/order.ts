@@ -11,11 +11,11 @@ import { ReservationSchema } from "./reservation";
  * Mapped to 'orders' table.
  */
 export const OrderDbSchema = z.object({
-  id: z.number().int().positive(),
-  reservation_id: z.number().int().positive(),
-  catalog_type_id: z.number().int().positive(),
-  confirmed_venture_id: z.number().int().positive().nullable().optional(),
-  notes: z.string().nullable().optional(),
+  zzz_id: z.number().int().positive(),
+  zzz_reservation_id: z.number().int().positive(),
+  zzz_catalog_type_id: z.number().int().positive(),
+  zzz_confirmed_venture_id: z.number().int().positive().nullable().optional(),
+  zzz_notes: z.string().nullable().optional(),
   /**
    * Order Lifecycle Status
    * - SEARCHING: Engine is looking for a venture.
@@ -26,14 +26,14 @@ export const OrderDbSchema = z.object({
    * - CANCELLED: Order cancelled.
    * - EXPIRED: No venture available after cascade.
    */
-  global_status: OrderStatusSchema.default("SEARCHING"),
-  cancel_reason: CancelReasonSchema.nullable().optional(),
-  cancelled_at: z.date().nullable().optional(),
-  completed_at: z.date().nullable().optional(),
-  confirmed_at: z.date().nullable().optional(),
-  current_offer_venture_id: z.number().int().positive().nullable().optional(),
-  created_at: z.date(),
-  notify_whatsapp: z.boolean().default(false),
+  zzz_global_status: OrderStatusSchema.default("SEARCHING"),
+  zzz_cancel_reason: CancelReasonSchema.nullable().optional(),
+  zzz_cancelled_at: z.date().nullable().optional(),
+  zzz_completed_at: z.date().nullable().optional(),
+  zzz_confirmed_at: z.date().nullable().optional(),
+  zzz_current_offer_venture_id: z.number().int().positive().nullable().optional(),
+  zzz_created_at: z.date(),
+  zzz_notify_whatsapp: z.boolean().default(false),
 });
 
 import { type OrderItem } from "./order-item";
@@ -46,18 +46,20 @@ import { type Reservation } from "./reservation";
  * Business entity that includes relations and nested items.
  */
 export const OrderSchema: z.ZodType<Order, z.ZodTypeDef, unknown> = OrderDbSchema.extend({
-  items: z.array(OrderItemSchema).default([]),
-  user: UserSchema.optional(),
-  confirmed_venture: VentureSchema.optional(),
-  reservation: z.lazy(() => ReservationSchema).optional(),
+  zzz_items: z.array(OrderItemSchema).default([]),
+  zzz_user: UserSchema.optional(),
+  zzz_confirmed_venture: VentureSchema.optional(),
+  zzz_current_offer_venture: VentureSchema.optional(),
+  zzz_reservation: z.lazy(() => ReservationSchema).optional(),
 });
 
 export type OrderRow = z.infer<typeof OrderDbSchema>;
 
 export interface Order extends OrderRow {
-  items: OrderItem[];
-  user?: User;
-  confirmed_venture?: Venture;
-  reservation?: Reservation;
-  current_offer_venture_id?: number | null;
+  zzz_items: OrderItem[];
+  zzz_user?: User;
+  zzz_confirmed_venture?: Venture;
+  zzz_current_offer_venture?: Venture;
+  zzz_reservation?: Reservation;
+  zzz_current_offer_venture_id?: number | null;
 }
