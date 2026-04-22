@@ -111,7 +111,10 @@ const RestAuthService: AuthServiceInterface = {
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "errors.auth.invalid_credentials");
+        const message = errorData.message === "Invalid credentials" 
+          ? "errors.auth.invalid_credentials" 
+          : (errorData.message || "errors.auth.invalid_credentials");
+        throw new Error(message);
       }
       return response.json();
     } catch (error) {
