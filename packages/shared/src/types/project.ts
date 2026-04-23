@@ -71,7 +71,7 @@ export const UpdateProjectSchema = z
     {
       message: "Default language must be one of the supported languages",
       path: ["zzz_default_language"],
-    }
+    },
   );
 
 export interface Project extends z.infer<typeof ProjectSchema> {}

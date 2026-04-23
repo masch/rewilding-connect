@@ -1,3 +1,4 @@
+import { UserRole } from "@repo/shared";
 import { render, screen, fireEvent, waitFor } from "./utils/test-utils";
 import RoleSelectorScreen from "../app/index";
 import TouristTabsLayout from "../app/tourist/_layout";
@@ -22,7 +23,7 @@ describe("Tourist Role Flow", () => {
         setUserRole: mockSetUserRole,
         login: mockLogin,
         isAuthenticated: false,
-        userRole: "TOURIST",
+        userRole: UserRole.TOURIST,
       });
     });
 
@@ -32,7 +33,7 @@ describe("Tourist Role Flow", () => {
       fireEvent.press(gomezButton);
 
       await waitFor(() => {
-        expect(mockSetUserRole).toHaveBeenCalledWith("TOURIST");
+        expect(mockSetUserRole).toHaveBeenCalledWith(UserRole.TOURIST);
         expect(mockLogin).toHaveBeenCalledWith({
           alias: "Familia Gómez",
         });
@@ -44,9 +45,9 @@ describe("Tourist Role Flow", () => {
   describe("Tourist Navigation Tabs", () => {
     beforeEach(() => {
       mockAuthState({
-        userRole: "TOURIST",
+        userRole: UserRole.TOURIST,
         isAuthenticated: true,
-        currentUser: { id: "tourist_001", role: "TOURIST" },
+        currentUser: { id: "tourist_001", role: UserRole.TOURIST },
       });
     });
 

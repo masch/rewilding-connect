@@ -34,6 +34,22 @@ export const formatDate = (
 };
 
 /**
+ * Formats a date object or string into a standardized time format.
+ *
+ * @param date - Date object or ISO string
+ * @returns Formatted time string (e.g., "14:53")
+ */
+export const formatTime = (date: Date | string | null | undefined): string => {
+  if (!date) return "";
+  const locale = useLocaleStore.getState().locale;
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  return dateObj.toLocaleTimeString(getNativeLocale(locale), {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+/**
  * Checks if two dates are the same day.
  */
 export const isSameDay = (date1: Date, date2: Date): boolean => {

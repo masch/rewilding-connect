@@ -128,7 +128,7 @@ export function Button({
                   <Text
                     numberOfLines={1}
                     className={`
-                      font-bold ${!rightIcon ? "text-center" : ""}
+                      font-bold ${!rightIcon && !textClassName.includes("text-left") && !textClassName.includes("text-right") ? "text-center" : ""}
                       ${pressed ? styles.pressed : styles.text}
                       ${textClassName}
                     `}
@@ -137,7 +137,7 @@ export function Button({
                   </Text>
                   {subtitle && (
                     <Text
-                      className={`text-xs text-on-surface opacity-50 ${!rightIcon ? "text-center" : ""}`}
+                      className={`text-xs text-on-surface opacity-50 ${!rightIcon && !textClassName.includes("text-left") && !textClassName.includes("text-right") ? "text-center" : ""}`}
                     >
                       {subtitle}
                     </Text>

@@ -1,9 +1,11 @@
 # Exploration: Database Setup with PostgreSQL & Drizzle
 
 ## Objective
+
 Establish the foundation for a persistent PostgreSQL database using `podman-compose` and integrate it with the Hono backend using Drizzle ORM.
 
 ## Current State Analysis
+
 - **Runtime**: Bun (already in use).
 - **Backend Framework**: Hono (already in use).
 - **Database**: None. Current data is likely in-memory or mocked.
@@ -11,6 +13,7 @@ Establish the foundation for a persistent PostgreSQL database using `podman-comp
 - **Dependencies**: `drizzle-orm` and `postgres` (driver) are missing.
 
 ## Technical Requirements
+
 1. **Containerization**: `podman-compose.yml` defining a PostgreSQL 16 image.
 2. **Environment Variables**: `.env` and `.env.example` with `DATABASE_URL`.
 3. **ORM Setup**:
@@ -24,7 +27,9 @@ Establish the foundation for a persistent PostgreSQL database using `podman-comp
    - Create a `users` table to support the requested "login" functionality.
 
 ## Proposed Components
+
 - **`podman-compose.yml`**:
+
   ```yaml
   services:
     db:
@@ -49,9 +54,11 @@ Establish the foundation for a persistent PostgreSQL database using `podman-comp
   Initial table for Entrepreneurs/Admins.
 
 ## Risks & Considerations
+
 - **Podman vs Docker**: `podman-compose` usually works as a drop-in for `docker-compose.yml`, but we should ensure the user has `podman` installed and configured.
 - **Bun Compatibility**: Drizzle works great with Bun. We'll use `postgres.js` as it's the most recommended driver for Drizzle + Bun/Hono.
 - **Migration Strategy**: Use `drizzle-kit push` for rapid development and `drizzle-kit generate` for formal migrations once the schema stabilizes.
 
 ## Next Step
+
 - **Proposal**: Formalize the plan to install dependencies and create the configuration files.

@@ -1,9 +1,11 @@
 # Proposal: Database Infrastructure & Drizzle Integration
 
 ## Intent
+
 Provision a local PostgreSQL environment using `podman-compose` and integrate Drizzle ORM into the `@repo/backend` to enable persistent storage, starting with the core `Project` entity.
 
 ## Scope
+
 - Create `podman-compose.yml` in the project root.
 - Install `drizzle-orm`, `postgres` (driver), and `drizzle-kit` in `apps/backend`.
 - Create `.env.example` with database connection strings.
@@ -15,6 +17,7 @@ Provision a local PostgreSQL environment using `podman-compose` and integrate Dr
 - Add integration tests for the projects endpoint using `bun:test` and `app.request()`.
 
 ## Approach
+
 1. **Infrastructure**:
    - Add `podman-compose.yml` with a standard PostgreSQL 16 image.
    - Use a persistent volume `postgres_data`.
@@ -50,11 +53,13 @@ Provision a local PostgreSQL environment using `podman-compose` and integrate Dr
    - Test `GET /v1/projects` returns expected data (after manual insert or seed).
 
 ## Impact
+
 - **Backend**: Adds database dependency.
 - **Developer Workflow**: Requires `podman` or `docker` running locally.
 - **DevOps**: New `podman-compose` workflow.
 
 ## Risk Mitigation
+
 - Use standard `postgres:16-alpine` to keep the image size small.
 - Use `postgres.js` for best-in-class performance with Bun.
 - Abstract the DB connection to allow easy mocking in tests.

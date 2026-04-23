@@ -15,7 +15,15 @@ describe("ReservationSchema", () => {
           zzz_reservation_id: 1,
           zzz_catalog_type_id: 1,
           zzz_global_status: "SEARCHING",
-          zzz_items: [{ zzz_id: 100, zzz_order_id: 10, zzz_catalog_item_id: 5, zzz_quantity: 2, zzz_price: 20 }],
+          zzz_items: [
+            {
+              zzz_id: 100,
+              zzz_order_id: 10,
+              zzz_catalog_item_id: 5,
+              zzz_quantity: 2,
+              zzz_price: 20,
+            },
+          ],
           zzz_created_at: new Date(),
           zzz_notify_whatsapp: false,
         },

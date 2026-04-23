@@ -3,7 +3,7 @@ import { db } from "./index";
 import { logger } from "../services/logger.service";
 
 /**
- * Database Setup Script: Applies advanced PostgreSQL patterns that are not 
+ * Database Setup Script: Applies advanced PostgreSQL patterns that are not
  * fully covered by the standard Drizzle-Kit push/pull workflow.
  */
 async function setupAdvancedPatterns() {
@@ -27,18 +27,20 @@ async function setupAdvancedPatterns() {
 
     for (const table of tables) {
       logger.info(`  - Setting up ${table}...`);
-      
+
       // Enable RLS
       await db.execute(sql.raw(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY;`));
 
       // Create Trigger (Drop first to avoid duplicates)
       await db.execute(sql.raw(`DROP TRIGGER IF EXISTS trg_update_updated_at ON ${table};`));
-      await db.execute(sql.raw(`
+      await db.execute(
+        sql.raw(`
         CREATE TRIGGER trg_update_updated_at
         BEFORE UPDATE ON ${table}
         FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column();
-      `));
+      `),
+      );
     }
 
     logger.info("✅ Advanced Database Patterns applied successfully!");

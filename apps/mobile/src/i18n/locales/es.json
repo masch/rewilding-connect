@@ -257,5 +257,33 @@
     "submit": "Explorar sabores",
     "active_context": "Pedido para {{date}} · {{moment}}",
     "change_hint": "Tocá acá para cambiar fecha o momento"
+  },
+  "status": {
+    "title": "Estado del Sistema",
+    "services": "Servicios",
+    "pipelines": "Integración (CI/CD)",
+    "api": "Backend API",
+    "database": "Base de Datos",
+    "ci": "Pruebas de Sistema (CI)",
+    "deploy": "Despliegue Web",
+    "api_desc": "Servicio de API",
+    "db_desc": "Almacenamiento de Datos",
+    "mock_env": "Mocks Locales",
+    "mock_db": "Base de Datos Local (Mock)",
+    "env_production": "Producción",
+    "env_staging": "Staging",
+    "env_development": "Desarrollo",
+    "env_mock": "Modo Mock",
+    "env_label": "Ambiente",
+    "operational": "Operacional",
+    "degraded": "Degradado",
+    "outage": "Caído",
+    "last_updated": "Última actualización: {{time}}",
+    "refresh": "Refrescar",
+    "unreachable": "No se pudo conectar",
+    "rate_limited": "Límite de GitHub excedido",
+    "uptime_label": "Tiempo activo: {{value}}",
+    "latency_label": "Latencia: {{value}}",
+    "loading_dots": "..."
   }
 }

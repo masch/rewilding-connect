@@ -13,10 +13,12 @@ If you need to set up the database in a new Neon project:
     DIRECT_URL="postgres://user:pass@host.region.neon.tech/neondb?sslmode=require"
     ```
 3.  **Deploy**: Run the initialization command:
+
     ```bash
     make db-migrate-neon
     ```
-    *This will execute all pending migrations and automatically apply Advanced Patterns (Triggers & RLS).*
+
+    _This will execute all pending migrations and automatically apply Advanced Patterns (Triggers & RLS)._
 
 4.  **Seed Data (Optional)**: If you want to populate the database with initial mock users and data:
     ```bash
@@ -32,7 +34,7 @@ When you need to change the schema (add tables, columns, etc.):
     ```bash
     make db-generate-neon NAME=add-new-feature
     ```
-    *Drizzle will compare your code with the local migration snapshots and create a new file (e.g., `0001_add_new_feature.sql`) in `src/db/migrations`.*
+    _Drizzle will compare your code with the local migration snapshots and create a new file (e.g., `0001_add_new_feature.sql`) in `src/db/migrations`._
 3.  **Review**: (Optional but recommended) Review the newly generated `.sql` file to ensure it matches your expectations.
 4.  **Apply**: Impact the changes in Neon:
     ```bash
@@ -43,11 +45,11 @@ When you need to change the schema (add tables, columns, etc.):
 
 To maintain consistency, use these commands depending on your target environment:
 
-| Task | Local (Docker/Podman) | Neon (Cloud) |
-| :--- | :--- | :--- |
-| Fast Prototyping | `make db-push` | `make db-push-neon` |
-| Generate SQL Migration | `make db-generate` | `make db-generate-neon` |
-| Apply Migrations | `make db-migrate` | `make db-migrate-neon` |
+| Task                   | Local (Docker/Podman) | Neon (Cloud)            |
+| :--------------------- | :-------------------- | :---------------------- |
+| Fast Prototyping       | `make db-push`        | `make db-push-neon`     |
+| Generate SQL Migration | `make db-generate`    | `make db-generate-neon` |
+| Apply Migrations       | `make db-migrate`     | `make db-migrate-neon`  |
 
 ## 4. Migration Files & Version Control
 
@@ -67,5 +69,6 @@ Thanks to the `db-setup-advanced.ts` script, the following features are applied 
 - **RLS**: Row Level Security enabled by default on sensitive tables.
 
 ## 6. Health Monitoring
+
 You can verify the database connectivity and latency in real-time:
 `GET /health` (Backend Endpoint)

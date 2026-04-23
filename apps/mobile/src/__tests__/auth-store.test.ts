@@ -2,6 +2,7 @@
  * Home Page Auth Tests - Store Logic Only
  */
 
+import { UserRole } from "@repo/shared";
 import { useAuthStore } from "../stores/auth.store";
 
 // Reset auth store before each test
@@ -15,7 +16,7 @@ describe("Home Page Auth Store Tests", () => {
 
     expect(state.isAuthenticated).toBe(false);
     expect(state.currentUser).toBeNull();
-    expect(state.userRole).toBe("TOURIST");
+    expect(state.userRole).toBe(UserRole.TOURIST);
     expect(state.isLoading).toBe(false);
   });
 
@@ -23,42 +24,42 @@ describe("Home Page Auth Store Tests", () => {
     const { login, setUserRole } = useAuthStore.getState();
 
     await login({ alias: "Familia Gómez" });
-    setUserRole("TOURIST");
+    setUserRole(UserRole.TOURIST);
 
     const state = useAuthStore.getState();
     expect(state.isAuthenticated).toBe(true);
     expect(state.currentUser).not.toBeNull();
     expect(state.currentUser?.alias).toBe("Familia Gómez");
-    expect(state.currentUser?.role).toBe("TOURIST");
-    expect(state.userRole).toBe("TOURIST");
+    expect(state.currentUser?.role).toBe(UserRole.TOURIST);
+    expect(state.userRole).toBe(UserRole.TOURIST);
   });
 
   it("3. Auth store login for entrepreneur works correctly", async () => {
     const { login, setUserRole } = useAuthStore.getState();
 
     await login({ email: "maria@forst-stew.com", password: "password123" });
-    setUserRole("ENTREPRENEUR");
+    setUserRole(UserRole.ENTREPRENEUR);
 
     const state = useAuthStore.getState();
     expect(state.isAuthenticated).toBe(true);
     expect(state.currentUser).not.toBeNull();
     expect(state.currentUser?.email).toBe("maria@forst-stew.com");
-    expect(state.currentUser?.role).toBe("ENTREPRENEUR");
-    expect(state.userRole).toBe("ENTREPRENEUR");
+    expect(state.currentUser?.role).toBe(UserRole.ENTREPRENEUR);
+    expect(state.userRole).toBe(UserRole.ENTREPRENEUR);
   });
 
   it("4. Auth store login for admin works correctly", async () => {
     const { login, setUserRole } = useAuthStore.getState();
 
     await login({ email: "admin@impenetrable.com", password: "password123" });
-    setUserRole("ADMIN");
+    setUserRole(UserRole.ADMIN);
 
     const state = useAuthStore.getState();
     expect(state.isAuthenticated).toBe(true);
     expect(state.currentUser).not.toBeNull();
     expect(state.currentUser?.email).toBe("admin@impenetrable.com");
-    expect(state.currentUser?.role).toBe("ADMIN");
-    expect(state.userRole).toBe("ADMIN");
+    expect(state.currentUser?.role).toBe(UserRole.ADMIN);
+    expect(state.userRole).toBe(UserRole.ADMIN);
   });
 
   it("5. Auth store logout works correctly", async () => {
@@ -66,7 +67,7 @@ describe("Home Page Auth Store Tests", () => {
 
     // Login first
     await login({ alias: "Familia Gómez" });
-    setUserRole("TOURIST");
+    setUserRole(UserRole.TOURIST);
 
     // Verify logged in
     expect(useAuthStore.getState().isAuthenticated).toBe(true);
@@ -78,7 +79,7 @@ describe("Home Page Auth Store Tests", () => {
     const state = useAuthStore.getState();
     expect(state.isAuthenticated).toBe(false);
     expect(state.currentUser).toBeNull();
-    expect(state.userRole).toBe("TOURIST");
+    expect(state.userRole).toBe(UserRole.TOURIST);
   });
 
   it("6. Auth store state updates correctly", () => {

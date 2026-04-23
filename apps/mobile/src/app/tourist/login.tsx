@@ -7,7 +7,7 @@ import { Button } from "../../components/Button";
 import { FormInput } from "../../components/FormInput";
 import { useTranslations } from "../../hooks/useI18n";
 import { useAuthStore } from "../../stores/auth.store";
-import { CreateUserInput } from "@repo/shared";
+import { CreateUserInput, UserRole } from "@repo/shared";
 import jaguarHero from "../../../assets/jaguar-hero.png";
 import { logger } from "../../services/logger.service";
 
@@ -52,7 +52,7 @@ export default function LoginScreen() {
       firstName: toNullable(formData.firstName.trim()) || null,
       lastName: toNullable(formData.lastName.trim()) || null,
       phoneNumber: toNullable(formData.phoneNumber.trim()) || null,
-      role: "TOURIST",
+      role: UserRole.TOURIST,
       email: null,
     };
     const register = useAuthStore.getState().register;

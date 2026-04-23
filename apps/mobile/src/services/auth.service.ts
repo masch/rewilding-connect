@@ -7,6 +7,7 @@ import {
   AuthResponse,
   CreateUserInput,
   CreateUserInputSchema,
+  UserRole,
 } from "@repo/shared";
 import env from "../config/env";
 import { findUserByAlias, findUserByEmail } from "../mocks/users";
@@ -72,7 +73,7 @@ const MockAuthService: AuthServiceInterface = {
     const newUser: User = {
       id: `user_${state.nextId++}`,
       ...validated,
-      role: "TOURIST",
+      role: UserRole.TOURIST,
       zzz_failed_login_attempts: 0,
       zzz_last_login_at: new Date(),
       isActive: true,
@@ -111,9 +112,10 @@ const RestAuthService: AuthServiceInterface = {
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const message = errorData.message === "Invalid credentials" 
-          ? "errors.auth.invalid_credentials" 
-          : (errorData.message || "errors.auth.invalid_credentials");
+        const message =
+          errorData.message === "Invalid credentials"
+            ? "errors.auth.invalid_credentials"
+            : errorData.message || "errors.auth.invalid_credentials";
         throw new Error(message);
       }
       return response.json();

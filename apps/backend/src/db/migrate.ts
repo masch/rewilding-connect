@@ -17,7 +17,7 @@ if (!databaseUrl) {
  */
 async function runMigration() {
   logger.info("⏳ Starting database migrations...");
-  
+
   const migrationClient = postgres(databaseUrl!, { max: 1 });
   const db = drizzle(migrationClient);
 
