@@ -343,7 +343,7 @@ eas-build-ios-simulator:
 	cd $(MOBILE_DIR) && bunx eas-cli build --profile development --platform ios --simulator
 
 eas-export-web:
-	cd $(MOBILE_DIR) && bunx expo export:web
+	cd $(MOBILE_DIR) && bunx expo export -p web
 
 eas-deploy-web: eas-export-web
 	cd $(MOBILE_DIR) && bunx eas-cli deploy
