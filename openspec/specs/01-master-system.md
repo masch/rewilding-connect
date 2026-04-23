@@ -1923,7 +1923,7 @@ bun test --coverage
 
 > **MVP:** Only single Project (Impenetrable). Multi-project support is **[POST-MVP]**.
 
-### 5.1. Naming Conventions (zzz_ prefix audit)
+### 5.1. Naming Conventions (zzz\_ prefix audit)
 
 All entity attributes across the system SHALL be prefixed with `zzz_` to indicate they are currently unvalidated. This naming convention applies to the Entity Relationship Diagram (ERD), Shared Types, Backend Schemas, and Mock Data.
 

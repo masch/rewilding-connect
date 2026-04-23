@@ -2,7 +2,7 @@ import { sign } from "hono/jwt";
 import { db } from "../db";
 import { users, refreshTokens } from "../db/schema";
 import { eq } from "drizzle-orm";
-import { LoginInput, User } from "@repo/shared";
+import { LoginInput, User, UserRole } from "@repo/shared";
 import { logger } from "./logger.service";
 
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-dev-key";
@@ -41,7 +41,7 @@ export class AuthService {
     const accessToken = await sign(
       {
         sub: user.id,
-        role: user.role,
+        role: user.role as UserRole,
         exp: Math.floor(Date.now() / 1000) + ACCESS_TOKEN_EXPIRY,
       },
       JWT_SECRET,
@@ -65,7 +65,7 @@ export class AuthService {
     const safeUser: User = {
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as UserRole,
       alias: user.alias,
       firstName: user.firstName,
       lastName: user.lastName,

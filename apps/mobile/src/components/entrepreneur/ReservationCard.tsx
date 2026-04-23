@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 import { Button } from "../../components/Button";
 import { type Order, type OrderStatus, COLORS } from "@repo/shared";
 import { useTranslations } from "../../hooks/useI18n";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { getOrderActions } from "../../logic/order-actions";
 import { formatCurrency } from "../../logic/formatters";
 

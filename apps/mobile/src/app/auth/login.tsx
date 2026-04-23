@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { UserRole } from "@repo/shared";
+
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Button } from "../../components/Button";
@@ -8,7 +10,7 @@ import Screen from "../../components/Screen";
 import { FormInput } from "../../components/FormInput";
 import { logger } from "../../services/logger.service";
 
-// @ts-ignore - Jaguar image for the brand feel
+// Jaguar image for the brand feel
 import jaguarHero from "../../../assets/jaguar-hero.png";
 
 export default function LoginScreen() {
@@ -26,11 +28,11 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     try {
       await login({ email, password });
-      
+
       // Redirect based on role
-      if (userRole === "ENTREPRENEUR") {
+      if (userRole === UserRole.ENTREPRENEUR) {
         router.replace("/entrepreneur/agenda");
-      } else if (userRole === "ADMIN") {
+      } else if (userRole === UserRole.ADMIN) {
         router.replace("/admin/project");
       } else {
         router.replace("/tourist");
@@ -67,7 +69,9 @@ export default function LoginScreen() {
                   {t("common.login")}
                 </Text>
                 <Text className="text-on-surface-variant text-center mb-8 font-body">
-                  {userRole === "ADMIN" ? t("login.admin_portal") : t("login.entrepreneur_panel")}
+                  {userRole === UserRole.ADMIN
+                    ? t("login.admin_portal")
+                    : t("login.entrepreneur_panel")}
                 </Text>
 
                 {error && (
@@ -81,7 +85,7 @@ export default function LoginScreen() {
                 <View className="gap-5">
                   <FormInput
                     label={t("login.email_label")}
-                    placeholder="ejemplo@rewilding.com"
+                    placeholder="ejemplo@elimpenetrable.org"
                     value={email}
                     onChangeText={(val: string) => {
                       setEmail(val);
@@ -109,11 +113,7 @@ export default function LoginScreen() {
                     className="mt-4"
                   />
 
-                  <Button
-                    title={t("common.back")}
-                    variant="ghost"
-                    onPress={() => router.back()}
-                  />
+                  <Button title={t("common.back")} variant="ghost" onPress={() => router.back()} />
                 </View>
               </View>
             </View>

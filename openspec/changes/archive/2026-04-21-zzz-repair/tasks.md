@@ -1,4 +1,4 @@
-# Tasks: zzz_ prefixing repair
+# Tasks: zzz\_ prefixing repair
 
 - [x] Repair UI Components
   - [x] ReservationModal.tsx: Fix broken property accessors and i18n keys.
@@ -17,7 +17,7 @@
   - [x] auth-state.ts: Fix parameter name in mockSetCurrentUser.
   - [x] logger.service.ts: Fix error.name access.
 - [x] Repair Backend
-  - [x] seed.ts: Apply zzz_ to all columns.
+  - [x] seed.ts: Apply zzz\_ to all columns.
   - [x] projects.ts: Fix database column references.
 - [x] Verification
   - [x] Run `make typecheck` (must pass 100%).

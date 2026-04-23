@@ -9,7 +9,7 @@ help:
 	@echo "  🔧 SETUP"
 	@echo "    make setup                        - Install dependencies"
 	@echo "    make install                      - Same as setup"
-	@echo "    make dev                          - Start all services (Backend + Mobile API)"
+	@echo "    make dev/dev-api                  - Start all services (Backend + Mobile API)"
 	@echo "    make dev-mock                     - Start mobile only with Mocks (no DB/API)"
 	@echo "    make dev-web-api                  - Start all services (Backend + Mobile Web API)"
 	@echo ""
@@ -218,6 +218,8 @@ db-wait:
 # 🚀 FULL MONOREPO
 # ==========================================
 
+dev-api: dev
+
 dev: db-up db-wait
 	@bunx concurrently \
 		--kill-others \
@@ -298,7 +300,7 @@ gga:
 
 check: check-static gga
 
-check-static: check-static-mobile check-static-backend
+check-static: format check-static-mobile check-static-backend
 
 check-mobile: check-static-mobile gga
 

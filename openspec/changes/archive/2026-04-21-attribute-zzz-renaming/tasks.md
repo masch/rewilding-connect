@@ -1,4 +1,4 @@
-# Tasks: Entity Attribute Renaming (zzz_ prefix)
+# Tasks: Entity Attribute Renaming (zzz\_ prefix)
 
 ## Phase 1: Specification (DER)
 

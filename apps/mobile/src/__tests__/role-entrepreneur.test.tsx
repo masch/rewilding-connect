@@ -1,3 +1,4 @@
+import { UserRole } from "@repo/shared";
 import { render, screen, fireEvent, waitFor } from "./utils/test-utils";
 import RoleSelectorScreen from "../app/index";
 import EntrepreneurTabsLayout from "../app/entrepreneur/_layout";
@@ -22,7 +23,7 @@ describe("Entrepreneur Role Flow", () => {
         setUserRole: mockSetUserRole,
         login: mockLogin,
         isAuthenticated: false,
-        userRole: "ENTREPRENEUR",
+        userRole: UserRole.ENTREPRENEUR,
       });
     });
 
@@ -32,7 +33,7 @@ describe("Entrepreneur Role Flow", () => {
       fireEvent.press(mariaButton);
 
       await waitFor(() => {
-        expect(mockSetUserRole).toHaveBeenCalledWith("ENTREPRENEUR");
+        expect(mockSetUserRole).toHaveBeenCalledWith(UserRole.ENTREPRENEUR);
         expect(mockLogin).toHaveBeenCalledWith({
           email: "maria@forst-stew.com",
           password: "password123",
@@ -45,9 +46,9 @@ describe("Entrepreneur Role Flow", () => {
   describe("Entrepreneur Navigation Tabs", () => {
     beforeEach(() => {
       mockAuthState({
-        userRole: "ENTREPRENEUR",
+        userRole: UserRole.ENTREPRENEUR,
         isAuthenticated: true,
-        currentUser: { id: "entrepreneur_001", role: "ENTREPRENEUR" },
+        currentUser: { id: "entrepreneur_001", role: UserRole.ENTREPRENEUR },
       });
     });
 

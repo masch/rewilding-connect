@@ -12,7 +12,7 @@ describe("Health Check Endpoint", () => {
     expect(body).toHaveProperty("timestamp");
     expect(body).toHaveProperty("uptime");
     expect(typeof body.uptime).toBe("number");
-    
+
     // Expert check: Verify database monitoring
     expect(body).toHaveProperty("database");
     expect(body.database).toHaveProperty("status");

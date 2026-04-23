@@ -14,8 +14,13 @@ export const I18nStringSchema = z.record(LanguageSchema, z.string());
 export type I18nString = z.infer<typeof I18nStringSchema>;
 
 // Shared Enums from the spec
-export const UserRoleSchema = z.enum(["TOURIST", "ADMIN", "ENTREPRENEUR"]);
-export type UserRole = z.infer<typeof UserRoleSchema>;
+export enum UserRole {
+  TOURIST = "TOURIST",
+  ADMIN = "ADMIN",
+  ENTREPRENEUR = "ENTREPRENEUR",
+}
+
+export const UserRoleSchema = z.nativeEnum(UserRole);
 
 // i18n translation keys for role labels — app-agnostic, each consumer resolves with its own i18n system
 export const USER_ROLE_KEYS = {

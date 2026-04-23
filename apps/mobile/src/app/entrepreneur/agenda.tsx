@@ -7,7 +7,7 @@ import { useTranslations } from "../../hooks/useI18n";
 import { useAgendaStore } from "../../stores/agenda.store";
 import { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import ReservationCard from "../../components/entrepreneur/ReservationCard";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { getMomentConfig, MOMENTS } from "../../constants/moments";
 import { COLORS } from "@repo/shared";
 import { formatDate, isSameDay, toISODate, formatMoment } from "../../logic/formatters";

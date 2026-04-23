@@ -2,13 +2,13 @@ import { describe, expect, it, beforeAll } from "bun:test";
 import { Hono } from "hono";
 import { authRouter } from "./auth";
 import { authMiddleware, roleGuard } from "../middleware/auth";
-import { MOCK_USER_ADMIN, MOCK_USER_ENTREPRENEUR_WITH_ORDERS } from "@repo/shared";
+import { MOCK_USER_ADMIN, MOCK_USER_ENTREPRENEUR_WITH_ORDERS, UserRole } from "@repo/shared";
 
 const testApp = new Hono();
 
 testApp.route("/v1/auth", authRouter);
 testApp.get("/v1/test-protected", authMiddleware, (c) => c.text("OK"));
-testApp.get("/v1/test-admin", authMiddleware, roleGuard(["ADMIN"]), (c) => c.text("OK"));
+testApp.get("/v1/test-admin", authMiddleware, roleGuard([UserRole.ADMIN]), (c) => c.text("OK"));
 
 describe("Auth API Integration", () => {
   let adminToken: string;

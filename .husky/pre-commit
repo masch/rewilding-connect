@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ======== REWILDING CONNECT HOOKS ========
+# ======== IMPENETRABLE CONNECT HOOKS ========
 # Run full check suite (Typecheck, Lint, Format, GGA)
 make check || exit 1
 

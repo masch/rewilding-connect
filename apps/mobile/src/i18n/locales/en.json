@@ -257,5 +257,33 @@
     "submit": "Explore flavors",
     "active_context": "Order for {{date}} · {{moment}}",
     "change_hint": "Tap here to change date or time"
+  },
+  "status": {
+    "title": "System Status",
+    "services": "Services",
+    "pipelines": "Integration (CI/CD)",
+    "api": "Backend API",
+    "database": "Database",
+    "ci": "System Tests (CI)",
+    "deploy": "Web Deployment",
+    "api_desc": "API Service",
+    "db_desc": "Data Storage",
+    "mock_env": "Local Mocks",
+    "mock_db": "Local Database (Mock)",
+    "env_production": "Production",
+    "env_staging": "Staging",
+    "env_development": "Development",
+    "env_mock": "Mock Mode",
+    "env_label": "Environment",
+    "operational": "Operational",
+    "degraded": "Degraded",
+    "outage": "Outage",
+    "last_updated": "Last updated: {{time}}",
+    "refresh": "Refresh",
+    "unreachable": "Could not connect",
+    "rate_limited": "GitHub limit exceeded",
+    "uptime_label": "Uptime: {{value}}",
+    "latency_label": "Latency: {{value}}",
+    "loading_dots": "..."
   }
 }

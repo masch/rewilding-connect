@@ -26,7 +26,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: false,
   error: null,
-  userRole: "TOURIST",
+  userRole: UserRole.TOURIST,
 
   setUserRole: (role) => set({ userRole: role }),
 
@@ -79,7 +79,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         currentUser: null,
         isAuthenticated: false,
         isLoading: false,
-        userRole: "TOURIST",
+        userRole: UserRole.TOURIST,
       });
     } catch (error) {
       set({ isLoading: false });

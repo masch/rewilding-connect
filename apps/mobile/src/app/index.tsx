@@ -2,9 +2,9 @@ import { useAuthStore } from "../stores/auth.store";
 import { View, Text, ScrollView } from "react-native";
 import Screen, { ScreenContent } from "../components/Screen";
 import { router } from "expo-router";
-import { COLORS, type User, type UserRole } from "@repo/shared";
+import { COLORS, UserRole, type User } from "@repo/shared";
 import { getDemoUsersByRole } from "../mocks/users";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useTranslations } from "../hooks/useI18n";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 
@@ -15,21 +15,21 @@ import { logger } from "../services/logger.service";
 
 // Role colors from design system - mapped for icons and backgrounds
 const ROLE_COLORS = {
-  TOURIST: {
+  [UserRole.TOURIST]: {
     icon: COLORS["tertiary-container"],
     bgClass: "bg-tertiary-container",
     accentClass: "bg-tertiary-container/10",
     borderClass: "border-tertiary-container/30",
     textClass: "text-tertiary-container",
   },
-  ENTREPRENEUR: {
+  [UserRole.ENTREPRENEUR]: {
     icon: COLORS.primary,
     bgClass: "bg-primary",
     accentClass: "bg-primary/10",
     borderClass: "border-primary/30",
     textClass: "text-primary",
   },
-  ADMIN: {
+  [UserRole.ADMIN]: {
     icon: COLORS.secondary,
     bgClass: "bg-secondary",
     accentClass: "bg-secondary/10",
@@ -39,29 +39,29 @@ const ROLE_COLORS = {
 } as const;
 
 const ROLE_CONFIG = {
-  TOURIST: {
+  [UserRole.TOURIST]: {
     icon: "hiking",
-    color: ROLE_COLORS.TOURIST.icon,
-    bgClass: ROLE_COLORS.TOURIST.bgClass,
-    accentClass: ROLE_COLORS.TOURIST.accentClass,
-    borderClass: ROLE_COLORS.TOURIST.borderClass,
-    textClass: ROLE_COLORS.TOURIST.textClass,
+    color: ROLE_COLORS[UserRole.TOURIST].icon,
+    bgClass: ROLE_COLORS[UserRole.TOURIST].bgClass,
+    accentClass: ROLE_COLORS[UserRole.TOURIST].accentClass,
+    borderClass: ROLE_COLORS[UserRole.TOURIST].borderClass,
+    textClass: ROLE_COLORS[UserRole.TOURIST].textClass,
   },
-  ENTREPRENEUR: {
+  [UserRole.ENTREPRENEUR]: {
     icon: "store",
-    color: ROLE_COLORS.ENTREPRENEUR.icon,
-    bgClass: ROLE_COLORS.ENTREPRENEUR.bgClass,
-    accentClass: ROLE_COLORS.ENTREPRENEUR.accentClass,
-    borderClass: ROLE_COLORS.ENTREPRENEUR.borderClass,
-    textClass: ROLE_COLORS.ENTREPRENEUR.textClass,
+    color: ROLE_COLORS[UserRole.ENTREPRENEUR].icon,
+    bgClass: ROLE_COLORS[UserRole.ENTREPRENEUR].bgClass,
+    accentClass: ROLE_COLORS[UserRole.ENTREPRENEUR].accentClass,
+    borderClass: ROLE_COLORS[UserRole.ENTREPRENEUR].borderClass,
+    textClass: ROLE_COLORS[UserRole.ENTREPRENEUR].textClass,
   },
-  ADMIN: {
+  [UserRole.ADMIN]: {
     icon: "shield-account",
-    color: ROLE_COLORS.ADMIN.icon,
-    bgClass: ROLE_COLORS.ADMIN.bgClass,
-    accentClass: ROLE_COLORS.ADMIN.accentClass,
-    borderClass: ROLE_COLORS.ADMIN.borderClass,
-    textClass: ROLE_COLORS.ADMIN.textClass,
+    color: ROLE_COLORS[UserRole.ADMIN].icon,
+    bgClass: ROLE_COLORS[UserRole.ADMIN].bgClass,
+    accentClass: ROLE_COLORS[UserRole.ADMIN].accentClass,
+    borderClass: ROLE_COLORS[UserRole.ADMIN].borderClass,
+    textClass: ROLE_COLORS[UserRole.ADMIN].textClass,
   },
 } as const;
 
@@ -72,7 +72,7 @@ export default function RoleSelectorScreen() {
   const login = useAuthStore((state) => state.login);
 
   const getUserIdentifier = (user: User, role: UserRole): string => {
-    if (role === "TOURIST") {
+    if (role === UserRole.TOURIST) {
       return user.alias || user.firstName || "Tourist";
     }
     return user.email || "";
@@ -91,11 +91,11 @@ export default function RoleSelectorScreen() {
 
       setUserRole(role);
 
-      if (role === "TOURIST") {
+      if (role === UserRole.TOURIST) {
         router.replace("/tourist");
-      } else if (role === "ENTREPRENEUR") {
+      } else if (role === UserRole.ENTREPRENEUR) {
         router.replace("/entrepreneur/agenda");
-      } else if (role === "ADMIN") {
+      } else if (role === UserRole.ADMIN) {
         router.replace("/admin/project");
       }
     } catch (error) {
@@ -104,14 +104,17 @@ export default function RoleSelectorScreen() {
   };
 
   const handleTouristSignUp = () => {
-    setUserRole("TOURIST");
+    setUserRole(UserRole.TOURIST);
     router.push("/tourist/login");
   };
 
   const demoUsersByRole = [
-    { role: "TOURIST" as const, users: env.USE_MOCKS ? getDemoUsersByRole("TOURIST") : [] },
-    { role: "ENTREPRENEUR" as const, users: env.USE_MOCKS ? getDemoUsersByRole("ENTREPRENEUR") : [] },
-    { role: "ADMIN" as const, users: env.USE_MOCKS ? getDemoUsersByRole("ADMIN") : [] },
+    { role: UserRole.TOURIST, users: env.USE_MOCKS ? getDemoUsersByRole(UserRole.TOURIST) : [] },
+    {
+      role: UserRole.ENTREPRENEUR,
+      users: env.USE_MOCKS ? getDemoUsersByRole(UserRole.ENTREPRENEUR) : [],
+    },
+    { role: UserRole.ADMIN, users: env.USE_MOCKS ? getDemoUsersByRole(UserRole.ADMIN) : [] },
   ] as const;
 
   const { t } = useTranslations();
@@ -156,7 +159,7 @@ export default function RoleSelectorScreen() {
                 </View>
 
                 {/* Create Identity Button - Only for Tourists */}
-                {group.role === "TOURIST" && (
+                {group.role === UserRole.TOURIST && (
                   <Button
                     variant="outline"
                     onPress={handleTouristSignUp}
@@ -168,18 +171,19 @@ export default function RoleSelectorScreen() {
                 )}
 
                 {/* Real Login Button - For Entrepreneur and Admin in Real Mode */}
-                {!env.USE_MOCKS && (group.role === "ENTREPRENEUR" || group.role === "ADMIN") && (
-                  <Button
-                    variant="primary"
-                    onPress={() => {
-                      setUserRole(group.role);
-                      router.push("/auth/login");
-                    }}
-                    leftIcon="login"
-                    title={t("common.login")}
-                    className="mb-3"
-                  />
-                )}
+                {!env.USE_MOCKS &&
+                  (group.role === UserRole.ENTREPRENEUR || group.role === UserRole.ADMIN) && (
+                    <Button
+                      variant="primary"
+                      onPress={() => {
+                        setUserRole(group.role);
+                        router.push("/auth/login");
+                      }}
+                      leftIcon="login"
+                      title={t("common.login")}
+                      className="mb-3"
+                    />
+                  )}
 
                 {/* Demo Users Grid */}
                 {env.USE_MOCKS && (

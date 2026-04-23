@@ -1,4 +1,4 @@
-# Design: Entity Attribute Renaming (zzz_ prefix)
+# Design: Entity Attribute Renaming (zzz\_ prefix)
 
 ## Technical Approach
 
@@ -10,7 +10,7 @@ The implementation will follow a "destructive refactor" pattern using global reg
 
 **Choice**: Rename even structural fields like `id`, `created_at`, and `project_id`.
 **Alternatives considered**: Only prefixing "business" fields like `name` or `description`.
-**Rationale**: The user specifically requested `id` -> `zzz_id`. This ensures that *every* reference to a field must be manually reviewed and corrected in future SDDs, providing a 100% audit coverage.
+**Rationale**: The user specifically requested `id` -> `zzz_id`. This ensures that _every_ reference to a field must be manually reviewed and corrected in future SDDs, providing a 100% audit coverage.
 
 ### Decision: Manual Regex Application per File Type
 
@@ -24,12 +24,12 @@ No changes to data flow logic, as this is a structural renaming task. However, t
 
 ## File Changes
 
-| File | Action | Description |
-|------|--------|-------------|
-| `openspec/specs/01-master-system.md` | Modify | Update Mermaid `erDiagram` attributes. |
-| `packages/shared/src/types/*.ts` | Modify | Update Zod schemas and TS interfaces. |
-| `apps/backend/src/db/schema/projects.ts` | Modify | Update Drizzle table columns. |
-| `apps/mobile/src/mocks/*.ts` | Modify | Update mock data objects. |
+| File                                     | Action | Description                            |
+| ---------------------------------------- | ------ | -------------------------------------- |
+| `openspec/specs/01-master-system.md`     | Modify | Update Mermaid `erDiagram` attributes. |
+| `packages/shared/src/types/*.ts`         | Modify | Update Zod schemas and TS interfaces.  |
+| `apps/backend/src/db/schema/projects.ts` | Modify | Update Drizzle table columns.          |
+| `apps/mobile/src/mocks/*.ts`             | Modify | Update mock data objects.              |
 
 ## Interfaces / Contracts
 
@@ -51,10 +51,10 @@ export const OrderDbSchema = z.object({
 
 ## Testing Strategy
 
-| Layer | What to Test | Approach |
-|-------|-------------|----------|
-| Static | Type Safety | Run `make typecheck` to confirm total breakage and identify all locations requiring the new prefix. |
-| Schema | Zod Validation | Ensure Zod schemas correctly parse objects with `zzz_` prefixed keys. |
+| Layer  | What to Test   | Approach                                                                                            |
+| ------ | -------------- | --------------------------------------------------------------------------------------------------- |
+| Static | Type Safety    | Run `make typecheck` to confirm total breakage and identify all locations requiring the new prefix. |
+| Schema | Zod Validation | Ensure Zod schemas correctly parse objects with `zzz_` prefixed keys.                               |
 
 ## Migration / Rollout
 
