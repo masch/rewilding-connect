@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, ScrollView, RefreshControl } from "react-native";
 import { openURL } from "expo-linking";
 import { Stack, useLocalSearchParams } from "expo-router";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslations } from "../hooks/useI18n";
 import { StatusService, BackendHealthWithLatency } from "../services/status.service";
 import { logger } from "../services/logger.service";
@@ -94,33 +94,24 @@ function StatusCard({
           </View>
         </View>
 
-        <View
-          className={`mt-2 self-start px-2 py-1 rounded-md ${badgeStyle?.bg || "bg-on-surface/5"} border ${badgeStyle?.border || "border-on-surface/10"} flex-row items-center gap-1`}
-        >
-          {(status === "error" || badgeStyle?.text === "text-error") && (
-            <MaterialCommunityIcons name="alert" size={10} color={COLORS.error} />
-          )}
-          <Text
-            className={`font-bold tracking-wider ${badgeStyle?.text || "text-on-surface/60"} text-[10px] uppercase`}
-          >
-            {description}
-          </Text>
-        </View>
+        {description && (
+          <View className="mt-1.5 self-start px-2 py-0.5 rounded-lg bg-on-surface/5 border border-on-surface/5">
+            <Text
+              className={`font-bold ${badgeStyle?.text || "text-on-surface/40"} text-[9px] uppercase tracking-wider`}
+            >
+              {description}
+            </Text>
+          </View>
+        )}
 
         {detail && <Text className="mt-2 text-sm text-on-surface/40 font-medium">{detail}</Text>}
 
         {isDetailed && messages && messages.length > 0 && (
-          <View className="mt-3 pt-3 border-t border-on-surface/5 w-full">
+          <View className="mt-3 w-full border-t border-on-surface/5 pt-2">
             {messages.map((msg, idx) => (
               <View key={idx} className="flex-row items-start gap-2 mb-1">
-                <MaterialCommunityIcons
-                  name="alert-circle-outline"
-                  size={12}
-                  color={COLORS.warning}
-                  className="mt-0.5"
-                />
-                <Text className="text-[11px] text-warning/80 font-medium leading-tight flex-1">
-                  {msg}
+                <Text className="text-[11px] text-on-surface/50 font-medium leading-tight flex-1">
+                  • {msg}
                 </Text>
               </View>
             ))}
@@ -149,15 +140,20 @@ function StatusCard({
   );
 }
 
+interface AnnotationData {
+  count: number;
+  messages: string[];
+}
+
+type AnnotationsMap = Record<string, AnnotationData>;
+
 export default function StatusScreen() {
   const { t } = useTranslations();
   const isDetailed = useLocalSearchParams<{ debug: string }>().debug === "true";
 
   const [health, setHealth] = useState<BackendHealthWithLatency | null>(null);
   const [runs, setRuns] = useState<GitHubRun[] | null>(null);
-  const [annotations, setAnnotations] = useState<
-    Record<string, { count: number; messages: string[] }>
-  >({});
+  const [annotations, setAnnotations] = useState<AnnotationsMap>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -168,12 +164,12 @@ export default function StatusScreen() {
 
     // We fetch independently so GitHub failures don't block the backend status
     const [healthData, runsData] = await Promise.all([
-      StatusService.fetchBackendHealth().catch((err) => {
+      StatusService.fetchBackendHealth().catch((err: Error) => {
         logger.error("[ERROR] Backend health fetch failed", err);
         setFetchError("unreachable");
         return null;
       }),
-      StatusService.fetchGitHubRuns().catch((err) => {
+      StatusService.fetchGitHubRuns().catch((err: Error) => {
         logger.error("[ERROR] GitHub runs fetch failed", err);
         return null; // Return null on failure instead of empty array
       }),
@@ -181,22 +177,23 @@ export default function StatusScreen() {
 
     if (runsData && runsData.length > 0 && isDetailed) {
       const relevantRuns = runsData.slice(0, 3);
-      const annotationsMap: Record<string, { count: number; messages: string[] }> = {};
+      const newAnnotationsMap: AnnotationsMap = {};
 
       await Promise.all(
         relevantRuns.map(async (run) => {
           try {
             const data = await StatusService.fetchCheckRuns(run.head_commit.id);
-            annotationsMap[run.head_commit.id] = {
+            newAnnotationsMap[run.head_commit.id] = {
               count: data.annotations_count,
               messages: data.messages,
             };
-          } catch (e) {
-            logger.error(`Failed to fetch annotations for run ${run.id}`, e);
+          } catch (e: unknown) {
+            const error = e instanceof Error ? e : new Error(String(e));
+            logger.error(`Failed to fetch annotations for run ${run.id}`, error);
           }
         }),
       );
-      setAnnotations(annotationsMap);
+      setAnnotations(newAnnotationsMap);
     }
 
     if (healthData) setHealth(healthData);
@@ -267,25 +264,48 @@ export default function StatusScreen() {
   const uptimeStr = `${uptimeHours}h ${uptimeMinutes}m`;
 
   const envColors = {
-    production: { text: "text-error", bg: "bg-error/10", border: "border-error/20" },
-    staging: { text: "text-warning", bg: "bg-warning/10", border: "border-warning/20" },
-    development: { text: "text-tertiary", bg: "bg-tertiary/10", border: "border-tertiary/20" },
-    mock: { text: "text-secondary", bg: "bg-secondary/10", border: "border-secondary/20" },
-    default: { text: "text-on-surface/60", bg: "bg-on-surface/5", border: "border-on-surface/10" },
+    production: {
+      text: "text-error",
+      bg: "bg-error/10",
+      border: "border-error/20",
+      dot: "bg-error",
+    },
+    staging: {
+      text: "text-warning",
+      bg: "bg-warning/10",
+      border: "border-warning/20",
+      dot: "bg-warning",
+    },
+    development: {
+      text: "text-on-surface/50",
+      bg: "bg-on-surface/5",
+      border: "border-on-surface/10",
+      dot: "bg-on-surface/40",
+    },
+    mock: {
+      text: "text-on-surface/50",
+      bg: "bg-on-surface/5",
+      border: "border-on-surface/10",
+      dot: "bg-on-surface/40",
+    },
+    default: {
+      text: "text-on-surface/50",
+      bg: "bg-on-surface/5",
+      border: "border-on-surface/10",
+      dot: "bg-on-surface/40",
+    },
   };
 
   const env = health?.environment && health.environment !== "mock" ? health.environment : "default";
   const colors = envColors[env as keyof typeof envColors] || envColors.default;
 
-  const apiDesc =
-    health?.environment && health.environment !== "mock"
-      ? `${t("status.env_label")}: ${t(`status.env_${health.environment}`)}`
-      : t("status.api_desc");
+  const apiDesc = health?.environment
+    ? `${t("status.env_label")}: ${t(`status.env_${health.environment}`)}`
+    : t("status.api_desc");
 
-  const dbDesc =
-    health?.environment && health.environment !== "mock"
-      ? `${t("status.env_label")}: ${t(`status.env_${health.environment}`)}`
-      : t("status.db_desc");
+  const dbDesc = health?.environment
+    ? `${t("status.env_label")}: ${t(`status.env_${health.environment}`)}`
+    : t("status.db_desc");
 
   return (
     <Screen>
