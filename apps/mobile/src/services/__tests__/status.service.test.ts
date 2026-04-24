@@ -9,13 +9,39 @@ describe("StatusService", () => {
   });
 
   describe("RestStatusService", () => {
-    it("should fetch backend health with latency", async () => {
+    it("should fetch backend health with latency and runs", async () => {
       const mockHealth = {
         status: "ok",
         timestamp: "2024-03-20T12:00:00Z",
         uptime: 3600,
         environment: "development",
         database: { status: "ok", latency: "10ms" },
+        github: { runs: [{ id: 1, name: "CI" }] },
+      };
+
+      (globalThis.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => mockHealth,
+      });
+
+      const health = await RestStatusService.fetchBackendHealth();
+      expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining("/health"));
+      expect(health.github.runs.length).toBe(1);
+    });
+
+    it("should fetch github runs from backend health", async () => {
+      const mockHealth = {
+        github: {
+          runs: [
+            {
+              id: 1,
+              name: "CI",
+              status: "completed",
+              conclusion: "success",
+              head_commit: { message: "test" },
+            },
+          ],
+        },
       };
 
       (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
@@ -23,36 +49,26 @@ describe("StatusService", () => {
         json: async () => mockHealth,
       });
 
-      const health = await RestStatusService.fetchBackendHealth();
+      const runs = await RestStatusService.fetchGitHubRuns();
       expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining("/health"));
-      expect(health.apiLatency).toBeDefined();
-      expect(health.status).toBe("ok");
+      expect(runs.length).toBe(1);
+      expect(runs[0].name).toBe("CI");
     });
 
-    it("should fetch github runs", async () => {
-      const mockRuns = {
-        workflow_runs: [
-          {
-            id: 1,
-            name: "CI",
-            status: "completed",
-            conclusion: "success",
-            head_commit: { message: "test commit" },
-          },
-        ],
-      };
+    it("should fetch check runs from backend proxy", async () => {
+      const mockCheckData = { annotations_count: 5, messages: ["Warn 1"] };
 
       (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => mockRuns,
+        json: async () => mockCheckData,
       });
 
-      const runs = await RestStatusService.fetchGitHubRuns();
+      const result = await RestStatusService.fetchCheckRuns("ref123");
       expect(globalThis.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("impenetrable-connect/actions/runs"),
-        expect.anything(),
+        expect.stringContaining("/health/check-runs/ref123"),
       );
-      expect(runs).toEqual(mockRuns.workflow_runs);
+      expect(result.annotations_count).toBe(5);
+      expect(result.messages[0]).toBe("Warn 1");
     });
 
     it("should handle backend health failure", async () => {
@@ -63,93 +79,21 @@ describe("StatusService", () => {
 
       await expect(RestStatusService.fetchBackendHealth()).rejects.toThrow("Health check failed");
     });
-
-    it("should handle github api failure", async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-      });
-
-      await expect(RestStatusService.fetchGitHubRuns()).rejects.toThrow("GH API failed");
-    });
-
-    it("should fetch check runs, retrieve annotations, and deduplicate identical messages", async () => {
-      const mockCheckRuns = {
-        check_runs: [
-          {
-            name: "CI",
-            output: {
-              annotations_count: 1,
-              annotations_url: "https://api.github.com/ci/annotations",
-            },
-          },
-          {
-            name: "Deploy",
-            output: {
-              annotations_count: 1,
-              annotations_url: "https://api.github.com/deploy/annotations",
-            },
-          },
-        ],
-      };
-
-      const mockAnnotations = [{ message: "Node.js 20 actions are deprecated." }];
-
-      (globalThis.fetch as jest.Mock)
-        // First call: fetch check runs
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockCheckRuns,
-        })
-        // Second call: fetch CI annotations
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockAnnotations,
-        })
-        // Third call: fetch Deploy annotations
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockAnnotations,
-        });
-
-      const result = await RestStatusService.fetchCheckRuns("abcdef1");
-
-      expect(globalThis.fetch).toHaveBeenCalledTimes(3);
-      expect(result.messages.length).toBe(2);
-      expect(result.messages[0]).toBe("[CI] Node.js 20 actions are deprecated.");
-      expect(result.messages[1]).toBe("[Deploy] Node.js 20 actions are deprecated.");
-    });
   });
 
   describe("MockStatusService", () => {
-    it("should return mock health data", async () => {
+    it("should return mock health data with empty runs", async () => {
       const health = await MockStatusService.fetchBackendHealth();
       expect(health.status).toBe("ok");
-      expect(health.apiLatency).toBe("0ms");
+      expect(health.github.runs).toEqual([]);
     });
 
-    it("should fetch real github runs even in mock mode", async () => {
-      const mockRuns = {
-        workflow_runs: [
-          {
-            id: 1,
-            name: "CI",
-            status: "completed",
-            conclusion: "success",
-            head_commit: { message: "test commit", id: "123" },
-          },
-        ],
-      };
-
-      (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockRuns,
-      });
-
+    it("should return empty runs and messages in mock mode", async () => {
       const runs = await MockStatusService.fetchGitHubRuns();
-      expect(globalThis.fetch).toHaveBeenCalled();
-      expect(runs.length).toBe(1);
-      expect(runs[0].name).toBe("CI");
+      const checks = await MockStatusService.fetchCheckRuns("any");
+
+      expect(runs).toEqual([]);
+      expect(checks).toEqual({ annotations_count: 0, messages: [] });
     });
   });
 });

@@ -7,6 +7,9 @@ export interface BackendHealth {
     status: "ok" | "error";
     latency: string;
   };
+  github: {
+    runs: GitHubRun[];
+  };
 }
 
 export interface GitHubRun {
