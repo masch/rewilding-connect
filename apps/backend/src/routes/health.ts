@@ -6,8 +6,11 @@ import type { GitHubRun } from "@repo/shared";
 
 const health = new Hono();
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_REPO = process.env.GITHUB_REPO;
+// Environment variables should be accessed dynamically to support testing and runtime changes
+const getGitHubConfig = () => ({
+  token: process.env.GITHUB_TOKEN,
+  repo: process.env.GITHUB_REPO,
+});
 
 health.get("/", async (c) => {
   const start = Date.now();
@@ -23,6 +26,8 @@ health.get("/", async (c) => {
   }
 
   let githubRuns: GitHubRun[] = [];
+  const { repo: GITHUB_REPO, token: GITHUB_TOKEN } = getGitHubConfig();
+
   if (GITHUB_REPO) {
     try {
       const ghUrl = `https://api.github.com/repos/${GITHUB_REPO}/actions/runs?per_page=10`;
@@ -55,6 +60,8 @@ health.get("/", async (c) => {
 
 health.get("/check-runs/:ref", async (c) => {
   const ref = c.req.param("ref");
+  const { repo: GITHUB_REPO, token: GITHUB_TOKEN } = getGitHubConfig();
+
   if (!GITHUB_REPO) return c.json({ annotations_count: 0, messages: [] }, 400);
 
   try {
