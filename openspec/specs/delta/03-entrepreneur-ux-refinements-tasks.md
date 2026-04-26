@@ -32,7 +32,7 @@
 ### 2.3 Implement "Solicitudes" Screen
 
 - [x] Replace placeholder in `entrepreneur/request.tsx` with `OFFER_PENDING` list.
-- [x] Add polling logic (every 20s) or refresh control.
+- [ ] Add polling logic (every 20s) or refresh control.
 
 ### 2.4 Implement Tab Indicators
 

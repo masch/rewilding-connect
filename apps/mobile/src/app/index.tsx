@@ -41,6 +41,10 @@ const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     color: COLORS["tertiary-container"],
     titleKey: "role_selector.roles.TOURIST.label",
     descriptionKey: "role_selector.roles.TOURIST.description",
+    userIcon: "account-outline",
+    actionTitleKey: "role_selector.create_identity",
+    actionDescriptionKey: "role_selector.register_as_tourist",
+    actionIcon: "account-plus-outline",
   },
   [UserRole.ENTREPRENEUR]: {
     icon: "storefront",
@@ -51,6 +55,10 @@ const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     color: COLORS.primary,
     titleKey: "role_selector.roles.ENTREPRENEUR.label",
     descriptionKey: "role_selector.roles.ENTREPRENEUR.description",
+    userIcon: "account-tie-outline",
+    actionTitleKey: "role_selector.register_parador",
+    actionDescriptionKey: "role_selector.apply_new_venture",
+    actionIcon: "store-plus-outline",
   },
   [UserRole.ADMIN]: {
     icon: "shield-check",
@@ -63,17 +71,6 @@ const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     descriptionKey: "role_selector.roles.ADMIN.description",
   },
 };
-
-// Update existing roles with icons and actions
-ROLE_CONFIG[UserRole.TOURIST].userIcon = "account-outline";
-ROLE_CONFIG[UserRole.TOURIST].actionTitleKey = "role_selector.create_identity";
-ROLE_CONFIG[UserRole.TOURIST].actionDescriptionKey = "role_selector.register_as_tourist";
-ROLE_CONFIG[UserRole.TOURIST].actionIcon = "account-plus-outline";
-
-ROLE_CONFIG[UserRole.ENTREPRENEUR].userIcon = "account-tie-outline";
-ROLE_CONFIG[UserRole.ENTREPRENEUR].actionTitleKey = "role_selector.register_parador";
-ROLE_CONFIG[UserRole.ENTREPRENEUR].actionDescriptionKey = "role_selector.apply_new_venture";
-ROLE_CONFIG[UserRole.ENTREPRENEUR].actionIcon = "store-plus-outline";
 
 export default function RoleSelectorScreen() {
   logger.debug("env.USE_MOCKS", { value: env.USE_MOCKS });
