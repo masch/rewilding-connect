@@ -27,7 +27,6 @@ describe("AgendaScreen", () => {
         getDayCount: () => 0,
         reset: jest.fn(),
       };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return typeof selector === "function" ? selector(state as any) : (state as any);
     }) as any;
   });
@@ -55,7 +54,6 @@ describe("AgendaScreen", () => {
         getDayCount: () => 0,
         reset: jest.fn(),
       };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return typeof selector === "function" ? selector(state as any) : (state as any);
     }) as any;
 
