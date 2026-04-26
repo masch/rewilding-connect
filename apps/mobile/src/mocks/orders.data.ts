@@ -189,7 +189,7 @@ export const INITIAL_MOCK_ORDERS: Order[] = [
     zzz_reservation_id: MOCK_RESERVATION_TODAY_LUNCH_CREATED.zzz_id,
     zzz_catalog_type_id: SERVICE_CATEGORY_IDS.GASTRONOMY,
     zzz_global_status: "SEARCHING",
-    zzz_notes: "Please no spicy",
+    zzz_notes: "Una persona es hipertensa, por favor cocinar sin sal.",
     zzz_items: [
       {
         zzz_id: 1,
@@ -364,6 +364,7 @@ export const INITIAL_MOCK_ORDERS: Order[] = [
     zzz_catalog_type_id: SERVICE_CATEGORY_IDS.GASTRONOMY,
     zzz_global_status: "CONFIRMED",
     zzz_confirmed_venture_id: MOCK_VENTURE_WITH_ORDERS.id,
+    zzz_notes: "Una persona es hipertensa, por favor cocinar sin sal.",
     zzz_items: [
       {
         zzz_id: 12,
@@ -390,6 +391,7 @@ export const INITIAL_MOCK_ORDERS: Order[] = [
     zzz_catalog_type_id: SERVICE_CATEGORY_IDS.GASTRONOMY,
     zzz_global_status: "CONFIRMED",
     zzz_confirmed_venture_id: MOCK_VENTURE_WITH_ORDERS.id,
+    zzz_notes: "Alérgico a las nueces y frutos secos.",
     zzz_items: [
       {
         zzz_id: 13,

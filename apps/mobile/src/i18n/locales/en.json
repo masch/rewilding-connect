@@ -84,7 +84,7 @@
         "other": "Total ({{count}} dishes)"
       },
       "dishes": "units",
-      "notes": "Additional notes (optional)",
+      "notes": "Restrictions / clarification (optional)",
       "notes_placeholder": "Any special requests...",
       "confirming": "Confirming...",
       "success": "Reservation confirmed",
@@ -171,7 +171,7 @@
     "itemNumber": "Item #",
     "registeredTourist": "Registered Tourist",
     "registeredVenture": "Registered Venture",
-    "notes": "Notes",
+    "notes": "Restrictions / clarification",
     "pending_requests_count": "You have {{count}} requests awaiting confirmation",
     "no_pending_requests": "No pending requests",
     "empty_inbox_title": "All caught up!",
