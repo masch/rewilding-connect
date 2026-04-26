@@ -19,7 +19,6 @@ interface AgendaState {
   isLoading: boolean;
   error: string | null;
 
-  // Actions
   fetchAgenda: (date: Date) => Promise<void>;
   getOccupationStats: (maxCapacity: number) => { occupied: number; total: number };
 }
@@ -60,10 +59,12 @@ export const useAgendaStore = create<AgendaState>((set, get) => ({
 
   // Calculate occupation stats for current orders in state
   getOccupationStats: (maxCapacity: number) => {
-    const totalOccupied = get().orders.reduce((sum, order) => {
-      const itemsSum = order.zzz_items?.reduce((iSum, item) => iSum + item.zzz_quantity, 0) || 0;
-      return sum + itemsSum;
-    }, 0);
+    const totalOccupied = get()
+      .orders.filter((o) => o.zzz_global_status !== "CANCELLED")
+      .reduce((sum, order) => {
+        const guestCount = order.zzz_reservation?.zzz_guest_count || 1;
+        return sum + guestCount;
+      }, 0);
     return {
       occupied: totalOccupied,
       total: maxCapacity,
