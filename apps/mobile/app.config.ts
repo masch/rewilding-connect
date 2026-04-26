@@ -42,7 +42,26 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     resizeMode: "contain",
     backgroundColor: "#fcf9f2", // Uses surface color from design system
   },
-  plugins: ["expo-localization", "expo-router", "@react-native-community/datetimepicker"],
+  plugins: [
+    "expo-localization",
+    [
+      "expo-router",
+      {
+        headers: {
+          // EXPLANATION OF CACHE-CONTROL "no-cache":
+          // The EAS Hosting default is a 1-hour cache which causes stale web deployments.
+          // Using "no-cache" is the optimal middle-ground for SPAs:
+          // It DOES allow the browser to cache the file locally, but STRICTLY REQUIRES
+          // the browser to validate with the server (via ETag) before using it.
+          // - If no new deploy was made -> Server returns HTTP 304, browser loads from cache instantly.
+          // - If a new deploy was made -> Server returns HTTP 200, browser downloads the fresh file.
+          // This guarantees users never see a stale index.html without sacrificing load speed.
+          "Cache-Control": "no-cache",
+        },
+      },
+    ],
+    "@react-native-community/datetimepicker",
+  ],
   ios: {
     supportsTablet: true,
     bundleIdentifier: getUniqueIdentifier(),
