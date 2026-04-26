@@ -1,3 +1,4 @@
+import type { Order } from "@repo/shared";
 import { useAgendaStore } from "../agenda.store";
 import { getMockAgendaOrders } from "../../mocks/agenda";
 
@@ -27,5 +28,32 @@ describe("Agenda Store", () => {
     // Today in mocks has several orders for Maria's venture totaling 23 guests
     expect(stats.occupied).toBe(23);
     expect(stats.total).toBe(20);
+  });
+
+  it("should calculate occupation based on zzz_guest_count and ignore CANCELLED orders", () => {
+    const mockOrders = [
+      {
+        zzz_id: 1,
+        zzz_global_status: "CONFIRMED",
+        zzz_reservation: { zzz_guest_count: 5 },
+      },
+      {
+        zzz_id: 2,
+        zzz_global_status: "CONFIRMED",
+        zzz_reservation: { zzz_guest_count: 3 },
+      },
+      {
+        zzz_id: 3,
+        zzz_global_status: "CANCELLED",
+        zzz_reservation: { zzz_guest_count: 10 },
+      },
+    ] as Order[];
+
+    useAgendaStore.setState({ orders: mockOrders });
+
+    const stats = useAgendaStore.getState().getOccupationStats(20);
+
+    // Should be 5 + 3 = 8. The CANCELLED one (10) must be ignored.
+    expect(stats.occupied).toBe(8);
   });
 });

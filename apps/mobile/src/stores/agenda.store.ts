@@ -19,7 +19,6 @@ interface AgendaState {
   isLoading: boolean;
   error: string | null;
 
-  // Actions
   fetchAgenda: (date: Date) => Promise<void>;
   getOccupationStats: (maxCapacity: number) => { occupied: number; total: number };
 }
