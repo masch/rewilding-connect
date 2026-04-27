@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { render, screen } from "@testing-library/react-native";
 import AgendaScreen from "../agenda";
-import { useAgendaStore } from "../../../stores/agenda.store";
+import { useAgendaStore, type AgendaState } from "../../../stores/agenda.store";
+import { UserRole, type Order } from "@repo/shared";
 
 // Mock the store to control data
 jest.mock("../../../stores/agenda.store");
@@ -12,7 +12,7 @@ describe("AgendaScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedUseAgendaStore.mockImplementation((selector) => {
-      const state = {
+      const state: AgendaState = {
         allOrders: [],
         orders: [],
         pendingOrders: [],
@@ -27,8 +27,8 @@ describe("AgendaScreen", () => {
         getDayCount: () => 0,
         reset: jest.fn(),
       };
-      return typeof selector === "function" ? selector(state as any) : (state as any);
-    }) as any;
+      return typeof selector === "function" ? selector(state) : state;
+    });
   });
 
   it("should render the screen title", () => {
@@ -39,7 +39,7 @@ describe("AgendaScreen", () => {
   it("should call fetchAgenda on mount", () => {
     const fetchAgenda = jest.fn();
     mockedUseAgendaStore.mockImplementation((selector) => {
-      const state = {
+      const state: AgendaState = {
         allOrders: [],
         orders: [],
         pendingOrders: [],
@@ -54,8 +54,8 @@ describe("AgendaScreen", () => {
         getDayCount: () => 0,
         reset: jest.fn(),
       };
-      return typeof selector === "function" ? selector(state as any) : (state as any);
-    }) as any;
+      return typeof selector === "function" ? selector(state) : state;
+    });
 
     render(<AgendaScreen />);
     expect(fetchAgenda).toHaveBeenCalled();
@@ -63,7 +63,7 @@ describe("AgendaScreen", () => {
 
   it("should render reservation notes when present in orders", () => {
     const mockNotes = "Una persona es hipertensa, por favor cocinar sin sal.";
-    const mockOrder = {
+    const mockOrder: Order = {
       zzz_id: 9,
       zzz_reservation_id: 1,
       zzz_catalog_type_id: 1,
@@ -78,7 +78,12 @@ describe("AgendaScreen", () => {
           zzz_quantity: 1,
           zzz_price: 1500,
           zzz_catalog_item: {
+            zzz_id: 1,
+            zzz_catalog_category_id: 1,
             zzz_name_i18n: { es: "Empanadas", en: "Empanadas" },
+            zzz_price: 1500,
+            zzz_max_participants: 10,
+            zzz_global_pause: false,
           },
         },
       ],
@@ -92,12 +97,25 @@ describe("AgendaScreen", () => {
         zzz_time_of_day: "DINNER",
         zzz_status: "CONFIRMED",
         zzz_guest_count: 3,
-        zzz_user: { alias: "Familia Gómez" },
+        zzz_user: {
+          id: "user-1",
+          alias: "Familia Gómez",
+          role: UserRole.TOURIST,
+          zzz_failed_login_attempts: 0,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          email: "test@test.com",
+          firstName: "Familia",
+          lastName: "Gómez",
+          phoneNumber: null,
+          zzz_last_login_at: null,
+        },
       },
-    } as any;
+    };
 
     mockedUseAgendaStore.mockImplementation((selector) => {
-      const state = {
+      const state: AgendaState = {
         allOrders: [mockOrder],
         orders: [mockOrder],
         pendingOrders: [],
@@ -112,8 +130,8 @@ describe("AgendaScreen", () => {
         getDayCount: () => 1,
         reset: jest.fn(),
       };
-      return typeof selector === "function" ? selector(state as any) : (state as any);
-    }) as any;
+      return typeof selector === "function" ? selector(state) : state;
+    });
 
     render(<AgendaScreen />);
 

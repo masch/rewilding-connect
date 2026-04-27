@@ -4,7 +4,7 @@ import { authService } from "../services/auth.service";
 import { logger } from "../services/logger.service";
 import { useAgendaStore } from "./agenda.store";
 
-interface AuthState {
+export interface AuthState {
   currentUser: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         userRole: response.user.role,
       });
       // Note: In a production app, we would persist tokens to SecureStore here
-    } catch (error) {
+    } catch (error: unknown) {
       set({
         error: error instanceof Error ? error.message : "Login failed",
         isLoading: false,
@@ -62,7 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         userRole: response.user.role,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       set({
         error: error instanceof Error ? error.message : "Registration failed",
         isLoading: false,
@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         userRole: UserRole.TOURIST,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       set({ isLoading: false });
       logger.error("Logout failed", error);
     }

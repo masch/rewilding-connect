@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { render, screen } from "@testing-library/react-native";
 import OrderScreen from "../orders";
-import { useReservationStore } from "../../../stores/reservation.store";
-import { useAuthStore } from "../../../stores/auth.store";
-import { useCatalogStore } from "../../../stores/catalog.store";
+import { useReservationStore, type ReservationState } from "../../../stores/reservation.store";
+import { useAuthStore, type AuthState } from "../../../stores/auth.store";
+import { useCatalogStore, type CatalogState } from "../../../stores/catalog.store";
+import { type Order, UserRole } from "@repo/shared";
 
 // Mock the stores
 jest.mock("../../../stores/reservation.store");
@@ -21,25 +21,57 @@ describe("OrderScreen (Tourist)", () => {
 
     // Default auth state: authenticated tourist
     mockedUseAuthStore.mockImplementation((selector) => {
-      const state = {
-        currentUser: { id: "tourist_1", role: "TOURIST" },
+      const state: AuthState = {
+        currentUser: {
+          id: "tourist_1",
+          email: "tourist@test.com",
+          alias: "Tourist One",
+          firstName: "Tourist",
+          lastName: "One",
+          phoneNumber: null,
+          role: UserRole.TOURIST,
+          zzz_failed_login_attempts: 0,
+          zzz_last_login_at: null,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
         isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        userRole: UserRole.TOURIST,
+        setUserRole: jest.fn(),
+        login: jest.fn(),
+        register: jest.fn(),
+        logout: jest.fn(),
+        setLoading: jest.fn(),
+        clearError: jest.fn(),
       };
-      return typeof selector === "function" ? selector(state as any) : (state as any);
+      return typeof selector === "function" ? selector(state) : state;
     });
 
     // Default catalog state
     mockedUseCatalogStore.mockImplementation((selector) => {
-      const state = {
+      const state: CatalogState = {
         services: [],
+        selectedService: null,
+        orders: [],
+        isLoading: false,
+        isSaving: false,
+        error: null,
         fetchServices: jest.fn(),
+        fetchServicesByCategory: jest.fn(),
+        selectService: jest.fn(),
+        clearSelectedService: jest.fn(),
+        placeOrder: jest.fn(),
+        fetchOrders: jest.fn(),
       };
-      return typeof selector === "function" ? selector(state as any) : (state as any);
+      return typeof selector === "function" ? selector(state) : state;
     });
 
     // Default reservation state
     mockedUseReservationStore.mockImplementation((selector) => {
-      const state = {
+      const state: ReservationState = {
         activeOrders: [],
         historyOrders: [],
         isLoading: false,
@@ -52,13 +84,13 @@ describe("OrderScreen (Tourist)", () => {
         moveOrders: jest.fn(),
         setTab: jest.fn(),
       };
-      return typeof selector === "function" ? selector(state as any) : (state as any);
-    }) as any;
+      return typeof selector === "function" ? selector(state) : state;
+    });
   });
 
   it("should render reservation notes when present in active orders", () => {
     const mockNotes = "Alérgico a las nueces y frutos secos.";
-    const mockOrder = {
+    const mockOrder: Order = {
       zzz_id: 10,
       zzz_reservation_id: 2,
       zzz_catalog_type_id: 1,
@@ -73,7 +105,12 @@ describe("OrderScreen (Tourist)", () => {
           zzz_quantity: 2,
           zzz_price: 2000,
           zzz_catalog_item: {
+            zzz_id: 2,
+            zzz_catalog_category_id: 1,
             zzz_name_i18n: { es: "Guiso", en: "Stew" },
+            zzz_price: 1000,
+            zzz_max_participants: 20,
+            zzz_global_pause: false,
           },
         },
       ],
@@ -89,12 +126,20 @@ describe("OrderScreen (Tourist)", () => {
         zzz_guest_count: 2,
       },
       zzz_confirmed_venture: {
+        id: 1,
         name: "Parador Don Esteban",
+        ownerId: "00000000-0000-0000-0000-000000000001",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        zzz_max_capacity: 20,
+        zzz_cascade_order: 1,
+        zzz_is_paused: false,
+        zzz_is_active: true,
       },
     };
 
     mockedUseReservationStore.mockImplementation((selector) => {
-      const state = {
+      const state: ReservationState = {
         activeOrders: [mockOrder],
         historyOrders: [],
         isLoading: false,
@@ -107,8 +152,8 @@ describe("OrderScreen (Tourist)", () => {
         moveOrders: jest.fn(),
         setTab: jest.fn(),
       };
-      return typeof selector === "function" ? selector(state as any) : (state as any);
-    }) as any;
+      return typeof selector === "function" ? selector(state) : state;
+    });
 
     render(<OrderScreen />);
 

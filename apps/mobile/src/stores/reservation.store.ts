@@ -9,7 +9,7 @@ import type { Order, ServiceMoment } from "@repo/shared";
 import { orderService } from "../services/order.service";
 import { logger } from "../services/logger.service";
 
-interface ReservationState {
+export interface ReservationState {
   // Data
   activeOrders: Order[];
   historyOrders: Order[];

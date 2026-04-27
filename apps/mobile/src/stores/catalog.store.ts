@@ -9,7 +9,7 @@ import { CatalogServiceItem, Order, CatalogService } from "../services/catalog.s
 import { logger } from "../services/logger.service";
 import { ServiceMoment } from "@repo/shared";
 
-interface CatalogState {
+export interface CatalogState {
   // Services data
   services: CatalogServiceItem[];
   selectedService: CatalogServiceItem | null;
@@ -32,9 +32,9 @@ interface CatalogState {
   placeOrder: (
     date: Date,
     moment: ServiceMoment,
-    zzz_items: Array<{ zzz_catalog_item_id: number; zzz_quantity: number }>,
+    items: Array<{ zzz_catalog_item_id: number; zzz_quantity: number }>,
     guestCount: number,
-    zzz_notes?: string,
+    notes?: string,
   ) => Promise<Order | null>;
   fetchOrders: () => Promise<void>;
 }
@@ -90,7 +90,13 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   },
 
   // Place a new order
-  placeOrder: async (date, moment, items, guestCount, notes) => {
+  placeOrder: async (
+    date: Date,
+    moment: ServiceMoment,
+    items: Array<{ zzz_catalog_item_id: number; zzz_quantity: number }>,
+    guestCount: number,
+    notes?: string,
+  ) => {
     set({ isSaving: true, error: null });
     try {
       const newOrder = await CatalogService.placeOrder(date, moment, items, guestCount, notes);
