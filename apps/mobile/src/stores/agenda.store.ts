@@ -12,7 +12,7 @@ import { getVentureIdsByUserId } from "../mocks/venture-members";
 import { toISODate } from "../logic/formatters";
 import { CatalogService } from "../services/catalog.service";
 
-interface AgendaState {
+export interface AgendaState {
   // Data
   allOrders: Order[];
   orders: Order[];
