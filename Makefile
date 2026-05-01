@@ -88,6 +88,7 @@ MOBILE_BUNDLE_ID = org.impenetrable.connect
 ANDROID_FIRST_AVD = $(shell $(ANDROID_EMULATOR) -list-avds | head -n 1)
 MOBILE_DIR = apps/mobile
 BACKEND_DIR = apps/backend
+EAS_CLI_VERSION = 18.8.1
 
 # ==========================================
 # 🚀 SETUP
@@ -318,40 +319,40 @@ db-reset: db-down db-up db-wait db-push seed
 # ==========================================
 
 eas-login:
-	cd $(MOBILE_DIR) && bunx eas-cli login -b
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) login -b
 
 eas-whoami:
-	cd $(MOBILE_DIR) && bunx eas-cli whoami
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) whoami
 
 eas-init:
-	cd $(MOBILE_DIR) && bunx eas-cli init
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) init
 
 eas-build-configure:
-	cd $(MOBILE_DIR) && bunx eas-cli build:configure
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) build:configure
 
 eas-build-dev:
-	cd $(MOBILE_DIR) && bunx eas-cli build --profile development
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) build --profile development
 
 eas-build-android-dev:
-	cd $(MOBILE_DIR) && bunx eas-cli build --profile development --platform android
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) build --profile development --platform android
 
 eas-build-android-preview:
-	cd $(MOBILE_DIR) && bunx eas-cli build --profile preview --platform android
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) build --profile preview --platform android
 
 eas-build-android-production:
-	cd $(MOBILE_DIR) && bunx eas-cli build --profile production --platform android
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) build --profile production --platform android
 
 eas-build-ios-simulator:
-	cd $(MOBILE_DIR) && bunx eas-cli build --profile development --platform ios --simulator
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) build --profile development --platform ios --simulator
 
 eas-export-web:
 	cd $(MOBILE_DIR) && bunx expo export -p web
 
 eas-deploy-web: eas-export-web
-	cd $(MOBILE_DIR) && bunx eas-cli deploy
+	cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) deploy
 
 eas-deploy-web-prod: eas-export-web
-		cd $(MOBILE_DIR) && bunx eas-cli deploy --prod
+		cd $(MOBILE_DIR) && bunx eas-cli@$(EAS_CLI_VERSION) deploy --prod
 
 # ==========================================
 # 🤖 ANDROID EMULATOR
