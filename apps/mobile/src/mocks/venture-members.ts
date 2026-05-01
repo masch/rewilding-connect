@@ -1,4 +1,4 @@
-import { MOCK_VENTURE_MEMBERS } from "./venture-members.data";
+import { MOCK_VENTURE_MEMBERS } from "@repo/shared";
 
 /**
  * Get venture IDs assigned to a specific user

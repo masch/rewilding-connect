@@ -14,6 +14,7 @@ import { Button } from "./Button";
 import { AppAlert } from "./AppAlert";
 import { FormInput } from "./FormInput";
 import { useCartStore } from "../stores/cart.store";
+import { useProjectStore } from "../stores/project.store";
 import { COLORS } from "@repo/shared";
 import { formatCurrency } from "../logic/formatters";
 
@@ -40,6 +41,7 @@ export function ReservationModal({
   initialNotes,
   mode = "add",
 }: ReservationModalProps) {
+  const { selectedProject } = useProjectStore();
   const { t, getLocalizedName } = useTranslations();
   const selectedDate = useCartStore((state) => state.selectedDate);
   const selectedMoment = useCartStore((state) => state.selectedMoment);
@@ -55,6 +57,8 @@ export function ReservationModal({
       setNotes(initialNotes || "");
     }
   }, [visible, initialQuantity, initialNotes]);
+
+  if (!selectedProject || !service) return null;
 
   const isValid = selectedMoment !== null && quantity > 0 && selectedDate !== null;
 
@@ -145,7 +149,8 @@ export function ReservationModal({
                   </View>
                   <Button
                     variant="ghost"
-                    onPress={() => setQuantity(Math.min(20, quantity + 1))}
+                    testID="quantity-plus-button"
+                    onPress={() => setQuantity(quantity + 1)}
                     className="w-10 h-10 items-center justify-center p-0 rounded-full"
                   >
                     <MaterialCommunityIcons name="plus" size={20} color={COLORS["on-surface"]} />

@@ -5,6 +5,7 @@ import {
   MOCK_USER_ENTREPRENEUR_LUCIA,
   MOCK_USER_ENTREPRENEUR_CARLOS,
 } from "./users";
+import { PROJECT_IDS } from "./projects";
 
 export const MOCK_VENTURES: Venture[] = [
   {
@@ -15,6 +16,7 @@ export const MOCK_VENTURES: Venture[] = [
     zzz_is_paused: false,
     zzz_is_active: true,
     zzz_cascade_order: 0,
+    zzz_project_id: PROJECT_IDS.IMPENETRABLE,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -26,6 +28,7 @@ export const MOCK_VENTURES: Venture[] = [
     zzz_is_paused: false,
     zzz_is_active: true,
     zzz_cascade_order: 1,
+    zzz_project_id: PROJECT_IDS.IMPENETRABLE,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -37,6 +40,7 @@ export const MOCK_VENTURES: Venture[] = [
     zzz_is_paused: false,
     zzz_is_active: true,
     zzz_cascade_order: 0,
+    zzz_project_id: PROJECT_IDS.IMPENETRABLE,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -48,12 +52,13 @@ export const MOCK_VENTURES: Venture[] = [
     zzz_is_paused: false,
     zzz_is_active: true,
     zzz_cascade_order: 0,
+    zzz_project_id: PROJECT_IDS.IMPENETRABLE,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
 ];
 
 export const MOCK_VENTURE_WITH_ORDERS = MOCK_VENTURES[0];
-export const MOCK_VENTURE_JOSE = MOCK_VENTURES[1];
+export const MOCK_VENTURE_PARADOR_BERMEJITO = MOCK_VENTURES[1];
 export const MOCK_VENTURE_CAMPO_ALEGRE = MOCK_VENTURES[2];
 export const MOCK_VENTURE_PLAZOLETA_NANCY = MOCK_VENTURES[3];

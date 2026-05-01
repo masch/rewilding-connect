@@ -1,9 +1,6 @@
 {
   "app_title": "Impenetrable Connect",
   "mock_mode": "[Frontend-First Mock Mode]",
-  "loading": "Loading...",
-  "saving": "Saving...",
-  "error": "Error",
   "no_projects": "No projects found",
   "active_projects": "Active Projects",
   "inactive_projects": "Inactive Projects",
@@ -21,6 +18,7 @@
   "save": "Save",
   "cancel": "Cancel",
   "delete": "Delete",
+  "max_capacity_limit": "Capacity Limit",
   "confirm_delete": "Confirm Delete",
   "delete_confirm_message": "Are you sure you want to delete",
   "login": {
@@ -136,7 +134,50 @@
     "profile": "Profile",
     "projects": "Projects",
     "request": "Request",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "venture": "Venture"
+  },
+  "profile": {
+    "title": "Profile",
+    "edit_profile": "Edit Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "about": "About",
+    "logout": "Logout",
+    "login": "Login",
+    "create_account": "Create account",
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "terms": "Terms of service",
+    "version": "Version",
+    "role": "Role",
+    "venture": "Venture",
+    "not_set": "Not defined"
+  },
+  "venture": {
+    "title": "Venture",
+    "config": "Configuration",
+    "name": "Venture Name",
+    "description": "Description",
+    "category": "Category",
+    "location": "Location",
+    "contact": "Contact",
+    "social": "Social Networks",
+    "images": "Images",
+    "capacity": "Capacity",
+    "max_capacity": "Maximum Capacity",
+    "max_capacity_desc": "This is the limit of seats/places available per time of day.",
+    "max_capacity_limit_info": "The limit allowed by the project is {{limit}}.",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "under_review": "Under Review",
+    "save_success": "Venture configuration saved successfully",
+    "save_error": "Error saving configuration",
+    "capacity_label": "Visitor Capacity",
+    "capacity_help": "Adjust the number of people you can receive simultaneously."
   },
   "orders": {
     "title": "My Orders",
@@ -195,10 +236,23 @@
       "DINNER": "Dinner"
     }
   },
+  "project": {
+    "title": "Project",
+    "name": "Project Name",
+    "description": "Description",
+    "status": "Status",
+    "created_at": "Created at",
+    "updated_at": "Updated at",
+    "is_active": "Is active",
+    "max_capacity_limit": "Max capacity limit",
+    "not_selected_error": "No project selected"
+  },
   "errors": {
-    "login_required_title": "Login required",
-    "login_required_message": "You must be logged in to make a reservation",
-    "reservation_failed": "Failed to create reservation",
+    "login_required_title": "Login Required",
+    "login_required_message": "You must log in to make a reservation",
+    "no_venture_found": "No venture found",
+    "no_project_found": "No project found",
+    "reservation_failed": "Error processing request",
     "auth": {
       "connection_failed": "Could not connect to the server. Please check if the backend is running.",
       "invalid_credentials": "Invalid email or password."
@@ -228,7 +282,12 @@
     "total": "Total",
     "yes": "Yes",
     "no": "No",
-    "back": "Back"
+    "back": "Back",
+    "save": "Save",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "max_capacity_limit": "Capacity Limit (Project)",
+    "open_external_link": "Open external link"
   },
   "role_selector": {
     "welcome": "Welcome",
@@ -290,5 +349,17 @@
     "uptime_label": "Uptime: {{value}}",
     "latency_label": "Latency: {{value}}",
     "loading_dots": "..."
+  },
+  "entrepreneur": {
+    "venture_config": {
+      "title": "Venture Configuration",
+      "capacity_label": "Maximum Capacity",
+      "capacity_help": "This is the limit of seats/spots available per time of day.",
+      "project_limit_warning": "The limit allowed by the project is {{limit}}.",
+      "save_success": "Configuration saved successfully."
+    }
+  },
+  "admin": {
+    "system": "System Management"
   }
 }

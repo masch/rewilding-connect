@@ -21,7 +21,12 @@ export const Link = "Link";
 
 // Component mocks for layouts
 const MockComponent = ({ children }: { children: React.ReactNode }) => children;
-MockComponent.Screen = ({ options }: { options?: { title?: string; tabBarLabel?: string } }) => {
+MockComponent.Screen = ({
+  options,
+}: {
+  options?: { title?: string; tabBarLabel?: string; href?: string | null };
+}) => {
+  if (options?.href === null) return null;
   return (
     <View testID="nav-tab">
       {options?.title && <Text>{options.title}</Text>}

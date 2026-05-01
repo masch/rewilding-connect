@@ -6,6 +6,7 @@ import {
   AccessibilityState,
   StyleProp,
   ViewStyle,
+  ActivityIndicator,
 } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { COLORS } from "@repo/shared";
@@ -35,6 +36,8 @@ interface ButtonProps {
   accessibilityHint?: string;
   children?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
+  isLoading?: boolean;
 }
 
 const variantStyles: Record<string, ButtonVariantStyle> = {
@@ -84,6 +87,8 @@ export function Button({
   children,
   textClassName = "",
   style,
+  testID,
+  isLoading = false,
 }: ButtonProps) {
   const styles = variantStyles[variant];
 
@@ -92,6 +97,7 @@ export function Button({
 
   return (
     <Pressable
+      testID={testID}
       accessibilityLabel={accessibilityLabel || title || "button"}
       accessibilityRole={accessibilityRole || "button"}
       accessibilityState={accessibilityState}
@@ -104,12 +110,14 @@ export function Button({
         ${className}
       `}
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       style={style}
     >
       {({ pressed }) => (
         <>
-          {children ? (
+          {isLoading ? (
+            <ActivityIndicator size="small" color={resolvedIconColor} />
+          ) : children ? (
             children
           ) : (
             <>
