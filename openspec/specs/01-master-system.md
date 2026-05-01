@@ -2490,3 +2490,21 @@ Redis is introduced in POST-MVP for:
 - [ ] **4.3 Mobile**: Replace Zustand mock actions with real `fetch` calls to the Hono API.
 - [ ] **4.4 Mobile**: Implement global error boundary and HTTP error toast notifications.
 - [ ] **4.5 Testing**: E2E manual flow test: db:seed -> start backend -> place order on mobile -> cascade engine auto-assigns.
+
+---
+
+## Appendix: Roadmap & Next Steps
+
+This section tracks planned features organized by priority.
+
+### 1. MVP: Next Steps (Phase 1 Continued)
+
+- **General Venture Pause**: Implement `is_paused` toggle in the Venture Config screen.
+- **Specific Item Management**: Implement the ability for entrepreneurs to pause/unpause specific catalog items for their venture.
+
+### 2. Post-MVP (Phase 2)
+
+- **Real-time Availability Engine**: Implement dynamic calculation of available seats per time slot (`Venture.max_capacity - current_occupation`) to cap tourist selections in the UI.
+- **Advanced Scheduling**: Move beyond fixed Day Moments (Breakfast/Lunch/etc.) to specific time slots or duration-based bookings.
+- **Lead Time Control**: Minimum notice required for a booking (e.g., 2 hours before the service).
+- **Technical Debt & Scaling**: Replace in-memory rate limiting with Redis; implement OpenTelemetry observability for the Cascade Engine.

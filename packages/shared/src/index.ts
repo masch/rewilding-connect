@@ -17,3 +17,4 @@ export * from "./theme/colors";
 export * from "./mocks/projects";
 export * from "./mocks/users";
 export * from "./mocks/ventures";
+export * from "./mocks/venture-members";

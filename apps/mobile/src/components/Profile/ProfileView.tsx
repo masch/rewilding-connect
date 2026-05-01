@@ -1,51 +1,113 @@
-import { UserRole, COLORS } from "@repo/shared";
+import { UserRole, COLORS, User } from "@repo/shared";
 import { Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, Router } from "expo-router";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Screen, { ScreenContent } from "../Screen";
 import { Button } from "../Button";
 import { useTranslations } from "../../hooks/useI18n";
+import { useAuthStore } from "../../stores/auth.store";
 
 interface ProfileViewProps {
   userType: UserRole;
 }
 
-/**
- * Shared Profile View component.
- * Uses role-based context and shared monorepo types.
- */
+interface ProfileAction {
+  id: string;
+  title: string;
+  description: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  onPress: () => void;
+}
+
+interface ProfileSection {
+  title: string;
+  actions: ProfileAction[];
+}
+
+interface ConfigParams {
+  t: (key: string) => string;
+  router: Router;
+  currentUser: User | null;
+}
+
+const ROLE_CONFIGS: Partial<Record<UserRole, (params: ConfigParams) => ProfileSection[]>> = {
+  [UserRole.ENTREPRENEUR]: ({ t, router, currentUser }) =>
+    currentUser?.id
+      ? [
+          {
+            title: t("tabs.venture"),
+            actions: [
+              {
+                id: "venture-config",
+                title: t("venture.config"),
+                description: t("venture.capacity_help"),
+                icon: "store-cog",
+                onPress: () => router.push("/entrepreneur/venture-config"),
+              },
+            ],
+          },
+        ]
+      : [],
+  [UserRole.ADMIN]: ({ t, router }) => [
+    {
+      title: t("admin.system"),
+      actions: [
+        {
+          id: "system-status",
+          title: t("status.title"),
+          description: `${t("status.services")} & ${t("status.pipelines")}`,
+          icon: "pulse",
+          onPress: () => router.push("/system-status"),
+        },
+      ],
+    },
+  ],
+};
+
 export default function ProfileView({ userType }: ProfileViewProps) {
   const { t } = useTranslations();
   const router = useRouter();
+  const { currentUser } = useAuthStore();
+
+  const sections = ROLE_CONFIGS[userType]?.({ t, router, currentUser }) || [];
 
   return (
     <Screen>
       <ScreenContent className="p-4">
-        <Text className="text-2xl font-bold mb-6">Profile - {userType}</Text>
+        <Text className="text-2xl font-display font-bold text-on-surface mb-8">
+          {t("profile.title")}
+        </Text>
 
-        {userType === UserRole.ADMIN && (
-          <Button
-            onPress={() => router.push("/system-status")}
-            variant="ghost"
-            className="flex-row items-center p-4 bg-surface-variant rounded-xl border border-outline/20 mb-4"
-          >
-            <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mr-4">
-              <MaterialCommunityIcons name="pulse" size={24} color={COLORS.primary} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-lg font-bold text-on-surface-variant">{t("status.title")}</Text>
-              <Text className="text-sm text-on-surface-variant/60">
-                {t("status.services")} & {t("status.pipelines")}
-              </Text>
-            </View>
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={24}
-              color={COLORS["on-surface-variant"]}
-            />
-          </Button>
-        )}
+        {sections.map((section) => (
+          <View key={section.title} className="mb-8">
+            <Text className="text-xs font-display font-bold text-primary uppercase tracking-[2px] mb-4 ml-1">
+              {section.title}
+            </Text>
+            {section.actions.map((action) => (
+              <ProfileActionButton key={action.id} {...action} />
+            ))}
+          </View>
+        ))}
       </ScreenContent>
     </Screen>
+  );
+}
+
+function ProfileActionButton({ title, description, icon, onPress }: ProfileAction) {
+  return (
+    <Button
+      onPress={onPress}
+      variant="ghost"
+      className="flex-row items-center p-4 bg-surface-container-low rounded-2xl border border-outline-variant/30"
+    >
+      <View className="w-12 h-12 rounded-2xl bg-primary/10 items-center justify-center mr-4">
+        <MaterialCommunityIcons name={icon} size={24} color={COLORS.primary} />
+      </View>
+      <View className="flex-1">
+        <Text className="text-lg font-display font-bold text-on-surface">{title}</Text>
+        <Text className="text-sm font-body text-on-surface-variant/70">{description}</Text>
+      </View>
+      <MaterialCommunityIcons name="chevron-right" size={24} color={COLORS["on-surface-variant"]} />
+    </Button>
   );
 }

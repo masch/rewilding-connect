@@ -48,7 +48,7 @@ export default function LoadingView({
       <ActivityIndicator size="large" color={COLORS.primary} />
       {showText && (
         <Text className="text-base font-body text-on-surface opacity-60 mt-4 text-center">
-          {message || t("loading")}
+          {message || t("common.loading")}
         </Text>
       )}
     </View>

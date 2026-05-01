@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useTranslations } from "../../hooks/useI18n";
 import { useCartStore } from "../../stores/cart.store";
 import { useReservationStore } from "../../stores/reservation.store";
+import { useProjectStore } from "../../stores/project.store";
 import { SERVICE_MOMENTS } from "../../constants/moments";
 import { DatePicker } from "../../components/DatePicker";
 import { Button } from "../../components/Button";
+import LoadingView from "../../components/LoadingView";
 import { COLORS, ServiceMoment, Order } from "@repo/shared";
 import { isSameDay } from "../../logic/formatters";
 import Screen, { ScreenContent } from "../../components/Screen";
@@ -15,11 +17,59 @@ import Screen, { ScreenContent } from "../../components/Screen";
 export default function OrderSetupScreen() {
   const router = useRouter();
   const { t } = useTranslations();
-  const { setContext, selectedDate, selectedMoment } = useCartStore();
+  const { projects, selectedProject, isLoading, error, fetchProjects, selectProject } =
+    useProjectStore();
+  const { setContext, selectedDate, selectedMoment, guestCount, setGuestCount } = useCartStore();
   const { activeOrders, moveOrders } = useReservationStore();
 
   const [date, setDate] = useState<Date | null>(selectedDate || null);
   const [moment, setMoment] = useState<ServiceMoment | null>(selectedMoment);
+
+  useEffect(() => {
+    if (!selectedProject && !isLoading && !error) {
+      if (projects.length === 0) {
+        fetchProjects();
+      } else {
+        // Auto-select the first active project if none selected
+        const firstActive = projects.find((p) => p.zzz_is_active);
+        if (firstActive) {
+          selectProject(firstActive.zzz_id);
+        }
+      }
+    }
+  }, [selectedProject, projects, isLoading, error, fetchProjects, selectProject]);
+
+  if (isLoading || (!selectedProject && !error)) {
+    return (
+      <Screen>
+        <LoadingView />
+      </Screen>
+    );
+  }
+
+  if (error) {
+    return (
+      <Screen>
+        <ScreenContent className="items-center justify-center p-6">
+          <MaterialCommunityIcons name="alert-circle-outline" size={64} color={COLORS.error} />
+          <Text className="text-xl font-display font-bold text-on-surface mt-4 text-center">
+            {error ? t("common.error") : t("errors.no_project_found")}
+          </Text>
+          {error && (
+            <Text className="text-sm font-body text-on-surface-variant mt-2 text-center">
+              {error}
+            </Text>
+          )}
+          <Button
+            title={error ? t("common.retry") : t("common.back")}
+            onPress={() => (error ? fetchProjects() : router.back())}
+            variant={error ? "primary" : "ghost"}
+            className="mt-6 w-full"
+          />
+        </ScreenContent>
+      </Screen>
+    );
+  }
 
   const isValid = date !== null && moment !== null;
 
@@ -99,11 +149,7 @@ export default function OrderSetupScreen() {
             <View className="bg-surface-container-low/30 border border-outline-variant/20 rounded-3xl p-6 flex-row items-center justify-between">
               <Button
                 variant="ghost"
-                onPress={() =>
-                  useCartStore
-                    .getState()
-                    .setGuestCount(Math.max(1, useCartStore.getState().guestCount - 1))
-                }
+                onPress={() => setGuestCount(Math.max(1, guestCount - 1))}
                 className="w-14 h-14 rounded-2xl bg-surface-container-high items-center justify-center border border-outline-variant/10"
               >
                 <MaterialCommunityIcons name="minus" size={24} color={COLORS.primary} />
@@ -111,7 +157,7 @@ export default function OrderSetupScreen() {
 
               <View className="items-center">
                 <Text className="text-4xl font-display font-bold text-on-surface">
-                  {useCartStore((state) => state.guestCount)}
+                  {guestCount}
                 </Text>
                 <Text className="text-[10px] font-display font-bold text-on-surface-variant uppercase tracking-widest mt-1">
                   {t("common.pax")}
@@ -120,11 +166,8 @@ export default function OrderSetupScreen() {
 
               <Button
                 variant="ghost"
-                onPress={() =>
-                  useCartStore
-                    .getState()
-                    .setGuestCount(Math.min(20, useCartStore.getState().guestCount + 1))
-                }
+                testID="guest-plus-button"
+                onPress={() => setGuestCount(guestCount + 1)}
                 className="w-14 h-14 rounded-2xl bg-surface-container-high items-center justify-center border border-outline-variant/10"
               >
                 <MaterialCommunityIcons name="plus" size={24} color={COLORS.primary} />

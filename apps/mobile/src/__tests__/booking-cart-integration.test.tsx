@@ -4,12 +4,14 @@ import { useCartStore } from "../stores/cart.store";
 import { useCatalogStore } from "../stores/catalog.store";
 import { useReservationStore } from "../stores/reservation.store";
 import { useAuthStore } from "../stores/auth.store";
+import { useProjectStore } from "../stores/project.store";
 
 // Mocking all involved stores
 jest.mock("../stores/cart.store");
 jest.mock("../stores/catalog.store");
 jest.mock("../stores/reservation.store");
 jest.mock("../stores/auth.store");
+jest.mock("../stores/project.store");
 
 jest.mock("../hooks/useI18n", () => ({
   useTranslations: () => ({
@@ -41,6 +43,7 @@ describe("Booking & Cart Integration", () => {
   interface StoreOverrides {
     auth?: Record<string, unknown>;
     catalog?: Record<string, unknown>;
+    project?: Record<string, unknown>;
     reservation?: Record<string, unknown>;
     cart?: Record<string, unknown>;
   }
@@ -49,6 +52,7 @@ describe("Booking & Cart Integration", () => {
     const defaultState = {
       auth: { userRole: "TOURIST", isAuthenticated: true },
       catalog: { services: mockServices, isLoading: false, fetchServices: jest.fn() },
+      project: { selectedProject: { zzz_id: 1, zzz_max_capacity_limit: 50 } },
       reservation: {
         activeOrders: [],
         fetchOrders: jest.fn(),
@@ -68,6 +72,7 @@ describe("Booking & Cart Integration", () => {
 
     const finalAuth = { ...defaultState.auth, ...overrides.auth };
     const finalCatalog = { ...defaultState.catalog, ...overrides.catalog };
+    const finalProject = { ...defaultState.project, ...overrides.project };
     const finalReservation = { ...defaultState.reservation, ...overrides.reservation };
     const finalCart = { ...defaultState.cart, ...overrides.cart };
 
@@ -76,6 +81,9 @@ describe("Booking & Cart Integration", () => {
     );
     (useCatalogStore as unknown as jest.Mock).mockImplementation((sel) =>
       sel ? sel(finalCatalog) : finalCatalog,
+    );
+    (useProjectStore as unknown as jest.Mock).mockImplementation((sel) =>
+      sel ? sel(finalProject) : finalProject,
     );
     (useReservationStore as unknown as jest.Mock).mockImplementation((sel) =>
       sel ? sel(finalReservation) : finalReservation,

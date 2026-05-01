@@ -65,6 +65,12 @@ export default function EntrepreneurTabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="venture-config"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

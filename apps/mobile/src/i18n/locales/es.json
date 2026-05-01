@@ -1,9 +1,6 @@
 {
   "app_title": "Impenetrable Connect",
   "mock_mode": "[Modo Mock Frontend-First]",
-  "loading": "Cargando...",
-  "saving": "Guardando...",
-  "error": "Error",
   "no_projects": "No se encontraron proyectos",
   "active_projects": "Proyectos Activos",
   "inactive_projects": "Proyectos Inactivos",
@@ -21,6 +18,7 @@
   "save": "Guardar",
   "cancel": "Cancelar",
   "delete": "Eliminar",
+  "max_capacity_limit": "Límite de Capacidad",
   "confirm_delete": "Confirmar Eliminación",
   "delete_confirm_message": "¿Estás seguro de que deseas eliminar",
   "login": {
@@ -136,7 +134,50 @@
     "profile": "Perfil",
     "projects": "Proyectos",
     "request": "Solicitudes",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "venture": "Emprendimiento"
+  },
+  "profile": {
+    "title": "Perfil",
+    "edit_profile": "Editar Perfil",
+    "settings": "Ajustes",
+    "help": "Ayuda",
+    "about": "Acerca de",
+    "logout": "Cerrar Sesión",
+    "login": "Ingresar",
+    "create_account": "Crear cuenta",
+    "language": "Idioma",
+    "theme": "Tema",
+    "notifications": "Notificaciones",
+    "privacy": "Privacidad",
+    "terms": "Términos de servicio",
+    "version": "Versión",
+    "role": "Rol",
+    "venture": "Emprendimiento",
+    "not_set": "No definido"
+  },
+  "venture": {
+    "title": "Emprendimiento",
+    "config": "Configuración",
+    "name": "Nombre del Emprendimiento",
+    "description": "Descripción",
+    "category": "Categoría",
+    "location": "Ubicación",
+    "contact": "Contacto",
+    "social": "Redes Sociales",
+    "images": "Imágenes",
+    "capacity": "Capacidad",
+    "max_capacity": "Capacidad Máxima",
+    "max_capacity_desc": "Este es el límite de cubiertos/lugares disponibles por momento del día.",
+    "max_capacity_limit_info": "El límite permitido por el proyecto es {{limit}}.",
+    "status": "Estado",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "under_review": "En Revisión",
+    "save_success": "Configuración del emprendimiento guardada con éxito",
+    "save_error": "Error al guardar la configuración",
+    "capacity_label": "Capacidad de Visitantes",
+    "capacity_help": "Ajustá la cantidad de personas que podés recibir simultáneamente."
   },
   "orders": {
     "title": "Mis Pedidos",
@@ -195,10 +236,23 @@
       "DINNER": "Cena"
     }
   },
+  "project": {
+    "title": "Proyecto",
+    "name": "Nombre del Proyecto",
+    "description": "Descripción",
+    "status": "Estado",
+    "created_at": "Creado el",
+    "updated_at": "Actualizado el",
+    "is_active": "Activo",
+    "max_capacity_limit": "Límite de capacidad máx.",
+    "not_selected_error": "No se seleccionó ningún proyecto"
+  },
   "errors": {
     "login_required_title": "Login requerido",
     "login_required_message": "Debes iniciar sesión para hacer una reserva",
     "reservation_failed": "Error al hacer la reserva",
+    "no_project_found": "No se seleccionó ningún proyecto",
+    "no_venture_found": "No se encontró el emprendimiento",
     "auth": {
       "connection_failed": "No se pudo conectar con el servidor. Por favor, verificá si el backend está encendido.",
       "invalid_credentials": "Email o contraseña incorrectos."
@@ -228,7 +282,12 @@
     "total": "Total",
     "yes": "Sí",
     "no": "No",
-    "back": "Volver"
+    "back": "Volver",
+    "save": "Guardar",
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "max_capacity_limit": "Límite de Capacidad (Proyecto)",
+    "open_external_link": "Abrir enlace externo"
   },
   "role_selector": {
     "welcome": "Bienvenido",
@@ -290,5 +349,17 @@
     "uptime_label": "Tiempo activo: {{value}}",
     "latency_label": "Latencia: {{value}}",
     "loading_dots": "..."
+  },
+  "entrepreneur": {
+    "venture_config": {
+      "title": "Configuración del Emprendimiento",
+      "capacity_label": "Capacidad Máxima",
+      "capacity_help": "Este es el límite de cubiertos/lugares disponibles por momento del día.",
+      "project_limit_warning": "El límite permitido por el proyecto es {{limit}}.",
+      "save_success": "Configuración guardada correctamente."
+    }
+  },
+  "admin": {
+    "system": "Gestión del Sistema"
   }
 }

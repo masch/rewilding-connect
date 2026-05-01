@@ -74,7 +74,12 @@ function StatusCard({
   const content = (
     <View className="p-4 flex-row items-start gap-4 w-full">
       <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mt-1">
-        <MaterialCommunityIcons name={icon} size={24} color={COLORS.primary} />
+        <MaterialCommunityIcons
+          name={icon}
+          size={24}
+          color={COLORS.primary}
+          accessibilityLabel={title}
+        />
       </View>
       <View className="flex-1 items-start">
         <View className="flex-row items-center justify-between w-full pr-2">
@@ -86,7 +91,14 @@ function StatusCard({
             >
               {title}
             </Text>
-            {url && <MaterialCommunityIcons name="open-in-new" size={14} color="gray" />}
+            {url && (
+              <MaterialCommunityIcons
+                name="open-in-new"
+                size={14}
+                color="gray"
+                accessibilityLabel={t("common.open_external_link")}
+              />
+            )}
           </View>
           <View className="flex-row items-center gap-2">
             <Text className="text-sm font-medium text-on-surface/80">{statusLabel}</Text>
@@ -145,7 +157,9 @@ interface AnnotationData {
   messages: string[];
 }
 
-type AnnotationsMap = Record<string, AnnotationData>;
+interface AnnotationsMap {
+  [key: string]: AnnotationData;
+}
 
 export default function StatusScreen() {
   const { t } = useTranslations();
@@ -216,7 +230,7 @@ export default function StatusScreen() {
   };
 
   if (loading) {
-    return <LoadingView message={t("loading")} />;
+    return <LoadingView message={t("common.loading")} />;
   }
 
   const getStatusFromRuns = (runs: GitHubRun[] | null, name: string) => {
@@ -296,8 +310,9 @@ export default function StatusScreen() {
     },
   };
 
-  const env = health?.environment && health.environment !== "mock" ? health.environment : "default";
-  const colors = envColors[env as keyof typeof envColors] || envColors.default;
+  const healthEnv =
+    health?.environment && health.environment !== "mock" ? health.environment : "default";
+  const colors = envColors[healthEnv as keyof typeof envColors] || envColors.default;
 
   const apiDesc = health?.environment
     ? `${t("status.env_label")}: ${t(`status.env_${health.environment}`)}`

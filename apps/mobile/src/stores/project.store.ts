@@ -16,6 +16,7 @@ interface ProjectState {
   createProject: (project: Omit<Project, "zzz_id">) => Promise<Project | null>;
   updateProject: (id: number, project: Partial<Project>) => Promise<Project | null>;
   deleteProject: (id: number) => Promise<boolean>;
+  setSelectedProject: (project: Project | null) => void;
 }
 
 /**
@@ -99,5 +100,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       set({ error: "Failed to delete project", isSaving: false });
       return false;
     }
+  },
+
+  setSelectedProject: (project: Project | null) => {
+    set({ selectedProject: project });
   },
 }));
