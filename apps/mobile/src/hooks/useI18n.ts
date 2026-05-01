@@ -26,7 +26,7 @@ export function useTranslations() {
     };
   }, [locale]);
 
-  return { t, locale, getLocalizedName };
+  return { t, getLocalizedName };
 }
 
 export function useLocale() {

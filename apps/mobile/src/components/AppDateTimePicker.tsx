@@ -1,5 +1,5 @@
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import { useTranslations } from "../hooks/useI18n";
+import { useLocale } from "../hooks/useI18n";
 import { getNativeLocale } from "../logic/formatters";
 
 interface AppDateTimePickerProps {
@@ -9,6 +9,7 @@ interface AppDateTimePickerProps {
   maximumDate?: Date;
   mode?: "date" | "time" | "datetime";
   display?: "default" | "spinner" | "calendar" | "clock";
+  testID?: string;
 }
 
 /**
@@ -22,8 +23,9 @@ export function AppDateTimePicker({
   maximumDate,
   mode = "date",
   display = "default",
+  testID,
 }: AppDateTimePickerProps) {
-  const { locale } = useTranslations();
+  const { locale } = useLocale();
 
   return (
     <DateTimePicker
@@ -34,6 +36,7 @@ export function AppDateTimePicker({
       minimumDate={minimumDate}
       maximumDate={maximumDate}
       locale={getNativeLocale(locale)}
+      testID={testID}
     />
   );
 }

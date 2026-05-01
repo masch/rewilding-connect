@@ -111,7 +111,7 @@ export default function ReservationCard({
   onDecline,
   onCancel,
 }: ReservationCardProps) {
-  const { t, locale } = useTranslations();
+  const { t, getLocalizedName } = useTranslations();
   const status = getStatusConfig(t, order.zzz_global_status);
   const isPending = order.zzz_global_status === "OFFER_PENDING";
   const bgClass = isPending ? "bg-status-pending/5" : "bg-surface-container-lowest";
@@ -151,6 +151,7 @@ export default function ReservationCard({
                 name={status.icon as keyof typeof MaterialCommunityIcons.glyphMap}
                 size={14}
                 color={status.color}
+                accessibilityLabel={status.label}
               />
               <Text
                 className={`font-display-bold text-[10px] uppercase tracking-[1px] ml-1.5 ${status.textClass}`}
@@ -169,6 +170,7 @@ export default function ReservationCard({
               name={headerIcon as keyof typeof MaterialCommunityIcons.glyphMap}
               size={hideStatus ? 18 : 14}
               color={hideStatus ? COLORS.primary : COLORS["on-surface-variant"]}
+              accessibilityLabel={headerTitle}
             />
             <Text
               className={`font-display-black ml-2 ${
@@ -188,7 +190,7 @@ export default function ReservationCard({
               <View key={item.zzz_id} className={`flex-row items-center ${idx > 0 ? "mt-4" : ""}`}>
                 <View className="flex-1 mr-2">
                   <Text className="text-on-surface font-display-bold text-[15px]" numberOfLines={2}>
-                    {item.zzz_catalog_item?.zzz_name_i18n?.[locale as "es" | "en"] ||
+                    {getLocalizedName(item.zzz_catalog_item?.zzz_name_i18n) ||
                       `${t("orders.itemNumber")}${item.zzz_catalog_item_id}`}
                   </Text>
                 </View>
@@ -221,6 +223,7 @@ export default function ReservationCard({
                 name="comment-text-outline"
                 size={12}
                 color={COLORS["on-surface-variant"]}
+                accessibilityLabel={t("orders.notes")}
               />
               <Text className="text-on-surface-variant font-display-bold text-[10px] uppercase ml-1.5 tracking-wider">
                 {t("orders.notes")}
@@ -241,6 +244,7 @@ export default function ReservationCard({
                   name="silverware-variant"
                   size={14}
                   color={COLORS["on-surface-variant"]}
+                  accessibilityLabel={t("common.dishes_other")}
                 />
                 <Text className="text-on-surface-variant font-display-black text-[11px] ml-2 uppercase tracking-tighter">
                   {order.zzz_items?.reduce((sum, item) => sum + item.zzz_quantity, 0) || 0}{" "}
@@ -253,6 +257,7 @@ export default function ReservationCard({
                   name="account-group-outline"
                   size={14}
                   color={COLORS.primary}
+                  accessibilityLabel={t("common.pax")}
                 />
                 <Text className="text-primary font-display-black text-[11px] ml-2 uppercase tracking-tighter">
                   {order.zzz_reservation?.zzz_guest_count || 1} {t("common.pax")}
@@ -262,7 +267,6 @@ export default function ReservationCard({
 
             <View className={`px-4 py-1.5 rounded-2xl overflow-hidden ${status.bgClass}/15`}>
               <Text className={`font-display-black text-[17px] ${status.textClass}`}>
-                $
                 {formatCurrency(
                   order.zzz_items?.reduce(
                     (sum, item) => sum + item.zzz_price * item.zzz_quantity,
@@ -284,6 +288,7 @@ export default function ReservationCard({
                   textClassName={action.variant === "outline" ? "text-error" : "text-xs"}
                   onPress={action.onPress}
                   title={action.label}
+                  testID={`order-action-${action.zzz_id}`}
                 />
               ))}
             </View>
