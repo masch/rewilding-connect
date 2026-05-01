@@ -177,7 +177,11 @@
     "save_success": "Configuración del emprendimiento guardada con éxito",
     "save_error": "Error al guardar la configuración",
     "capacity_label": "Capacidad de Visitantes",
-    "capacity_help": "Ajustá la cantidad de personas que podés recibir simultáneamente."
+    "capacity_help": "Ajustá la cantidad de personas que podés recibir simultáneamente.",
+    "current_value": "Valor actual",
+    "capacity_legend": "Este es el límite máximo de personas que podés recibir simultáneamente.",
+    "minus": "Disminuir capacidad",
+    "plus": "Aumentar capacidad"
   },
   "orders": {
     "title": "Mis Pedidos",

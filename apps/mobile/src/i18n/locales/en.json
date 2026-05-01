@@ -177,7 +177,11 @@
     "save_success": "Venture configuration saved successfully",
     "save_error": "Error saving configuration",
     "capacity_label": "Visitor Capacity",
-    "capacity_help": "Adjust the number of people you can receive simultaneously."
+    "capacity_help": "Adjust the number of people you can receive simultaneously.",
+    "current_value": "Current value",
+    "capacity_legend": "This is the maximum number of people you can receive simultaneously.",
+    "minus": "Decrease capacity",
+    "plus": "Increase capacity"
   },
   "orders": {
     "title": "My Orders",

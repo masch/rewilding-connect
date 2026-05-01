@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useTranslations } from "../hooks/useI18n";
 import { useProjectStore } from "../stores/project.store";
@@ -7,6 +7,7 @@ import { VentureService } from "../services/venture.service";
 import { Venture, COLORS } from "@repo/shared";
 import { Button } from "./Button";
 import { logger } from "../services/logger.service";
+import LoadingView from "./LoadingView";
 
 interface VentureCapacitySectionProps {
   userId: string;
@@ -29,7 +30,6 @@ export default function VentureCapacitySection({ userId }: VentureCapacitySectio
           setVenture(data);
           setCapacity(data.zzz_max_capacity);
 
-          // If we have a project ID but no selected project, try to sync it
           if (
             data.zzz_project_id &&
             (!selectedProject || selectedProject.zzz_id !== data.zzz_project_id)
@@ -65,11 +65,7 @@ export default function VentureCapacitySection({ userId }: VentureCapacitySectio
   };
 
   if (isLoading) {
-    return (
-      <View className="bg-surface-container-low rounded-3xl p-8 mb-4 border border-outline-variant/30 items-center justify-center">
-        <ActivityIndicator color={COLORS.primary} size="large" />
-      </View>
-    );
+    return <LoadingView />;
   }
 
   if (!venture) {
@@ -86,7 +82,12 @@ export default function VentureCapacitySection({ userId }: VentureCapacitySectio
     <View className="bg-surface-container-low rounded-3xl border border-outline-variant/30 p-5 shadow-sm mb-4">
       <View className="flex-row items-center mb-4">
         <View className="w-10 h-10 rounded-xl bg-primary/10 items-center justify-center mr-3">
-          <MaterialCommunityIcons name="account-group-outline" size={24} color={COLORS.primary} />
+          <MaterialCommunityIcons
+            name="account-group-outline"
+            size={24}
+            color={COLORS.primary}
+            accessibilityLabel={t("venture.capacity_label")}
+          />
         </View>
         <Text className="text-lg font-display font-bold text-on-surface">
           {t("venture.capacity_label")}
@@ -101,10 +102,24 @@ export default function VentureCapacitySection({ userId }: VentureCapacitySectio
           disabled={capacity <= 1 || isSaving}
           testID="minus-button"
         >
-          <MaterialCommunityIcons name="minus" size={24} color={COLORS.primary} />
+          <MaterialCommunityIcons
+            name="minus"
+            size={24}
+            color={COLORS.primary}
+            accessibilityLabel={t("venture.minus")}
+          />
         </Button>
 
         <View className="items-center">
+          <View className="flex-row items-center mb-1 opacity-40">
+            <Text className="text-[8px] font-body uppercase tracking-widest text-on-surface-variant">
+              {t("venture.current_value")}:{" "}
+            </Text>
+            <Text className="text-[10px] font-display font-bold text-on-surface-variant">
+              {venture.zzz_max_capacity}
+            </Text>
+          </View>
+
           <Text testID="capacity-text" className="text-3xl font-display font-bold text-on-surface">
             {capacity}
           </Text>
@@ -120,9 +135,18 @@ export default function VentureCapacitySection({ userId }: VentureCapacitySectio
           disabled={capacity >= 999 || isSaving}
           testID="plus-button"
         >
-          <MaterialCommunityIcons name="plus" size={24} color={COLORS.primary} />
+          <MaterialCommunityIcons
+            name="plus"
+            size={24}
+            color={COLORS.primary}
+            accessibilityLabel={t("venture.plus")}
+          />
         </Button>
       </View>
+
+      <Text className="text-[11px] font-body text-on-surface-variant/70 text-center px-4 mb-6 italic">
+        {t("venture.capacity_legend")}
+      </Text>
 
       <Button
         onPress={handleSave}

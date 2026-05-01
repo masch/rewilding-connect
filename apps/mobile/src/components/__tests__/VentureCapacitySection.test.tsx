@@ -54,4 +54,19 @@ describe("VentureCapacitySection", () => {
     // Check that it shows the capacity from the venture mock (50)
     expect(screen.getByTestId("capacity-text").props.children).toBe(50);
   });
+
+  it("should display the current value reference and descriptive legend", async () => {
+    render(<VentureCapacitySection userId={userId} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("venture.capacity_label")).toBeTruthy();
+    });
+
+    // Check for the "Actual" label and original value (which appears twice: current and editable)
+    expect(screen.getByText(/venture.current_value/)).toBeTruthy();
+    expect(screen.getAllByText("50")).toHaveLength(2);
+
+    // Check for the descriptive legend
+    expect(screen.getByText("venture.capacity_legend")).toBeTruthy();
+  });
 });
