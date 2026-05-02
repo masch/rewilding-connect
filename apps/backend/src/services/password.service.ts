@@ -29,7 +29,7 @@ async function deriveKey(
   return crypto.subtle.deriveBits(
     {
       name: PBKDF2_ALGORITHM,
-      salt: salt as Uint8Array,
+      salt: salt as unknown as BufferSource,
       iterations,
       hash: PBKDF2_HASH_ALGO,
     },
