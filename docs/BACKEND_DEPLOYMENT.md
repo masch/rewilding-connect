@@ -94,7 +94,7 @@ Hono's JWT middleware requires an explicit algorithm. We use **`HS256`** for sha
 
 ### Shared Dependencies
 
-Wrangler is configured to use `bun` as the bundler to correctly resolve workspace dependencies like `@repo/shared`.
+Wrangler (v3+) natively handles the resolution of workspace dependencies like `@repo/shared` during the bundling process. No additional configuration is required as long as the project structure follows standard monorepo patterns.
 
 ---
 
