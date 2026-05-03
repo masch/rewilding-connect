@@ -7,6 +7,12 @@ on:
       - "apps/backend/**"
       - "packages/shared/**"
       - ".github/workflows/deploy-backend.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/backend/**"
+      - "packages/shared/**"
+      - ".github/workflows/deploy-backend.yml"
   workflow_dispatch:
     inputs:
       environment:
@@ -27,7 +33,7 @@ jobs:
     name: Deploy to ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || 'development' }}
     runs-on: ubuntu-latest
     # The 'environment' key maps to GitHub Environments for secrets access
-    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || 'development' }}
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && github.event_name == 'push' && 'production') || 'development' }}
 
     steps:
       - name: Checkout
@@ -38,7 +44,7 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.environment }}" != "" ]; then
             echo "env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          elif [ "${{ github.ref }}" == "refs/heads/main" ] && [ "${{ github.event_name }}" == "push" ]; then
             echo "env=production" >> $GITHUB_OUTPUT
           else
             echo "env=development" >> $GITHUB_OUTPUT
