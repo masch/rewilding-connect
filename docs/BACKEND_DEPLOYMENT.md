@@ -118,6 +118,18 @@ make backend-logs
 1. Select the environment (`production` or `development`).
 2. The command will stream logs from the corresponding Cloudflare Worker.
 
+### 6. Health & Status Checks
+
+You can check the health and build status of each environment using the following commands:
+
+**Check Health**:
+- Production: `make backend-health [KEY=...]`
+- Development: `make backend-health-dev [KEY=...]`
+
+**Check GitHub Build Status**:
+- Production: `make backend-check-runs [REF=main] [KEY=...]`
+- Development: `make backend-check-runs-dev [REF=branch] [KEY=...]`
+
 ---
 
 ## ⚠️ Important Considerations (Gotchas)

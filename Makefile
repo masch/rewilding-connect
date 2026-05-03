@@ -44,8 +44,10 @@ help:
 	@echo "    make backend-logs                 - View production logs"
 	@echo "    make backend-secret-set           - Set a secret in production"
 	@echo "    make backend-secret-delete        - Delete a secret in production"
-	@echo "    make backend-health               - Check production health (Keychain auto-auth)"
-	@echo "    make backend-check-runs           - Check GitHub build status (Keychain auto-auth)"
+	@echo "    make backend-health               - Check production health"
+	@echo "    make backend-health-dev           - Check development health"
+	@echo "    make backend-check-runs           - Check production build status"
+	@echo "    make backend-check-runs-dev       - Check development build status"
 	@echo "    make seed                         - Seed database"
 	@echo "    make db-up                        - Start database container (Podman)"
 	@echo "    make db-down                      - Stop database container"
@@ -97,6 +99,7 @@ ANDROID_FIRST_AVD = $(shell $(ANDROID_EMULATOR) -list-avds | head -n 1)
 MOBILE_DIR = apps/mobile
 BACKEND_DIR = apps/backend
 BACKEND_PROD_URL = https://impenetrable-backend.impenetrable-connect.workers.dev
+BACKEND_DEV_URL = https://impenetrable-backend-dev.impenetrable-connect.workers.dev
 EAS_CLI_VERSION = 18.8.1
 
 # ==========================================
@@ -251,16 +254,30 @@ backend-secret-delete:
 # We use a shell variable to prevent Makefile from misinterpreting special chars
 GET_H_KEY = $(if $(KEY),$(KEY),$(shell which secret-tool > /dev/null && secret-tool lookup project impenetrable-connect secret health_token))
 
-backend-health: ## Check production health (usage: make backend-health [KEY=...])
+backend-health:
+	@$(MAKE) backend-health-internal URL=$(BACKEND_PROD_URL) KEY=$(KEY)
+
+backend-health-dev:
+	@$(MAKE) backend-health-internal URL=$(BACKEND_DEV_URL) KEY=$(KEY)
+
+backend-health-internal:
 	@TOKEN='$(subst ','\'',$(GET_H_KEY))'; \
 	if [ -z "$$TOKEN" ]; then echo "Error: No key provided. Use KEY=... or store it in keychain with secret-tool."; exit 1; fi; \
-	curl -s -H "X-Health-Key: $$TOKEN" $(BACKEND_PROD_URL)/health | jq .
+	echo "🔍 Checking health at $(URL)..."; \
+	curl -s -H "X-Health-Key: $$TOKEN" $(URL)/health | jq .
 
-backend-check-runs: ## Check production build status (usage: make backend-check-runs [KEY=...] [REF=main])
+backend-check-runs:
+	@$(MAKE) backend-check-runs-internal URL=$(BACKEND_PROD_URL) KEY=$(KEY) REF=$(REF)
+
+backend-check-runs-dev:
+	@$(MAKE) backend-check-runs-internal URL=$(BACKEND_DEV_URL) KEY=$(KEY) REF=$(REF)
+
+backend-check-runs-internal:
 	@TOKEN='$(subst ','\'',$(GET_H_KEY))'; \
 	if [ -z "$$TOKEN" ]; then echo "Error: No key provided. Use KEY=... or store it in keychain with secret-tool."; exit 1; fi; \
 	REF=$(or $(REF),main); \
-	curl -s -H "X-Health-Key: $$TOKEN" $(BACKEND_PROD_URL)/health/check-runs/$$REF | jq .
+	echo "🔍 Checking build status at $(URL) for ref $$REF..."; \
+	curl -s -H "X-Health-Key: $$TOKEN" $(URL)/health/check-runs/$$REF | jq .
 
 db-shell:
 	podman exec -it impenetrable-db psql -U impenetrable -d impenetrable_db
