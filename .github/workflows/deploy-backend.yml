@@ -1,0 +1,65 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/backend/**"
+      - "packages/shared/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "development"
+        type: choice
+        options:
+          - production
+          - development
+
+concurrency:
+  group: deploy-backend-${{ github.ref }}-${{ github.event.inputs.environment || 'auto' }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || 'development' }}
+    runs-on: ubuntu-latest
+    # The 'environment' key maps to GitHub Environments for secrets access
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || 'development' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set Environment Context
+        id: set-env
+        run: |
+          if [ "${{ github.event.inputs.environment }}" != "" ]; then
+            echo "env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "env=production" >> $GITHUB_OUTPUT
+          else
+            echo "env=development" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          cache: true
+
+      - name: Install Dependencies
+        run: make setup
+
+      - name: Deploy to Cloudflare
+        run: |
+          if [ "${{ steps.set-env.outputs.env }}" == "production" ]; then
+            make backend-deploy
+          else
+            make backend-deploy-dev
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

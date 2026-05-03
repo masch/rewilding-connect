@@ -35,16 +35,17 @@ Cloudflare Workers do not use `.env` files for production secrets. Instead, they
 
 ### How to Configure Keys
 
-Use the provided `Makefile` command to set secrets securely without exposing them in your terminal history:
+Use the provided `Makefile` command to set secrets securely for each environment:
 
 ```bash
 make backend-secret-set
 ```
 
-1.  Enter `DATABASE_URL` when prompted for the name and paste the Neon URL.
-2.  Repeat for `JWT_SECRET` with your custom seed.
-3.  Repeat for `ALLOWED_ORIGINS` to specify which domains can access your API.
-4.  (Optional) Repeat for `GITHUB_TOKEN` and `GITHUB_REPO` for health check diagnostics.
+1.  Select the environment (`production` or `development`).
+2.  Enter the secret name (e.g., `DATABASE_URL`).
+3.  Paste the corresponding value for that environment.
+
+**Note**: You must repeat this for every required secret in **both** environments to ensure the workers can function correctly.
 
 ---
 
@@ -58,21 +59,64 @@ First-time setup requires logging into Cloudflare:
 make backend-login
 ```
 
-### 2. Deploying Changes
+### 2. Deploying Changes (Manual)
 
-To bundle and upload the backend to the Edge:
+To bundle and upload the backend to the Edge manually from your local machine:
+
+**Production**:
 
 ```bash
 make backend-deploy
 ```
 
-### 3. Monitoring Logs
+**Development**:
 
-To see real-time logs from the production Worker:
+```bash
+make backend-deploy-dev
+```
+
+### 3. Automated Deployment (CI/CD)
+
+The project includes a GitHub Actions workflow that automatically deploys the backend to Cloudflare:
+
+- **Production**: Triggered on push to `main`.
+- **Development**: Triggered manually or on other branches (configurable).
+
+**Required GitHub Secrets**:
+
+- `CLOUDFLARE_API_TOKEN`: Cloudflare API token with Workers permissions.
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID.
+
+### 4. Database Migrations
+
+Migrations are **manual** for security reasons. Follow these steps for each environment:
+
+#### Development / Staging
+
+1. Ensure your `.env` or `.env.development` has the correct `DATABASE_URL`.
+2. Run:
+   ```bash
+   make db-migrate
+   ```
+
+#### Production (Neon)
+
+1. Ensure your `.env.neon` has the production connection string.
+2. Run:
+   ```bash
+   make db-migrate-neon
+   ```
+
+### 5. Monitoring Logs
+
+To see real-time logs from your workers:
 
 ```bash
 make backend-logs
 ```
+
+1. Select the environment (`production` or `development`).
+2. The command will stream logs from the corresponding Cloudflare Worker.
 
 ---
 
@@ -127,3 +171,34 @@ If a browser blocks your requests:
 
 Always verify the deployment status at:
 `https://impenetrable-backend.impenetrable-connect.workers.dev/health`
+
+---
+
+## 🌍 Multi-Environment Support
+
+The backend supports multiple environments in Cloudflare Workers using the `--env` flag.
+
+### Environments defined in `wrangler.toml`:
+
+- **Production (Default)**: `impenetrable-backend`
+- **Development**: `impenetrable-backend-dev`
+
+To deploy manually to development:
+
+```bash
+cd apps/backend && bunx wrangler deploy --env development
+```
+
+## 💰 Cost & Limitations (Free Tier)
+
+This project is optimized to run within the free tiers of our cloud providers.
+
+| Provider       | Service    | Free Tier Limits                 | Exceeded Behavior     | Upgrade Path             |
+| :------------- | :--------- | :------------------------------- | :-------------------- | :----------------------- |
+| **Cloudflare** | Workers    | 100k requests/day, 10ms CPU time | 429 Too Many Requests | **$5/mo** (10M requests) |
+| **Neon**       | PostgreSQL | 0.5 GB storage, 100 CU-hours/mo  | Suspension/Throttling | **$19/mo** (Launch Plan) |
+
+**Architect's Note**:
+
+- **Scale-to-Zero**: Both services will "sleep" during inactivity. The first request after a period of silence may experience a 1-2 second delay (cold start).
+- **Storage**: Use Cloudflare R2 or S3 for images/videos; do not store large binary blobs in the database to stay within the 0.5 GB limit.

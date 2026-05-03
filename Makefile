@@ -1,4 +1,4 @@
-.PHONY: help setup install dev dev-api dev-web-api clean lint gga format check check-static typecheck test test-shared test-coverage mobile mobile-mock mobile-api mobile-native mobile-clean mobile-web mobile-web-api mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-dev mobile-expo-fix-deps mobile-expo-doctor backend seed db-up db-down db-push db-generate db-migrate db-push-neon db-generate-neon db-migrate-neon db-reset eas-login eas-whoami eas-init eas-build-configure eas-build-dev eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator eas-export-web eas-deploy-web eas-deploy-web-prod android-app-stop android-app-restart android-reset android-stop android-kill android-restart check-backend-alive backend-login backend-deploy backend-logs backend-secret-set
+.PHONY: help setup install dev dev-api dev-web-api clean lint gga format check check-static typecheck test test-shared test-coverage mobile mobile-mock mobile-api mobile-native mobile-clean mobile-web mobile-web-api mobile-android mobile-android-native mobile-ios mobile-ios-native mobile-dev mobile-expo-fix-deps mobile-expo-doctor backend seed db-up db-down db-push db-generate db-migrate db-push-neon db-generate-neon db-migrate-neon db-reset eas-login eas-whoami eas-init eas-build-configure eas-build-dev eas-build-android-dev eas-build-android-preview eas-build-android-production eas-build-ios-simulator eas-export-web eas-deploy-web eas-deploy-web-prod android-app-stop android-app-restart android-reset android-stop android-kill android-restart check-backend-alive backend-login backend-deploy backend-deploy-dev backend-logs backend-secret-set
 
 # ==========================================
 # 📋 HELP
@@ -40,6 +40,7 @@ help:
 	@echo "    make backend                      - Start backend API (Local)"
 	@echo "    make backend-login                - Login to Cloudflare"
 	@echo "    make backend-deploy               - Deploy backend to production"
+	@echo "    make backend-deploy-dev           - Deploy backend to development"
 	@echo "    make backend-logs                 - View production logs"
 	@echo "    make backend-secret-set           - Set a secret in production"
 	@echo "    make backend-secret-delete        - Delete a secret in production"
@@ -213,17 +214,38 @@ backend-login:
 backend-deploy:
 	cd $(BACKEND_DIR) && bunx wrangler deploy
 
+backend-deploy-dev:
+	cd $(BACKEND_DIR) && bunx wrangler deploy --env development
+
 backend-logs:
-	cd $(BACKEND_DIR) && bunx wrangler tail
+	@read -p "Enter environment (production/development) [production]: " env; \
+	env=$${env:-production}; \
+	if [ "$$env" = "production" ]; then \
+		cd $(BACKEND_DIR) && bunx wrangler tail; \
+	else \
+		cd $(BACKEND_DIR) && bunx wrangler tail --env $$env; \
+	fi
 
 backend-secret-set:
-	@read -p "Enter secret name: " name; \
+	@read -p "Enter environment (production/development) [production]: " env; \
+	env=$${env:-production}; \
+	read -p "Enter secret name: " name; \
 	read -p "Enter secret value: " value; \
-	cd $(BACKEND_DIR) && echo $$value | bunx wrangler secret put $$name
+	if [ "$$env" = "production" ]; then \
+		cd $(BACKEND_DIR) && echo $$value | bunx wrangler secret put $$name; \
+	else \
+		cd $(BACKEND_DIR) && echo $$value | bunx wrangler secret put $$name --env $$env; \
+	fi
 
 backend-secret-delete:
-	@read -p "Enter secret name to delete: " name; \
-	cd $(BACKEND_DIR) && bunx wrangler secret delete $$name
+	@read -p "Enter environment (production/development) [production]: " env; \
+	env=$${env:-production}; \
+	read -p "Enter secret name to delete: " name; \
+	if [ "$$env" = "production" ]; then \
+		cd $(BACKEND_DIR) && bunx wrangler secret delete $$name; \
+	else \
+		cd $(BACKEND_DIR) && bunx wrangler secret delete $$name --env $$env; \
+	fi
 
 # Local health token support (Keychain or CLI)
 # We use a shell variable to prevent Makefile from misinterpreting special chars

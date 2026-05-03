@@ -453,10 +453,11 @@ To meet the requirement of running smoothly on low-end devices while serving Web
 
 - **Frontend Framework:** **React Native using Expo**. This allows writing a single codebase that compiles into a lightweight Android application (APK/AAB) and a responsive Web application.
 - **Performance Constraint:** Avoid heavy UI animations and large client-side bundle sizes to ensure performance on low-end hardware.
-- **Runtime:** **Bun**. High-performance JavaScript/TypeScript runtime used as both the package manager (`bun install`) and the execution environment (`bun run`). Chosen for native TypeScript support without transpilation, built-in test runner, and superior performance over Node.js for this workload.
-- **Backend Framework:** **Hono** (on Bun). Ultralight (~14KB, zero deps) web framework built on Web Standards (Request/Response). Runs natively on `Bun.serve()` without compatibility layers, providing Express-like DX (routing, middleware, path params) at near-raw performance. Enables sharing TypeScript interfaces and type definitions between frontend and backend for end-to-end type safety.
-- **ORM:** **Drizzle ORM**. Type-safe SQL-first ORM with zero runtime overhead. Schema defined in TypeScript with `pgEnum`, `pgTable`, and type inference via `$inferSelect`/`$inferInsert`.
-- **Database:** PostgreSQL 16 (local development via `podman-compose`).
+- **Runtime:** **Bun** (local) / **Cloudflare Workers** (production). High-performance JavaScript/TypeScript environment.
+- **Backend Framework:** **Hono**. Ultralight web framework built on Web Standards. Runs natively on `Bun.serve()` (local) and Cloudflare Workers (production), providing end-to-end type safety between the API and Mobile/Web apps.
+- **ORM:** **Drizzle ORM**. Type-safe SQL-first ORM with zero runtime overhead.
+- **Database:** **PostgreSQL 17**. Local development via Podman/Docker. Production via **Neon PostgreSQL** (Serverless), using the `neon-http` driver for optimal performance on the Edge.
+- **Deployment:** **Cloudflare Workers** for low-latency global delivery and high availability.
 - **State Management:** **Zustand**. Minimal, performant state management for React Native.
 - **Styling:** **NativeWind v4** + Tailwind CSS v3 + `react-native-css`. Standard Tailwind configuration via `tailwind.config.js`. Components wrapped with CSS interpolation support.
 - **Monorepo:** **Bun Workspaces**. Single repository with multiple projects sharing types and validators.
@@ -635,8 +636,10 @@ The following agent skills are installed to enforce patterns and best practices 
 
 - **Authentication - Entrepreneur/Admin (Password Login):**
   - JWT-based authentication with email/password
-  - Tokens stored in httpOnly cookies (web) or secure storage (mobile)
-  - Password hashed with bcrypt or argon2 (cost factor 10+)
+  - Tokens stored in secure storage (mobile) or httpOnly cookies (web)
+  - **Password Hashing**: Unified **PBKDF2** implementation via the native **Web Crypto API** (`crypto.subtle`). This ensures 100% compatibility across all runtimes (Bun, Cloudflare, Browser) with zero native dependencies.
+
+- **Fail-Fast Configuration**: Critical environment variables (`DATABASE_URL`, `JWT_SECRET`) are validated at boot-time. The application MUST NOT start if these variables are missing or invalid, preventing inconsistent states in production.
 
 - **Tourist Device Binding & Security **[MVP]\*\*\*\*
 
@@ -2521,14 +2524,27 @@ Redis is introduced in POST-MVP for:
 
 This section tracks planned features organized by priority.
 
-### 1. MVP: Next Steps (Phase 1 Continued)
+### 1. Recently Completed (Done) ✅
 
-- **General Venture Pause**: Implement `is_paused` toggle in the Venture Config screen.
-- **Specific Item Management**: Implement the ability for entrepreneurs to pause/unpause specific catalog items for their venture.
+- **Cloud Infrastructure**: Hono backend successfully deployed to **Cloudflare Workers** with **Neon PostgreSQL 17** (Serverless).
+- **CI/CD Integration**: Automated pipeline via GitHub Actions (Typecheck, Lint, DB Seed).
+- **Unified Security**: Standardized password hashing using **PBKDF2** via native **Web Crypto API**.
+- **Fail-Fast Configuration**: Strict boot-time validation of environment variables.
 
-### 2. Post-MVP (Phase 2)
+### 2. High Priority: MVP Completion (Phase 1) 🚀
 
-- **Real-time Availability Engine**: Implement dynamic calculation of available seats per time slot (`Venture.max_capacity - current_occupation`) to cap tourist selections in the UI.
-- **Advanced Scheduling**: Move beyond fixed Day Moments (Breakfast/Lunch/etc.) to specific time slots or duration-based bookings.
-- **Lead Time Control**: Minimum notice required for a booking (e.g., 2 hours before the service).
-- **Technical Debt & Scaling**: Replace in-memory rate limiting with Redis; implement OpenTelemetry observability for the Cascade Engine.
+- **Venture-Project Link**: Establish the organizational link between ventures and projects to enable regional filtering.
+- **Real-time Capacity Engine**: Implement dynamic calculation of available seats per time slot (`Venture.max_capacity - current_occupation`) to prevent overbooking.
+- **General & Specific Pause**: UI implementation for entrepreneurs to toggle business or item availability.
+
+### 3. Medium Priority: Integration & Scale (Phase 2) 📡
+
+- **Push Notifications**: Integrate **Expo Push API** to notify entrepreneurs of new cascade offers.
+- **Lead Time Control**: Implement minimum notice requirements (e.g., "Must book 2 hours before service").
+- **Observability**: Implement OpenTelemetry or similar for the Cascade Engine to track assignment times and rejection rates.
+
+### 4. Future Evolution (Phase 3) 🌍
+
+- **Admin Dashboard**: Web-based interface for regional admins to manage catalogs and audit ecosystems.
+- **Multi-language Expansion**: Full i18n implementation for catalog data and system notifications.
+- **Redis Integration**: Transition from in-memory rate limiting to Redis for multi-instance scaling.
