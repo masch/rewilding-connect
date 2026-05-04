@@ -101,7 +101,7 @@ export const ServiceCard = ({ item, onPress, categoryName, className = "" }: Ser
 
           <View className="flex-row items-center mt-4 pt-4 border-t border-outline-variant/10">
             <Text className="text-[10px] font-display font-bold text-primary uppercase tracking-tighter">
-              {t("catalog.view_details")}
+              {t("catalog.book_now")}
             </Text>
             <MaterialCommunityIcons name="chevron-right" size={16} color={COLORS.primary} />
           </View>

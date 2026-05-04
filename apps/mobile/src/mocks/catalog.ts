@@ -267,8 +267,22 @@ export const MERIENDA: CatalogItem = {
   zzz_global_pause: false,
 };
 
-export const PASEO_LANCHA: CatalogItem = {
+export const VIANDA: CatalogItem = {
   zzz_id: 17,
+  zzz_catalog_category_id: SERVICE_CATEGORY_IDS.GASTRONOMY,
+  zzz_name_i18n: { es: "Vianda", en: "Packed lunch" },
+  zzz_description_i18n: {
+    es: "Vianda casera para llevar",
+    en: "Packed lunch",
+  },
+  zzz_price: 9500,
+  zzz_max_participants: 20,
+  zzz_image_url: empanadas6,
+  zzz_global_pause: false,
+};
+
+export const PASEO_LANCHA: CatalogItem = {
+  zzz_id: 18,
   zzz_catalog_category_id: SERVICE_CATEGORY_IDS.EXCURSION,
   zzz_name_i18n: { es: "Paseo en lancha", en: "Boat trip" },
   zzz_description_i18n: {
@@ -299,6 +313,7 @@ export const MOCK_CATALOG_ITEMS: Record<number, CatalogItem> = {
   [DESAYUNO.zzz_id]: DESAYUNO,
   [MERIENDA.zzz_id]: MERIENDA,
   [PASEO_LANCHA.zzz_id]: PASEO_LANCHA,
+  [VIANDA.zzz_id]: VIANDA,
 };
 
 // Derive additional UI fields from CatalogItem

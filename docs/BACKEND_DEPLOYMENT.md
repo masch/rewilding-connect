@@ -123,10 +123,12 @@ make backend-logs
 You can check the health and build status of each environment using the following commands:
 
 **Check Health**:
+
 - Production: `make backend-health [KEY=...]`
 - Development: `make backend-health-dev [KEY=...]`
 
 **Check GitHub Build Status**:
+
 - Production: `make backend-check-runs [REF=main] [KEY=...]`
 - Development: `make backend-check-runs-dev [REF=branch] [KEY=...]`
 
