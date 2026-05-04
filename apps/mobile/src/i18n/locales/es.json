@@ -111,7 +111,7 @@
     "total_items": "Items totales",
     "total_cost": "Total pedido",
     "each": "c/u",
-    "view_details": "Ver detalles"
+    "book_now": "Realizar pedido"
   },
   "roles": {
     "TOURIST": {
